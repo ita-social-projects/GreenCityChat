@@ -49,7 +49,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             .map(
                 rooms.stream()
                     .filter(chatRoom -> !chatRoom.getMessages().isEmpty() && chatRoom.getType().equals(ChatType.PRIVATE)
-                        || chatRoom.getType().equals(ChatType.GROUP)|| chatRoom.getType().equals(ChatType.SYSTEM))
+                        || chatRoom.getType().equals(ChatType.GROUP) || chatRoom.getType().equals(ChatType.SYSTEM))
                     .collect(Collectors.toList()),
                 new TypeToken<List<ChatRoomDto>>() {
                 }.getType());
