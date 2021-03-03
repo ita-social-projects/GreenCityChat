@@ -2,6 +2,7 @@ package greencity.controller;
 
 import greencity.dto.ChatMessageDto;
 import greencity.dto.ChatRoomDto;
+import greencity.dto.MessageLike;
 import greencity.dto.ParticipantDto;
 import greencity.enums.ChatType;
 import greencity.service.ChatMessageService;
@@ -19,9 +20,7 @@ import java.util.Objects;
 import greencity.service.impl.ChatImageServiceImpl;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -240,5 +239,13 @@ public class ChatController {
     @MessageMapping("/chat/update")
     public void updateMessage(ChatMessageDto chatMessageDto) {
         chatMessageService.updateMessage(chatMessageDto);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @MessageMapping("/chat/like")
+    public void likeMessage(MessageLike messageLike) {
+        chatMessageService.likeMessage(messageLike);
     }
 }
