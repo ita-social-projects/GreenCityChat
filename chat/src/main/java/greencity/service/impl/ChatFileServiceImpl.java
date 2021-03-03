@@ -3,14 +3,19 @@ package greencity.service.impl;
 import greencity.service.ChatFileService;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Base64;
 import java.security.SecureRandom;
 
 @Service
-public class ChatImageServiceImpl implements ChatFileService {
+public class ChatFileServiceImpl implements ChatFileService {
     @Value("${fileFolder}")
     private String fileFolder;
     private static final String IMAGE_TYPE = "image";
@@ -71,5 +76,11 @@ public class ChatImageServiceImpl implements ChatFileService {
             return VIDEO_TYPE;
         }
         return OTHER_TYPE;
+    }
+
+    @Override
+    public Resource getFileResource(String fileName) throws IOException {
+        Path path = Paths.get(fileFolder + fileName);
+        return new ByteArrayResource(Files.readAllBytes(path));
     }
 }
