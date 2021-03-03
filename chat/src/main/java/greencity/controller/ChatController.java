@@ -184,7 +184,7 @@ public class ChatController {
     @GetMapping(value = "/document/download/{name}")
     public ResponseEntity<Resource> downloadDocument(@PathVariable("name") String name) throws IOException {
         return ResponseEntity.status(HttpStatus.OK)
-            .header("Content-Disposition", "attachment", "text/plain")
+            .header("Content-Disposition", "attachment")
             .body(chatFileService.getFileResource(name));
     }
 
