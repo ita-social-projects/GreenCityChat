@@ -24,7 +24,7 @@ public class ChatMessageDtoMapper extends AbstractConverter<ChatMessage, ChatMes
             .id(chatMessage.getId())
             .content(chatMessage.getContent())
             .createDate(chatMessage.getCreateDate())
-            .imageName(chatMessage.getImageName())
+            .fileName(chatMessage.getFileName())
             .fileType(chatMessage.getFileType())
             .senderId(chatMessage.getSender().getId())
             .roomId(chatMessage.getRoom().getId())

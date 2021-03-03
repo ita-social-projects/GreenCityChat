@@ -166,7 +166,8 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                 rooms.stream()
                     .filter(chatRoom -> !chatRoom.getMessages().isEmpty()
                         && chatRoom.getType().equals(ChatType.PRIVATE)
-                        || chatRoom.getType().equals(ChatType.GROUP))
+                        || chatRoom.getType().equals(ChatType.GROUP)
+                        || chatRoom.getType().equals(ChatType.SYSTEM))
                     .collect(Collectors.toList()),
                 new TypeToken<List<ChatRoomDto>>() {
                 }.getType());
@@ -203,8 +204,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         chatRoomRepo.save(chatRoom);
         return chatRoomDto;
     }
-
-
 
     @Override
     public Long addNewUserToSystemChat(Long userId) {
