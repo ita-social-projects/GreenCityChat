@@ -204,6 +204,15 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         return chatRoomDto;
     }
 
+
+
+    @Override
+    public Long addNewUserToSystemChat(Long userId) {
+        chatRoomRepo.findSystemChatRooms()
+            .forEach(chatRoom -> chatRoomRepo.addUserToSystemChatRoom(chatRoom.getId(), userId));
+        return userId;
+    }
+
     private List<ChatRoomDto> mapListChatMessageDto(List<ChatRoom> rooms) {
         List<ChatRoomDto> chatRoomDtos = new ArrayList<>();
         for (ChatRoom room : rooms) {

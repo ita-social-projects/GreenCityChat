@@ -17,7 +17,7 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
 
-import greencity.service.impl.ChatImageServiceImpl;
+import greencity.service.impl.ChatFileServiceImpl;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.ByteArrayResource;
@@ -34,7 +34,7 @@ public class ChatController {
     private final ChatRoomService chatRoomService;
     private final ParticipantService participantService;
     private final ChatMessageService chatMessageService;
-    private final ChatImageServiceImpl chatImageService;
+    private final ChatFileServiceImpl chatFileService;
 
     /**
      * {@inheritDoc}
@@ -178,17 +178,9 @@ public class ChatController {
     /**
      * {@inheritDoc}
      */
-    @GetMapping("/upload/image")
-    public ResponseEntity<String> uploadImage(String encodedString) throws IOException {
-        return ResponseEntity.status(HttpStatus.OK).body(chatImageService.save(encodedString));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     @GetMapping(value = "/media/{name}", produces = "*/*")
     public byte[] getImageWithMediaType(@PathVariable("name") String name) throws IOException {
-        return chatImageService.getByteArrayFromFile(name);
+        return chatFileService.getByteArrayFromFile(name);
     }
 
     /**
@@ -196,10 +188,9 @@ public class ChatController {
      */
     @GetMapping(value = "/document/download/{name}")
     public ResponseEntity<Resource> downloadDocument(@PathVariable("name") String name) throws IOException {
-        Path path =
-            Paths.get("C:\\Users\\Besitzer\\IdeaProjects\\GreenCity\\chat\\src\\main\\resources\\chat-images\\" + name);
-        ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
-        return ResponseEntity.status(HttpStatus.OK).header("Content-Disposition", "attachment").body(resource);
+        return ResponseEntity.status(HttpStatus.OK)
+            .header("Content-Disposition", "attachment")
+            .body(chatFileService.getFileResource(name));
     }
 
     /**
@@ -207,12 +198,10 @@ public class ChatController {
      */
     @PostMapping("/upload/file")
     public ResponseEntity<ChatMessageDto> uploadFile(@RequestBody MultipartFile file) throws IOException {
-        System.out.println("++++++++++++++++++++++++");
-        System.out.println(file.getContentType());
-        String fileType = chatImageService.getFilteredFileType(Objects.requireNonNull(file.getContentType()));
-        String imageName = chatImageService.saveFileAndGetFileName(file.getBytes(), file.getOriginalFilename());
+        String fileType = chatFileService.getFilteredFileType(Objects.requireNonNull(file.getContentType()));
+        String imageName = chatFileService.saveFileAndGetFileName(file.getBytes(), file.getOriginalFilename());
         ChatMessageDto chatMessageDto = new ChatMessageDto();
-        chatMessageDto.setImageName(imageName);
+        chatMessageDto.setFileName(imageName);
         chatMessageDto.setFileType(fileType);
         return ResponseEntity.status(HttpStatus.OK).body(chatMessageDto);
     }
@@ -221,7 +210,7 @@ public class ChatController {
      * {@inheritDoc}
      */
     @MessageMapping("/chat")
-    public void processMessage(ChatMessageDto chatMessageDto) throws IOException {
+    public void processMessage(ChatMessageDto chatMessageDto) {
         chatMessageService.processMessage(chatMessageDto);
     }
 
@@ -239,6 +228,14 @@ public class ChatController {
     @MessageMapping("/chat/update")
     public void updateMessage(ChatMessageDto chatMessageDto) {
         chatMessageService.updateMessage(chatMessageDto);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @PostMapping("/user")
+    public ResponseEntity<Long> addUserToSystemChatRoom(@RequestBody Long userId) {
+        return ResponseEntity.status(HttpStatus.OK).body(chatRoomService.addNewUserToSystemChat(userId));
     }
 
     /**
