@@ -1,4 +1,4 @@
-package greencity.providers;
+package greencity.security.providers;
 
 import static greencity.constant.AppConstant.AUTHORITIES;
 import greencity.jwt.JwtTool;

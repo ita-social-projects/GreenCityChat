@@ -1,9 +1,10 @@
 package greencity.config;
 
 import static greencity.constant.AppConstant.*;
-import greencity.filters.AccessTokenAuthenticationFilter;
+
+import greencity.client.RestClient;
 import greencity.jwt.JwtTool;
-import greencity.providers.JwtAuthenticationProvider;
+import greencity.security.providers.JwtAuthenticationProvider;
 import java.util.Arrays;
 import java.util.Collections;
 import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
@@ -34,13 +35,15 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final JwtTool jwtTool;
+    private final RestClient restClient;
 
     /**
      * Constructor.
      */
     @Autowired
-    public SecurityConfig(JwtTool jwtTool) {
+    public SecurityConfig(JwtTool jwtTool, RestClient restClient) {
         this.jwtTool = jwtTool;
+        this.restClient = restClient;
     }
 
     /**
@@ -65,7 +68,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
             .addFilterBefore(
-                new AccessTokenAuthenticationFilter(jwtTool, authenticationManager()),
+                    new greencity.security.filters.AccessTokenAuthenticationFilter(jwtTool, authenticationManager(), restClient),
                 UsernamePasswordAuthenticationFilter.class)
             .exceptionHandling()
             .authenticationEntryPoint((req, resp, exc) -> resp.sendError(SC_UNAUTHORIZED, "Authorize first."))
