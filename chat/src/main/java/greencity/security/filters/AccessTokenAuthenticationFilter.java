@@ -35,7 +35,7 @@ public class AccessTokenAuthenticationFilter extends OncePerRequestFilter {
      * Constructor.
      */
     public AccessTokenAuthenticationFilter(JwtTool jwtTool, AuthenticationManager authenticationManager,
-                                           RestClient restClient) {
+        RestClient restClient) {
         this.jwtTool = jwtTool;
         this.authenticationManager = authenticationManager;
         this.restClient = restClient;

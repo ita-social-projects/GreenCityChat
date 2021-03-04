@@ -68,7 +68,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
             .addFilterBefore(
-                    new greencity.security.filters.AccessTokenAuthenticationFilter(jwtTool, authenticationManager(), restClient),
+                new greencity.security.filters.AccessTokenAuthenticationFilter(jwtTool, authenticationManager(),
+                    restClient),
                 UsernamePasswordAuthenticationFilter.class)
             .exceptionHandling()
             .authenticationEntryPoint((req, resp, exc) -> resp.sendError(SC_UNAUTHORIZED, "Authorize first."))

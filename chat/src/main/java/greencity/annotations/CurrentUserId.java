@@ -8,8 +8,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation is used for injecting id of {@link greencity.entity.Participant} into
- * controller by {@link UserArgumentResolver}.
+ * Annotation is used for injecting id of {@link greencity.entity.Participant}
+ * into controller by {@link UserArgumentResolver}.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
