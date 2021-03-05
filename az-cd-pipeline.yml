@@ -81,6 +81,8 @@ stages:
         mavenVersionOption: 'Default'
         options: '-Dmaven.test.skip=true'
         
+    - script: ls
+      displayName: ls    
     - script: mv $(chatRepoName)/target/*.jar $(chatRepoName)/target/$(onbootJarName)
       displayName: Rename user jar to app
 
