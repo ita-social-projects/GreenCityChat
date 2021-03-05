@@ -120,6 +120,7 @@ stages:
                 downloadType: 'single'
                 artifactName: '$(artifactName)'
                 downloadPath: '$(System.ArtifactsDirectory)'
+          
                 
             - task: AzureRmWebAppDeployment@4
               inputs:
@@ -129,3 +130,5 @@ stages:
                 deployToSlotOrASE: true
                 ResourceGroupName: '$(resourceGroup)'
                 packageForLinux: '$(System.ArtifactsDirectory)/$(artifactName)/$(chatRepoName)/target/$(onbootJarName)'
+            - script: ls '$(System.ArtifactsDirectory)/$(artifactName)/$(chatRepoName)/target/$(onbootJarName)'
+              displayName: ls deploy
