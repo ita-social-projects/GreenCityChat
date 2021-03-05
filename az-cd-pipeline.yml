@@ -124,4 +124,4 @@ stages:
                 WebAppName: '$(chatServiceName)'
                 deployToSlotOrASE: true
                 ResourceGroupName: '$(resourceGroup)'
-                packageForLinux: '$(System.ArtifactsDirectory)/$(artifactName)/$(chatServiceName)/target/$(onbootJarName)'
+                packageForLinux: '$(System.ArtifactsDirectory)/$(artifactName)/$(chatRepoName)/target/$(onbootJarName)'
