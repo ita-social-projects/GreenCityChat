@@ -82,7 +82,7 @@ stages:
         options: '-Dmaven.test.skip=true'
         
     - script: ls
-      displayName: ls    
+      displayName: ls    chat/target/
     - script: mv $(chatRepoName)/target/*.jar $(chatRepoName)/target/$(onbootJarName)
       displayName: Rename user jar to app
 
