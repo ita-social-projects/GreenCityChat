@@ -2,6 +2,7 @@ package greencity.controller;
 
 import greencity.dto.ChatMessageDto;
 import greencity.dto.ChatRoomDto;
+import greencity.dto.MessageLike;
 import greencity.dto.ParticipantDto;
 import greencity.enums.ChatType;
 import greencity.service.ChatMessageService;
@@ -9,6 +10,9 @@ import greencity.service.ChatRoomService;
 import greencity.service.ParticipantService;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
@@ -16,6 +20,7 @@ import java.util.Objects;
 import greencity.service.impl.ChatFileServiceImpl;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -231,5 +236,13 @@ public class ChatController {
     @PostMapping("/user")
     public ResponseEntity<Long> addUserToSystemChatRoom(@RequestBody Long userId) {
         return ResponseEntity.status(HttpStatus.OK).body(chatRoomService.addNewUserToSystemChat(userId));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @MessageMapping("/chat/like")
+    public void likeMessage(MessageLike messageLike) {
+        chatMessageService.likeMessage(messageLike);
     }
 }

@@ -4,8 +4,12 @@ import greencity.dto.ChatMessageDto;
 import greencity.dto.ChatRoomDto;
 import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
+import greencity.entity.Participant;
 import greencity.repository.ChatMessageRepo;
+import greencity.repository.ChatRoomRepo;
 import greencity.service.impl.ChatMessageServiceImpl;
+import java.util.Collections;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +38,8 @@ class ChatMessageServiceTest {
     private SimpMessagingTemplate messagingTemplate;
     @Mock
     private ModelMapper modelMapper;
+    @Mock
+    private ChatRoomRepo chatRoomRepo;
     ChatRoomDto expectedChatRoomDto;
     List<ChatMessage> expectedChatMessagesList;
     ChatRoom expectedChatRoom;
@@ -52,13 +58,38 @@ class ChatMessageServiceTest {
 
     @Test
     void findAllMessagesByChatRoomId() {
-        when(chatRoomService.findChatRoomById(1L)).thenReturn(expectedChatRoomDto);
-        when(modelMapper.map(expectedChatRoomDto, ChatRoom.class)).thenReturn(expectedChatRoom);
-        when(chatMessageRepo.findAllByRoom(expectedChatRoom)).thenReturn(expectedChatMessagesList);
-        when(modelMapper.map(expectedChatMessagesList, new TypeToken<List<ChatMessageDto>>() {
-        }.getType())).thenReturn(expectedChatMessageDtoList);
+        Participant owner = Participant.builder()
+            .id(1L)
+            .build();
+        ChatRoom chatRoom = ChatRoom.builder()
+            .id(1L)
+            .name("TestName")
+            .owner(owner)
+            .build();
+        Optional<ChatRoom> roomOptional = Optional.of(chatRoom);
+        ChatMessage chatMessage = ChatMessage.builder()
+            .id(1L)
+            .content("test")
+            .room(chatRoom)
+            .sender(owner)
+            .build();
+        List<ChatMessage> messages = Collections.singletonList(chatMessage);
+        List<Long> userLike = Collections.singletonList(1L);
+        ChatMessageDto chatMessageDto = ChatMessageDto.builder()
+            .id(1L)
+            .content("test")
+            .roomId(1L)
+            .senderId(1L)
+            .build();
+        chatMessageDto.setLikedUserId(userLike);
+        List<ChatMessageDto> chatMessageDtos = Collections.singletonList(chatMessageDto);
+
+        when(chatRoomRepo.findById(1L)).thenReturn(roomOptional);
+        when(chatMessageRepo.findAllByRoom(chatRoom)).thenReturn(messages);
+        when(modelMapper.map(chatMessage, ChatMessageDto.class)).thenReturn(chatMessageDto);
+        when(chatMessageRepo.getLikesByMessageId(1L)).thenReturn(userLike);
         List<ChatMessageDto> actual = chatMessageServiceImpl.findAllMessagesByChatRoomId(1L);
-        assertEquals(expectedChatMessageDtoList, actual);
+        assertEquals(chatMessageDtos, actual);
     }
 
     @Test
