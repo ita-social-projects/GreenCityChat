@@ -81,8 +81,12 @@ stages:
         mavenVersionOption: 'Default'
         options: '-Dmaven.test.skip=true'
         
-    - script: mv $(chatServiceName)/target/*.jar $(chatServiceName)/target/$(onbootJarName)
+    - script: ls    chat/target/
+      displayName: ls pre
+    - script: mv $(chatRepoName)/target/*.jar $(chatRepoName)/target/$(onbootJarName)
       displayName: Rename user jar to app
+    - script: ls    chat/target/
+      displayName: ls post
 
     - task: CopyFiles@2
       displayName: Copy Files
@@ -116,6 +120,7 @@ stages:
                 downloadType: 'single'
                 artifactName: '$(artifactName)'
                 downloadPath: '$(System.ArtifactsDirectory)'
+          
                 
             - task: AzureRmWebAppDeployment@4
               inputs:
@@ -125,3 +130,5 @@ stages:
                 deployToSlotOrASE: true
                 ResourceGroupName: '$(resourceGroup)'
                 packageForLinux: '$(System.ArtifactsDirectory)/$(artifactName)/$(chatRepoName)/target/$(onbootJarName)'
+            - script: ls '$(System.ArtifactsDirectory)/$(artifactName)/$(chatRepoName)/target/'
+              displayName: ls deploy
