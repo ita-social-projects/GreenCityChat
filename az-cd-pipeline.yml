@@ -130,5 +130,5 @@ stages:
                 deployToSlotOrASE: true
                 ResourceGroupName: '$(resourceGroup)'
                 packageForLinux: '$(System.ArtifactsDirectory)/$(artifactName)/$(chatRepoName)/target/$(onbootJarName)'
-            - script: ls '$(System.ArtifactsDirectory)/$(artifactName)/$(chatRepoName)/target/$(onbootJarName)'
+            - script: ls '$(System.ArtifactsDirectory)/$(artifactName)/$(chatRepoName)/target/'
               displayName: ls deploy
