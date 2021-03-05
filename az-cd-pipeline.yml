@@ -81,10 +81,12 @@ stages:
         mavenVersionOption: 'Default'
         options: '-Dmaven.test.skip=true'
         
-    - script: ls
-      displayName: ls    chat/target/
+    - script: ls    chat/target/
+      displayName: ls pre
     - script: mv $(chatRepoName)/target/*.jar $(chatRepoName)/target/$(onbootJarName)
       displayName: Rename user jar to app
+    - script: ls    chat/target/
+      displayName: ls post
 
     - task: CopyFiles@2
       displayName: Copy Files
