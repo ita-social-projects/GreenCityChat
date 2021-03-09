@@ -5,22 +5,18 @@ import greencity.dto.ChatRoomDto;
 import greencity.dto.MessageLike;
 import greencity.dto.ParticipantDto;
 import greencity.enums.ChatType;
+import greencity.service.ChatFileService;
 import greencity.service.ChatMessageService;
 import greencity.service.ChatRoomService;
 import greencity.service.ParticipantService;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
 
-import greencity.service.impl.ChatFileServiceImpl;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -31,10 +27,11 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 @RequestMapping("/chat")
 public class ChatController {
+    private static final String WAV = ".wav";
     private final ChatRoomService chatRoomService;
     private final ParticipantService participantService;
     private final ChatMessageService chatMessageService;
-    private final ChatFileServiceImpl chatFileService;
+    private final ChatFileService chatFileService;
 
     /**
      * {@inheritDoc}
@@ -204,6 +201,28 @@ public class ChatController {
         chatMessageDto.setFileName(imageName);
         chatMessageDto.setFileType(fileType);
         return ResponseEntity.status(HttpStatus.OK).body(chatMessageDto);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @PostMapping("/upload/voice")
+    public ResponseEntity<ChatMessageDto> uploadVoice(@RequestBody MultipartFile file) throws IOException {
+        String fileType = chatFileService.getFilteredFileType(Objects.requireNonNull(file.getContentType()));
+        String fileName = chatFileService.saveFileAndGetFileName(file.getBytes(), WAV);
+        ChatMessageDto chatMessageDto = new ChatMessageDto();
+        chatMessageDto.setFileName(fileName);
+        chatMessageDto.setFileType(fileType);
+        return ResponseEntity.status(HttpStatus.OK).body(chatMessageDto);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @DeleteMapping("/delete/voice/{fileName}")
+    public ResponseEntity<HttpStatus> deleteVoiceMessageFile(@PathVariable("fileName") String fileName) {
+        this.chatFileService.deleteFile(fileName);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     /**
