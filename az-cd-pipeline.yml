@@ -1,19 +1,20 @@
-pr:
+trigger:
   branches:
     include:
     - dev, master
   paths:
     exclude:
     - README.md
-
+    
+pr: none
 
 variables:
   agentOS: ubuntu-latest
-  
-  azKeyVault: key-vault-greencity
-  jsonSecret: google-credentials
-  jsonFile: google-creds.json
-  jsonLocation: /site/wwwroot
+#
+#  azKeyVault: key-vault-greencity
+#  jsonSecret: google-credentials
+#  jsonFile: google-creds.json
+#  jsonLocation: /site/wwwroot
   
   artifactName: drop
   chatRepoName: chat
@@ -30,47 +31,47 @@ stages:
     pool:
       vmImage: $(agentOS)
     steps:
-    - task: AzureCLI@2
-      displayName: Get GOOGLE_APPLICATION_CREDENTIALS from Azure Key Vault
-      inputs:
-        azureSubscription: '$(azureSub)'
-        scriptType: 'bash'
-        scriptLocation: inlineScript
-        inlineScript: |
-          az keyvault secret download --name $(jsonSecret) --vault-name $(azKeyVault) --file $(jsonFile)
-          
-    - task: AzureKeyVault@1
-      displayName: Get FTP credentials from Azure Key Vault
-      inputs:
-        azureSubscription: '$(azureSub)'
-        KeyVaultName: '$(azKeyVault)'
-        SecretsFilter: 'ftpHost, ftpUser, ftpPass'
-        
-    - task: FtpUpload@2
-      displayName: Upload json to app service via FTP
-      inputs:
-        credentialsOption: 'inputs'
-        serverUrl: '$(ftpHost)'
-        username: '$(ftpUser)'
-        password: '$(ftpPass)'
-        filePatterns: '$(jsonFile)'
-        remoteDirectory: '$(jsonLocation)'
+#    - task: AzureCLI@2
+#      displayName: Get GOOGLE_APPLICATION_CREDENTIALS from Azure Key Vault
+#      inputs:
+#        azureSubscription: '$(azureSub)'
+#        scriptType: 'bash'
+#        scriptLocation: inlineScript
+#        inlineScript: |
+#          az keyvault secret download --name $(jsonSecret) --vault-name $(azKeyVault) --file $(jsonFile)
+#
+#    - task: AzureKeyVault@1
+#      displayName: Get FTP credentials from Azure Key Vault
+#      inputs:
+#        azureSubscription: '$(azureSub)'
+#        KeyVaultName: '$(azKeyVault)'
+#        SecretsFilter: 'ftpHost, ftpUser, ftpPass'
+#
+#    - task: FtpUpload@2
+#      displayName: Upload json to app service via FTP
+#      inputs:
+#        credentialsOption: 'inputs'
+#        serverUrl: '$(ftpHost)'
+#        username: '$(ftpUser)'
+#        password: '$(ftpPass)'
+#        filePatterns: '$(jsonFile)'
+#        remoteDirectory: '$(jsonLocation)'
 
-    - task: AzureAppServiceSettings@1
-      displayName: Set GOOGLE_APPLICATION_CREDENTIALS config in Azure Portal
-      inputs:
-        azureSubscription: '$(azureSub)'
-        appName: '$(userServiceName)'
-        resourceGroupName: '$(resourceGroup)'
-        appSettings: |
-          [
-            {
-              "name": "GOOGLE_APPLICATION_CREDENTIALS",
-              "value": "/home$(jsonLocation)/$(jsonFile)", 
-              "slotSetting": false
-            }
-          ]
-     
+#    - task: AzureAppServiceSettings@1
+#      displayName: Set GOOGLE_APPLICATION_CREDENTIALS config in Azure Portal
+#      inputs:
+#        azureSubscription: '$(azureSub)'
+#        appName: '$(userServiceName)'
+#        resourceGroupName: '$(resourceGroup)'
+#        appSettings: |
+#          [
+#            {
+#              "name": "GOOGLE_APPLICATION_CREDENTIALS",
+#              "value": "/home$(jsonLocation)/$(jsonFile)",
+#              "slotSetting": false
+#            }
+#          ]
+#
     - task: Maven@3
       displayName: Maven package
       inputs:
@@ -80,8 +81,12 @@ stages:
         mavenVersionOption: 'Default'
         options: '-Dmaven.test.skip=true'
         
-    - script: mv $(userRepoName)/target/*.jar $(userRepoName)/target/$(onbootJarName)
+    - script: ls    chat/target/
+      displayName: ls pre
+    - script: mv $(chatRepoName)/target/*.jar $(chatRepoName)/target/$(onbootJarName)
       displayName: Rename user jar to app
+    - script: ls    chat/target/
+      displayName: ls post
 
     - task: CopyFiles@2
       displayName: Copy Files
@@ -99,7 +104,7 @@ stages:
 - stage: Deploy
   jobs:
     - deployment: DeployChat
-      displayName: Deploy User app service
+      displayName: Deploy Chat app service
       pool:
         vmImage: $(agentOS)
       environment: 'prod'
@@ -115,6 +120,7 @@ stages:
                 downloadType: 'single'
                 artifactName: '$(artifactName)'
                 downloadPath: '$(System.ArtifactsDirectory)'
+          
                 
             - task: AzureRmWebAppDeployment@4
               inputs:
@@ -124,3 +130,5 @@ stages:
                 deployToSlotOrASE: true
                 ResourceGroupName: '$(resourceGroup)'
                 packageForLinux: '$(System.ArtifactsDirectory)/$(artifactName)/$(chatRepoName)/target/$(onbootJarName)'
+            - script: ls '$(System.ArtifactsDirectory)/$(artifactName)/$(chatRepoName)/target/'
+              displayName: ls deploy
