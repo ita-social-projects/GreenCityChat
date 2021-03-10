@@ -219,8 +219,8 @@ public class ChatController {
     /**
      * {@inheritDoc}
      */
-    @DeleteMapping("/delete/voice/{fileName}")
-    public ResponseEntity<HttpStatus> deleteVoiceMessageFile(@PathVariable("fileName") String fileName) {
+    @DeleteMapping("/delete/file/{fileName}")
+    public ResponseEntity<HttpStatus> deleteFile(@PathVariable("fileName") String fileName) {
         this.chatFileService.deleteFile(fileName);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
