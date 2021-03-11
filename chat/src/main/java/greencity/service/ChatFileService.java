@@ -34,4 +34,9 @@ public interface ChatFileService {
      * {@inheritDoc}
      */
     Resource getFileResource(String fileName) throws IOException;
+
+    /**
+     * {@inheritDoc}
+     */
+    void deleteFile(String fileName);
 }
