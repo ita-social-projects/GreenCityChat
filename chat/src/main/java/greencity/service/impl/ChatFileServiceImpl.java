@@ -27,6 +27,7 @@ public class ChatFileServiceImpl implements ChatFileService {
 
     @Override
     public String save(String encodedString) throws IOException {
+        System.out.println("test");
         String fileName = this.getUniqueName(encodedString);
         byte[] decodedBytes = Base64.getDecoder().decode(encodedString);
         File file = new File(fileFolder, fileName);
