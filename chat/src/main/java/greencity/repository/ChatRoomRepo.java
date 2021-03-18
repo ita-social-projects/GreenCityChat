@@ -67,7 +67,7 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
     List<ChatRoom> findAllChatRoomsByQuery(String query, Participant participant);
 
     /**
-     * {@inheritDoc}
+     * Method select all system chat.
      */
     @Query("select cr from ChatRoom  cr where cr.type = 'SYSTEM'")
     List<ChatRoom> findSystemChatRooms();
@@ -80,4 +80,10 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
     @Query(nativeQuery = true, value = "insert into chat_rooms_participants(room_id,participant_id)"
         + "values ( :chatroomid, :prticipantid )")
     void addUserToSystemChatRoom(@Param("chatroomid") Long chatroomid, @Param("prticipantid") Long prticipantid);
+
+    /**
+     * {@inheritDoc}
+     */
+    @Query("select cr.participants from ChatRoom cr where cr.id = :id")
+    Set<Participant> getPatricipantsByChatRoomId(@Param("id") Long id);
 }
