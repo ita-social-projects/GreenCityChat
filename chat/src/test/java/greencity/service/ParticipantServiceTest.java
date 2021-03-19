@@ -61,26 +61,49 @@ class ParticipantServiceTest {
 
     @Test
     void findByEmail() {
-        when(participantRepo.findNotDeactivatedByEmail(email)).thenReturn(Optional.of(expected))
-            .thenThrow(UserNotFoundException.class);
+        when(participantRepo.findNotDeactivatedByEmail(email)).thenReturn(Optional.of(expected));
         Optional<Participant> actual = Optional.ofNullable(participantServiceImpl.findByEmail(email));
         assertEquals(Optional.of(expected), actual);
     }
 
     @Test
+    void findByEmailException() {
+        when(participantRepo.findNotDeactivatedByEmail(email)).thenThrow(UserNotFoundException.class);
+        assertThrows(UserNotFoundException.class, () -> {
+            participantServiceImpl.findByEmail(email);
+        });
+    }
+
+    @Test
     void findById() {
-        when(participantRepo.findById(1L)).thenReturn(Optional.of(expected)).thenThrow(UserNotFoundException.class);
+        when(participantRepo.findById(1L)).thenReturn(Optional.of(expected));
         Optional<Participant> actual = Optional.ofNullable(participantServiceImpl.findById(1L));
         assertEquals(Optional.of(expected), actual);
     }
 
     @Test
+    void findByIdException() {
+        when(participantRepo.findById(1L)).thenThrow(UserNotFoundException.class);
+        assertThrows(UserNotFoundException.class, () -> {
+            participantServiceImpl.findById(1L);
+        });
+    }
+
+    @Test
     void getCurrentParticipantByEmail() {
-        when(participantRepo.findNotDeactivatedByEmail(email)).thenReturn(Optional.of(expected))
-            .thenThrow(UserNotFoundException.class);
+        when(participantRepo.findNotDeactivatedByEmail(email)).thenReturn(Optional.of(expected));
         when(modelMapper.map(expected, ParticipantDto.class)).thenReturn(expectedDto);
         ParticipantDto actualDto = participantServiceImpl.getCurrentParticipantByEmail(email);
         assertEquals(expectedDto, actualDto);
+    }
+
+    @Test
+    void getCurrentParticipantByEmailException() {
+        when(participantRepo.findNotDeactivatedByEmail(email)).thenReturn(Optional.of(expected));
+        when(modelMapper.map(expected, ParticipantDto.class)).thenThrow(UserNotFoundException.class);
+        assertThrows(UserNotFoundException.class, () -> {
+            participantServiceImpl.getCurrentParticipantByEmail(email);
+        });
     }
 
     @Test
