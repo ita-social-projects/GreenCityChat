@@ -3,6 +3,8 @@ package greencity.service.impl;
 import greencity.constant.ErrorMessage;
 import greencity.dto.ChatMessageDto;
 import greencity.dto.ChatRoomDto;
+import greencity.dto.GroupChatRoomCreateDto;
+import greencity.dto.ParticipantDto;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.enums.ChatType;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 /**
@@ -30,6 +33,13 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     private final ParticipantService participantService;
     private final ModelMapper modelMapper;
     private final ChatMessageRepo chatMessageRepo;
+    private final SimpMessagingTemplate messagingTemplate;
+
+    private static final String ROOM_LINK = "/rooms/user/";
+    private static final String HEADER_CREATE_ROOM = "createRoom";
+    private static final String HEADER_UPDATE_ROOM = "updateRoom";
+    private static final String HEADER_DELETE_ROOM = "deleteRoom";
+    private static final String HEADER_LEAVE_ROOM = "leaveRoom";
 
     /**
      * {@inheritDoc}
@@ -92,9 +102,9 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     /**
      * {@inheritDoc}
      */
-    private ChatRoomDto filterPrivateRoom(List<ChatRoom> chatRoom, Set<Participant> participants, Participant owner) {
+    private ChatRoomDto filterPrivateRoom(List<ChatRoom> chatRooms, Set<Participant> participants, Participant owner) {
         ChatRoom toReturn;
-        if (chatRoom.isEmpty()) {
+        if (chatRooms.isEmpty()) {
             toReturn = chatRoomRepo.save(
                 ChatRoom.builder()
                     .name(participants.stream().map(Participant::getName).collect(Collectors.joining(":")))
@@ -103,10 +113,15 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                     .participants(participants)
                     .type(ChatType.PRIVATE)
                     .build());
+            ChatRoomDto chatRoomDto = modelMapper.map(toReturn, ChatRoomDto.class);
+            Map<String, Object> headers = new HashMap<>();
+            headers.put(HEADER_CREATE_ROOM, new Object());
+            for (Participant p : participants) {
+                messagingTemplate.convertAndSend(ROOM_LINK + p.getId(), chatRoomDto, headers);
+            }
         } else {
-            toReturn = chatRoom.get(0);
+            toReturn = chatRooms.get(0);
         }
-
         return modelMapper.map(toReturn, ChatRoomDto.class);
     }
 
@@ -146,6 +161,114 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     }
 
     /**
+     * Method create new group chat room.
+     * 
+     * @param dto      of {@link GroupChatRoomCreateDto}
+     * @param userName of {@link String} name of current user. {@inheritDoc}
+     */
+    @Override
+    public void createNewChatRoom(GroupChatRoomCreateDto dto, String userName) {
+        Participant owner = participantService.findByEmail(userName);
+        Set<Participant> participants = new HashSet<>();
+        participants.add(owner);
+        dto.getUsersId().forEach(id -> participants.add(participantService.findById(id)));
+        List<ChatRoom> chatRooms =
+            chatRoomRepo.findByParticipantsAndStatus(participants, participants.size(), ChatType.GROUP);
+        System.out.println(chatRooms.size());
+        if (chatRooms.isEmpty()) {
+            ChatRoom room = chatRoomRepo.save(ChatRoom
+                .builder()
+                .participants(participants)
+                .owner(owner)
+                .type(ChatType.GROUP)
+                .name(dto.getChatName())
+                .build());
+            Map<String, Object> headers = new HashMap<>();
+            headers.put(HEADER_CREATE_ROOM, new Object());
+            ChatRoomDto chatRoomDto = modelMapper.map(room, ChatRoomDto.class);
+
+            for (Participant p : room.getParticipants()) {
+                messagingTemplate.convertAndSend(ROOM_LINK + p.getId(), chatRoomDto, headers);
+            }
+        }
+    }
+
+    /**
+     * Method delete participants from chat room.
+     * 
+     * @param chatRoomDto of {@link ChatRoomDto} {@inheritDoc}
+     */
+    @Override
+    public void deleteParticipantsFromChatRoom(ChatRoomDto chatRoomDto) {
+        ChatRoom room = modelMapper.map(chatRoomDto, ChatRoom.class);
+        room.setOwner(participantService.findById(chatRoomDto.getOwnerId()));
+        room.setType(chatRoomDto.getChatType());
+        Set<Participant> participantToSend = chatRoomRepo.getPatricipantsByChatRoomId(chatRoomDto.getId());
+        room = chatRoomRepo.save(room);
+        Map<String, Object> headers = new HashMap<>();
+        headers.put(HEADER_UPDATE_ROOM, new Object());
+        for (Participant participant : participantToSend) {
+            messagingTemplate.convertAndSend(ROOM_LINK + participant.getId(),
+                modelMapper.map(room, ChatRoomDto.class), headers);
+        }
+    }
+
+    /**
+     * Method for rename and add new participant to chat room.
+     * 
+     * @param chatRoomDto of {@link ChatRoomDto}
+     */
+    @Override
+    public void updateChatRoom(ChatRoomDto chatRoomDto) {
+        ChatRoom room = modelMapper.map(chatRoomDto, ChatRoom.class);
+        room.setOwner(participantService.findById(chatRoomDto.getOwnerId()));
+        room.setType(chatRoomDto.getChatType());
+        room = chatRoomRepo.save(room);
+        Map<String, Object> headers = new HashMap<>();
+        headers.put(HEADER_UPDATE_ROOM, new Object());
+        for (ParticipantDto participant : chatRoomDto.getParticipants()) {
+            messagingTemplate.convertAndSend(ROOM_LINK + participant.getId(),
+                modelMapper.map(room, ChatRoomDto.class), headers);
+        }
+    }
+
+    /**
+     * Method delete chat room.
+     * 
+     * @param chatRoomDto of {@link ChatRoomDto} {@inheritDoc}
+     */
+    @Override
+    public void deleteChatRoom(ChatRoomDto chatRoomDto) {
+        chatRoomRepo.deleteById(chatRoomDto.getId());
+        Map<String, Object> headers = new HashMap<>();
+        headers.put(HEADER_DELETE_ROOM, new Object());
+        for (ParticipantDto participant : chatRoomDto.getParticipants()) {
+            messagingTemplate.convertAndSend(ROOM_LINK + participant.getId(), chatRoomDto, headers);
+        }
+    }
+
+    /**
+     * Method delete current user from chat room.
+     * 
+     * @param chatRoomDto of {@link ChatRoomDto}
+     * @param userEmail   of {@link String} email of current user.
+     */
+    @Override
+    public void leaveChatRoom(ChatRoomDto chatRoomDto, String userEmail) {
+        ChatRoom chatRoom = modelMapper.map(chatRoomDto, ChatRoom.class);
+        chatRoom.setOwner(participantService.findById(chatRoomDto.getOwnerId()));
+        chatRoom.setType(ChatType.GROUP);
+        chatRoom.getParticipants().removeIf(participant -> participant.getEmail().equals(userEmail));
+        chatRoomRepo.save(chatRoom);
+        chatRoomDto = modelMapper.map(chatRoom, ChatRoomDto.class);
+        Map<String, Object> headers = new HashMap<>();
+        headers.put(HEADER_LEAVE_ROOM, new Object());
+        for (ParticipantDto participant : chatRoomDto.getParticipants()) {
+            messagingTemplate.convertAndSend(ROOM_LINK + participant.getId(), chatRoomDto, headers);
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -177,47 +300,23 @@ public class ChatRoomServiceImpl implements ChatRoomService {
      * {@inheritDoc}
      */
     @Override
-    public ChatRoomDto deleteChatRoom(Long roomId, String email) {
-        Participant participant = participantService.findByEmail(email);
-        List<ChatRoom> list = chatRoomRepo.findAllByParticipant(participant);
-        ChatRoom deleteRoom = list.stream().filter(chatRoom -> chatRoom.getId().equals(roomId)).findAny().orElseThrow();
-        ChatRoomDto chatRoomDto = modelMapper.map(deleteRoom, ChatRoomDto.class);
-        chatRoomRepo.delete(deleteRoom);
-        return chatRoomDto;
-    }
-
-    @Override
-    public ChatRoomDto leaveChatRoom(ChatRoomDto chatRoomDto, String email, Long ownerId) {
-        ChatRoom chatRoom = modelMapper.map(chatRoomDto, ChatRoom.class);
-        chatRoom.setOwner(participantService.findById(ownerId));
-        chatRoom.setType(ChatType.GROUP);
-        chatRoom.getParticipants().removeIf(participant -> participant.getEmail().equals(email));
-        chatRoomRepo.save(chatRoom);
-        return null;
-    }
-
-    @Override
-    public ChatRoomDto manageParticipantsAndNameChatRoom(ChatRoomDto chatRoomDto, String email) {
-        ChatRoom chatRoom = modelMapper.map(chatRoomDto, ChatRoom.class);
-        chatRoom.setOwner(participantService.findByEmail(email));
-        chatRoom.setType(ChatType.GROUP);
-        chatRoomRepo.save(chatRoom);
-        return chatRoomDto;
-    }
-
-    @Override
     public Long addNewUserToSystemChat(Long userId) {
         chatRoomRepo.findSystemChatRooms()
             .forEach(chatRoom -> chatRoomRepo.addUserToSystemChatRoom(chatRoom.getId(), userId));
         return userId;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     private List<ChatRoomDto> mapListChatMessageDto(List<ChatRoom> rooms) {
         List<ChatRoomDto> chatRoomDtos = new ArrayList<>();
         for (ChatRoom room : rooms) {
             ChatRoomDto chatRoomDto = modelMapper.map(room, ChatRoomDto.class);
-            for (ChatMessageDto messageDto : chatRoomDto.getMessages()) {
-                messageDto.setLikedUserId(chatMessageRepo.getLikesByMessageId(messageDto.getId()));
+            if (chatRoomDto.getMessages() != null) {
+                for (ChatMessageDto messageDto : chatRoomDto.getMessages()) {
+                    messageDto.setLikedUserId(chatMessageRepo.getLikesByMessageId(messageDto.getId()));
+                }
             }
             chatRoomDtos.add(chatRoomDto);
         }

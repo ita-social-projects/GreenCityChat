@@ -1,6 +1,7 @@
 package greencity.service;
 
 import greencity.dto.ChatRoomDto;
+import greencity.dto.GroupChatRoomCreateDto;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.enums.ChatType;
@@ -63,20 +64,30 @@ public interface ChatRoomService {
     /**
      * {@inheritDoc}
      */
-    ChatRoomDto deleteChatRoom(Long roomId, String email);
-
-    /**
-     * {@inheritDoc}
-     */
-    ChatRoomDto leaveChatRoom(ChatRoomDto chatRoomDto, String email, Long ownerId);
-
-    /**
-     * {@inheritDoc}
-     */
-    ChatRoomDto manageParticipantsAndNameChatRoom(ChatRoomDto chatRoomDto, String email);
-
-    /**
-     * {@inheritDoc}
-     */
     Long addNewUserToSystemChat(Long userId);
+
+    /**
+     * {@inheritDoc}
+     */
+    void createNewChatRoom(GroupChatRoomCreateDto dto, String userName);
+
+    /**
+     * {@inheritDoc}
+     */
+    void deleteParticipantsFromChatRoom(ChatRoomDto chatRoomDto);
+
+    /**
+     * {@inheritDoc}
+     */
+    void updateChatRoom(ChatRoomDto chatRoomDto);
+
+    /**
+     * {@inheritDoc}
+     */
+    void deleteChatRoom(ChatRoomDto chatRoomDto);
+
+    /**
+     * {@inheritDoc}
+     */
+    void leaveChatRoom(ChatRoomDto chatRoomDto, String userEmail);
 }

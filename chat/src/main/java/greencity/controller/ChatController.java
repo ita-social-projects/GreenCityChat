@@ -1,9 +1,6 @@
 package greencity.controller;
 
-import greencity.dto.ChatMessageDto;
-import greencity.dto.ChatRoomDto;
-import greencity.dto.MessageLike;
-import greencity.dto.ParticipantDto;
+import greencity.dto.*;
 import greencity.enums.ChatType;
 import greencity.service.ChatFileService;
 import greencity.service.ChatMessageService;
@@ -124,14 +121,55 @@ public class ChatController {
     }
 
     /**
-     * {@inheritDoc}
+     * Create new group chat room.
+     * 
+     * @param groupChatRoomCreateDto of {@link GroupChatRoomCreateDto}
      */
-    @GetMapping("/users/{ids}/room/{room_name}")
-    public ResponseEntity<List<ChatRoomDto>> getGroupChatRoomsWithUsers(@PathVariable("ids") List<Long> ids,
-        @PathVariable("room_name") String chatName,
+    @MessageMapping("/chat/users/create-room")
+    public void getGroupChatRoomsWithUsers(GroupChatRoomCreateDto groupChatRoomCreateDto,
         Principal principal) {
-        return ResponseEntity.status(HttpStatus.OK)
-            .body(chatRoomService.findGroupByParticipants(ids, principal.getName(), chatName));
+        chatRoomService.createNewChatRoom(groupChatRoomCreateDto, principal.getName());
+    }
+
+    /**
+     * Delete participants from group chat room.
+     * 
+     * @param chatRoomDto of {@link ChatRoomDto}
+     */
+    @MessageMapping("/chat/users/delete-participants-room")
+    public void deleteParticipantsFromChatRoom(ChatRoomDto chatRoomDto) {
+        chatRoomService.deleteParticipantsFromChatRoom(chatRoomDto);
+    }
+
+    /**
+     * Add participants from group chat room.
+     * 
+     * @param chatRoomDto of {@link ChatRoomDto}
+     */
+    @MessageMapping("/chat/users/update-room")
+    public void addParticipantsToChatRoom(ChatRoomDto chatRoomDto) {
+        chatRoomService.updateChatRoom(chatRoomDto);
+    }
+
+    /**
+     * Delete current user from group chat room.
+     * 
+     * @param chatRoomDto of {@link ChatRoomDto}
+     */
+    @MessageMapping("/chat/users/leave-room")
+    public void leaveRoom(ChatRoomDto chatRoomDto, Principal principal) {
+        chatRoomService.leaveChatRoom(chatRoomDto, principal.getName());
+    }
+
+    /**
+     * Delete chat room.
+     * 
+     * @param chatRoomDto of {@link ChatRoomDto}
+     */
+    @MessageMapping("/chat/users/delete-room")
+    public void deleteChatRoom(ChatRoomDto chatRoomDto) {
+        System.out.println("delete");
+        chatRoomService.deleteChatRoom(chatRoomDto);
     }
 
     /**
@@ -142,34 +180,6 @@ public class ChatController {
         return ResponseEntity.status(HttpStatus.OK)
             .body(chatRoomService.findGroupChatRooms(participantService.findByEmail(principal.getName()),
                 ChatType.GROUP));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @DeleteMapping("/delete/room/{room_id}")
-    public ResponseEntity<ChatRoomDto> deleteChatRoom(@PathVariable("room_id") Long roomId, Principal principal) {
-        return ResponseEntity.status(HttpStatus.OK)
-            .body(chatRoomService.deleteChatRoom(roomId, principal.getName()));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @PostMapping("/room/leave")
-    public ResponseEntity<ChatRoomDto> leaveChatRoom(@RequestBody ChatRoomDto chatRoomDto, Principal principal) {
-        return ResponseEntity.status(HttpStatus.OK)
-            .body(chatRoomService.leaveChatRoom(chatRoomDto, principal.getName(), chatRoomDto.getOwnerId()));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @PostMapping("/room/manage/participants")
-    public ResponseEntity<ChatRoomDto> manageParticipantsChatRoom(@RequestBody ChatRoomDto chatRoomDto,
-        Principal principal) {
-        return ResponseEntity.status(HttpStatus.OK)
-            .body(chatRoomService.manageParticipantsAndNameChatRoom(chatRoomDto, principal.getName()));
     }
 
     /**
