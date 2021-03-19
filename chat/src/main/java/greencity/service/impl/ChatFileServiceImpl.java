@@ -1,21 +1,29 @@
 package greencity.service.impl;
 
+import greencity.constant.ErrorMessage;
+import greencity.exception.exceptions.VoiceMessageNotFoundException;
 import greencity.service.ChatFileService;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Base64;
 import java.security.SecureRandom;
 
 @Service
-public class ChatImageServiceImpl implements ChatFileService {
+public class ChatFileServiceImpl implements ChatFileService {
     @Value("${fileFolder}")
     private String fileFolder;
     private static final String IMAGE_TYPE = "image";
     private static final String VIDEO_TYPE = "video";
     private static final String OTHER_TYPE = "doc";
+    private static final String AUDIO_TYPE = "audio";
 
     @Override
     public String save(String encodedString) throws IOException {
@@ -70,6 +78,23 @@ public class ChatImageServiceImpl implements ChatFileService {
         if (mediaType.contains(VIDEO_TYPE)) {
             return VIDEO_TYPE;
         }
+        if (mediaType.contains(AUDIO_TYPE)) {
+            return AUDIO_TYPE;
+        }
         return OTHER_TYPE;
+    }
+
+    @Override
+    public Resource getFileResource(String fileName) throws IOException {
+        Path path = Paths.get(fileFolder + fileName);
+        return new ByteArrayResource(Files.readAllBytes(path));
+    }
+
+    @Override
+    public void deleteFile(String fileName) {
+        File file = new File(fileFolder + fileName);
+        if (!file.delete()) {
+            throw new VoiceMessageNotFoundException(ErrorMessage.VOICE_MESSAGE_NOT_FOUND_BY_FILE_NAME + fileName);
+        }
     }
 }

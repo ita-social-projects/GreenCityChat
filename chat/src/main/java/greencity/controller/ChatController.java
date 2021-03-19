@@ -1,27 +1,19 @@
 package greencity.controller;
 
-import greencity.dto.ChatMessageDto;
-import greencity.dto.ChatRoomDto;
-import greencity.dto.ParticipantDto;
+import greencity.dto.*;
 import greencity.enums.ChatType;
+import greencity.service.ChatFileService;
 import greencity.service.ChatMessageService;
 import greencity.service.ChatRoomService;
 import greencity.service.ParticipantService;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
 
-import greencity.service.impl.ChatImageServiceImpl;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -32,10 +24,11 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 @RequestMapping("/chat")
 public class ChatController {
+    private static final String WAV = ".wav";
     private final ChatRoomService chatRoomService;
     private final ParticipantService participantService;
     private final ChatMessageService chatMessageService;
-    private final ChatImageServiceImpl chatImageService;
+    private final ChatFileService chatFileService;
 
     /**
      * {@inheritDoc}
@@ -128,14 +121,55 @@ public class ChatController {
     }
 
     /**
-     * {@inheritDoc}
+     * Create new group chat room.
+     * 
+     * @param groupChatRoomCreateDto of {@link GroupChatRoomCreateDto}
      */
-    @GetMapping("/users/{ids}/room/{room_name}")
-    public ResponseEntity<List<ChatRoomDto>> getGroupChatRoomsWithUsers(@PathVariable("ids") List<Long> ids,
-        @PathVariable("room_name") String chatName,
+    @MessageMapping("/chat/users/create-room")
+    public void getGroupChatRoomsWithUsers(GroupChatRoomCreateDto groupChatRoomCreateDto,
         Principal principal) {
-        return ResponseEntity.status(HttpStatus.OK)
-            .body(chatRoomService.findGroupByParticipants(ids, principal.getName(), chatName));
+        chatRoomService.createNewChatRoom(groupChatRoomCreateDto, principal.getName());
+    }
+
+    /**
+     * Delete participants from group chat room.
+     * 
+     * @param chatRoomDto of {@link ChatRoomDto}
+     */
+    @MessageMapping("/chat/users/delete-participants-room")
+    public void deleteParticipantsFromChatRoom(ChatRoomDto chatRoomDto) {
+        chatRoomService.deleteParticipantsFromChatRoom(chatRoomDto);
+    }
+
+    /**
+     * Add participants from group chat room.
+     * 
+     * @param chatRoomDto of {@link ChatRoomDto}
+     */
+    @MessageMapping("/chat/users/update-room")
+    public void addParticipantsToChatRoom(ChatRoomDto chatRoomDto) {
+        chatRoomService.updateChatRoom(chatRoomDto);
+    }
+
+    /**
+     * Delete current user from group chat room.
+     * 
+     * @param chatRoomDto of {@link ChatRoomDto}
+     */
+    @MessageMapping("/chat/users/leave-room")
+    public void leaveRoom(ChatRoomDto chatRoomDto, Principal principal) {
+        chatRoomService.leaveChatRoom(chatRoomDto, principal.getName());
+    }
+
+    /**
+     * Delete chat room.
+     * 
+     * @param chatRoomDto of {@link ChatRoomDto}
+     */
+    @MessageMapping("/chat/users/delete-room")
+    public void deleteChatRoom(ChatRoomDto chatRoomDto) {
+        System.out.println("delete");
+        chatRoomService.deleteChatRoom(chatRoomDto);
     }
 
     /**
@@ -151,45 +185,9 @@ public class ChatController {
     /**
      * {@inheritDoc}
      */
-    @DeleteMapping("/delete/room/{room_id}")
-    public ResponseEntity<ChatRoomDto> deleteChatRoom(@PathVariable("room_id") Long roomId, Principal principal) {
-        return ResponseEntity.status(HttpStatus.OK)
-            .body(chatRoomService.deleteChatRoom(roomId, principal.getName()));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @PostMapping("/room/leave")
-    public ResponseEntity<ChatRoomDto> leaveChatRoom(@RequestBody ChatRoomDto chatRoomDto, Principal principal) {
-        return ResponseEntity.status(HttpStatus.OK)
-            .body(chatRoomService.leaveChatRoom(chatRoomDto, principal.getName(), chatRoomDto.getOwnerId()));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @PostMapping("/room/manage/participants")
-    public ResponseEntity<ChatRoomDto> manageParticipantsChatRoom(@RequestBody ChatRoomDto chatRoomDto,
-        Principal principal) {
-        return ResponseEntity.status(HttpStatus.OK)
-            .body(chatRoomService.manageParticipantsAndNameChatRoom(chatRoomDto, principal.getName()));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @GetMapping("/upload/image")
-    public ResponseEntity<String> uploadImage(String encodedString) throws IOException {
-        return ResponseEntity.status(HttpStatus.OK).body(chatImageService.save(encodedString));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     @GetMapping(value = "/media/{name}", produces = "*/*")
     public byte[] getImageWithMediaType(@PathVariable("name") String name) throws IOException {
-        return chatImageService.getByteArrayFromFile(name);
+        return chatFileService.getByteArrayFromFile(name);
     }
 
     /**
@@ -197,10 +195,9 @@ public class ChatController {
      */
     @GetMapping(value = "/document/download/{name}")
     public ResponseEntity<Resource> downloadDocument(@PathVariable("name") String name) throws IOException {
-        Path path =
-            Paths.get("C:\\Users\\Besitzer\\IdeaProjects\\GreenCity\\chat\\src\\main\\resources\\chat-images\\" + name);
-        ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
-        return ResponseEntity.status(HttpStatus.OK).header("Content-Disposition", "attachment").body(resource);
+        return ResponseEntity.status(HttpStatus.OK)
+            .header("Content-Disposition", "attachment")
+            .body(chatFileService.getFileResource(name));
     }
 
     /**
@@ -208,12 +205,10 @@ public class ChatController {
      */
     @PostMapping("/upload/file")
     public ResponseEntity<ChatMessageDto> uploadFile(@RequestBody MultipartFile file) throws IOException {
-        System.out.println("++++++++++++++++++++++++");
-        System.out.println(file.getContentType());
-        String fileType = chatImageService.getFilteredFileType(Objects.requireNonNull(file.getContentType()));
-        String imageName = chatImageService.saveFileAndGetFileName(file.getBytes(), file.getOriginalFilename());
+        String fileType = chatFileService.getFilteredFileType(Objects.requireNonNull(file.getContentType()));
+        String imageName = chatFileService.saveFileAndGetFileName(file.getBytes(), file.getOriginalFilename());
         ChatMessageDto chatMessageDto = new ChatMessageDto();
-        chatMessageDto.setImageName(imageName);
+        chatMessageDto.setFileName(imageName);
         chatMessageDto.setFileType(fileType);
         return ResponseEntity.status(HttpStatus.OK).body(chatMessageDto);
     }
@@ -221,8 +216,30 @@ public class ChatController {
     /**
      * {@inheritDoc}
      */
+    @PostMapping("/upload/voice")
+    public ResponseEntity<ChatMessageDto> uploadVoice(@RequestBody MultipartFile file) throws IOException {
+        String fileType = chatFileService.getFilteredFileType(Objects.requireNonNull(file.getContentType()));
+        String fileName = chatFileService.saveFileAndGetFileName(file.getBytes(), WAV);
+        ChatMessageDto chatMessageDto = new ChatMessageDto();
+        chatMessageDto.setFileName(fileName);
+        chatMessageDto.setFileType(fileType);
+        return ResponseEntity.status(HttpStatus.OK).body(chatMessageDto);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @DeleteMapping("/delete/file/{fileName}")
+    public ResponseEntity<HttpStatus> deleteFile(@PathVariable("fileName") String fileName) {
+        this.chatFileService.deleteFile(fileName);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @MessageMapping("/chat")
-    public void processMessage(ChatMessageDto chatMessageDto) throws IOException {
+    public void processMessage(ChatMessageDto chatMessageDto) {
         chatMessageService.processMessage(chatMessageDto);
     }
 
@@ -240,5 +257,21 @@ public class ChatController {
     @MessageMapping("/chat/update")
     public void updateMessage(ChatMessageDto chatMessageDto) {
         chatMessageService.updateMessage(chatMessageDto);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @PostMapping("/user")
+    public ResponseEntity<Long> addUserToSystemChatRoom(@RequestBody Long userId) {
+        return ResponseEntity.status(HttpStatus.OK).body(chatRoomService.addNewUserToSystemChat(userId));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @MessageMapping("/chat/like")
+    public void likeMessage(MessageLike messageLike) {
+        chatMessageService.likeMessage(messageLike);
     }
 }

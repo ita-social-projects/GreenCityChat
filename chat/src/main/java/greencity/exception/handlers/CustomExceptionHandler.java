@@ -1,6 +1,7 @@
 package greencity.exception.handlers;
 
 import greencity.exception.exceptions.UserNotFoundException;
+import greencity.exception.exceptions.VoiceMessageNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -32,6 +33,22 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @ExceptionHandler(UserNotFoundException.class)
     public final ResponseEntity<Object> handleParticipantNotFoundException(UserNotFoundException ex,
+        WebRequest request) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(getErrorAttributes(request));
+        log.trace(ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exceptionResponse);
+    }
+
+    /**
+     * Method intercept exception {@link VoiceMessageNotFoundException}.
+     *
+     * @param ex      Exception witch should be intercepted.
+     * @param request contain detail about occur exception
+     * @return ResponseEntity witch contain http status and body with message of
+     *         exception.
+     */
+    @ExceptionHandler(VoiceMessageNotFoundException.class)
+    public final ResponseEntity<Object> handleVoiceMessageNotFoundException(VoiceMessageNotFoundException ex,
         WebRequest request) {
         ExceptionResponse exceptionResponse = new ExceptionResponse(getErrorAttributes(request));
         log.trace(ex.getMessage(), ex);

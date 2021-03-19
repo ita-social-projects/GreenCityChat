@@ -1,5 +1,7 @@
 package greencity.service;
 
+import org.springframework.core.io.Resource;
+
 import java.io.IOException;
 
 public interface ChatFileService {
@@ -27,4 +29,14 @@ public interface ChatFileService {
      * {@inheritDoc}
      */
     String getFilteredFileType(String mediaType);
+
+    /**
+     * {@inheritDoc}
+     */
+    Resource getFileResource(String fileName) throws IOException;
+
+    /**
+     * {@inheritDoc}
+     */
+    void deleteFile(String fileName);
 }

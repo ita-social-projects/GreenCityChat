@@ -4,6 +4,7 @@ import greencity.dto.ChatMessageDto;
 import greencity.dto.ChatRoomDto;
 import greencity.dto.ParticipantDto;
 import greencity.entity.ChatRoom;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.modelmapper.AbstractConverter;
 import org.modelmapper.ModelMapper;
@@ -22,27 +23,49 @@ public class ChatRoomDtoMapper extends AbstractConverter<ChatRoom, ChatRoomDto> 
      */
     @Override
     protected ChatRoomDto convert(ChatRoom chatRoom) {
-        return ChatRoomDto.builder()
-            .id(chatRoom.getId())
-            .ownerId(chatRoom.getOwner().getId())
-            .chatType(chatRoom.getType())
-            .messages(chatRoom.getMessages().stream().map(
-                chatMessage -> ChatMessageDto.builder()
-                    .id(chatMessage.getId())
-                    .content(chatMessage.getContent())
-                    .imageName(chatMessage.getImageName())
-                    .fileType(chatMessage.getFileType())
-                    .senderId(chatMessage.getSender().getId())
-                    .roomId(chatRoom.getId()).build())
-                .collect(Collectors.toList()))
-            .name(chatRoom.getName())
-            .participants(chatRoom.getParticipants().stream().map(
-                participant -> ParticipantDto.builder()
-                    .name(participant.getName())
-                    .profilePicture(participant.getProfilePicture())
-                    .id(participant.getId())
-                    .email(participant.getEmail()).build())
-                .collect(Collectors.toSet()))
-            .build();
+        if (chatRoom.getMessages() == null) {
+            return ChatRoomDto.builder()
+                .id(chatRoom.getId())
+                .ownerId(chatRoom.getOwner().getId())
+                .chatType(chatRoom.getType())
+                .name(chatRoom.getName())
+                .participants(chatRoom.getParticipants().stream().map(
+                    participant -> ParticipantDto.builder()
+                        .name(participant.getName())
+                        .profilePicture(participant.getProfilePicture())
+                        .id(participant.getId())
+                        .email(participant.getEmail())
+                        .role(participant.getRole())
+                        .build())
+                    .collect(Collectors.toSet()))
+                .build();
+        } else {
+            return ChatRoomDto.builder()
+                .id(chatRoom.getId())
+                .ownerId(chatRoom.getOwner().getId())
+                .chatType(chatRoom.getType())
+                .messages(chatRoom.getMessages().stream()
+                    .filter(Objects::nonNull)
+                    .map(
+                        chatMessage -> ChatMessageDto.builder()
+                            .id(chatMessage.getId())
+                            .content(chatMessage.getContent())
+                            .fileName(chatMessage.getFileName())
+                            .fileType(chatMessage.getFileType())
+                            .senderId(chatMessage.getSender().getId())
+                            .roomId(chatRoom.getId()).build())
+                    .collect(Collectors.toList()))
+                .name(chatRoom.getName())
+                .participants(chatRoom.getParticipants().stream().map(
+                    participant -> ParticipantDto.builder()
+                        .name(participant.getName())
+                        .profilePicture(participant.getProfilePicture())
+                        .id(participant.getId())
+                        .email(participant.getEmail())
+                        .role(participant.getRole())
+                        .build())
+                    .collect(Collectors.toSet()))
+                .build();
+        }
     }
 }
