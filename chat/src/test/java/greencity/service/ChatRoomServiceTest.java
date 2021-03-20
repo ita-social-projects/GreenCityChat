@@ -107,21 +107,4 @@ class ChatRoomServiceTest {
         ChatRoomDto actual = chatRoomService.findChatRoomById(1L);
         assertEquals(expectedDto, actual);
     }
-
-    @Test
-    void findPrivateByParticipants() {
-        when(participantService.findByEmail(email)).thenReturn(expectedParticipant);
-        when(participantService.findById(1L)).thenReturn(expectedParticipant);
-        when(chatRoomRepo.findByParticipantsAndStatus(expectedSet, expectedSet.size(), ChatType.PRIVATE))
-            .thenReturn(expectedListEmpty);
-        when(chatRoomRepo.save(expectedToReturn)).thenReturn(expectedToReturn);
-        when(modelMapper.map(expectedToReturn, ChatRoomDto.class)).thenReturn(expectedDto);
-        ChatRoomDto actualExpectedListEmpty = chatRoomService.findPrivateByParticipants(1L, email);
-        assertEquals(expectedDto, actualExpectedListEmpty);
-        when(chatRoomRepo.findByParticipantsAndStatus(expectedSet, expectedSet.size(), ChatType.PRIVATE))
-            .thenReturn(expectedList);
-        when(modelMapper.map(expected, ChatRoomDto.class)).thenReturn(expectedDto);
-        ChatRoomDto actualExpectedList = chatRoomService.findPrivateByParticipants(1L, email);
-        assertEquals(expectedDto, actualExpectedList);
-    }
 }
