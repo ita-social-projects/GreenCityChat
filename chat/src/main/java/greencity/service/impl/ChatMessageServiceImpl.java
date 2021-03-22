@@ -86,7 +86,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
     @Override
     public void likeMessage(MessageLike messageLike) {
-        if ( isLiked(messageLike.getMessageId(), messageLike.getParticipantId())) {
+        if (isLiked(messageLike.getMessageId(), messageLike.getParticipantId())) {
             chatMessageRepo.deleteLikeFromMessage(messageLike.getMessageId(), messageLike.getParticipantId());
         } else {
             chatMessageRepo.addLikeToMessage(messageLike.getMessageId(), messageLike.getParticipantId());
