@@ -11,6 +11,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
 class ChatMessageDtoMapperTest {
@@ -24,9 +26,9 @@ class ChatMessageDtoMapperTest {
             ChatType.GROUP, null),
             new Participant(1L, "name", "asd@asd.asd", null,
                 null, UserStatus.ACTIVATED, Role.ROLE_USER),
-            "content", null, "fileName", "fileType");
+            "content", null, "fileName", "fileType","fileUrl");
         expected = new ChatMessageDto(1L, 1L, 1L, "content",
-            null, "fileName", "fileType", null);
+            null, "fileName", "fileType","fileUrl", null);
     }
 
     @Test
