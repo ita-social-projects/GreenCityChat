@@ -1,20 +1,19 @@
 package greencity.controller;
 
+import greencity.constant.HttpStatuses;
 import greencity.dto.*;
 import greencity.enums.ChatType;
-import greencity.service.ChatFileService;
-import greencity.service.ChatMessageService;
-import greencity.service.ChatRoomService;
-import greencity.service.ParticipantService;
+import greencity.service.*;
 
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import java.io.*;
 import java.security.Principal;
 import java.util.List;
-import java.util.Objects;
 
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +27,7 @@ public class ChatController {
     private final ChatRoomService chatRoomService;
     private final ParticipantService participantService;
     private final ChatMessageService chatMessageService;
-    private final ChatFileService chatFileService;
+    private final AzureFileService azureFileService;
 
     /**
      * {@inheritDoc}
@@ -183,33 +182,21 @@ public class ChatController {
     }
 
     /**
-     * {@inheritDoc}
+     * Method for uploading an image.
+     *
+     * @param file image to save.
+     * @return url of the saved image.
      */
-    @GetMapping(value = "/media/{name}", produces = "*/*")
-    public byte[] getImageWithMediaType(@PathVariable("name") String name) throws IOException {
-        return chatFileService.getByteArrayFromFile(name);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @GetMapping(value = "/document/download/{name}")
-    public ResponseEntity<Resource> downloadDocument(@PathVariable("name") String name) throws IOException {
-        return ResponseEntity.status(HttpStatus.OK)
-            .header("Content-Disposition", "attachment")
-            .body(chatFileService.getFileResource(name));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
+    @ApiOperation(value = "Upload an image.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = HttpStatuses.CREATED, response = String.class),
+        @ApiResponse(code = 303, message = HttpStatuses.SEE_OTHER),
+        @ApiResponse(code = 403, message = HttpStatuses.FORBIDDEN),
+        @ApiResponse(code = 500, message = HttpStatuses.INTERNAL_SERVER_ERROR),
+    })
     @PostMapping("/upload/file")
     public ResponseEntity<ChatMessageDto> uploadFile(@RequestBody MultipartFile file) throws IOException {
-        String fileType = chatFileService.getFilteredFileType(Objects.requireNonNull(file.getContentType()));
-        String imageName = chatFileService.saveFileAndGetFileName(file.getBytes(), file.getOriginalFilename());
-        ChatMessageDto chatMessageDto = new ChatMessageDto();
-        chatMessageDto.setFileName(imageName);
-        chatMessageDto.setFileType(fileType);
+        ChatMessageDto chatMessageDto = azureFileService.saveFile(file);
         return ResponseEntity.status(HttpStatus.OK).body(chatMessageDto);
     }
 
@@ -217,12 +204,8 @@ public class ChatController {
      * {@inheritDoc}
      */
     @PostMapping("/upload/voice")
-    public ResponseEntity<ChatMessageDto> uploadVoice(@RequestBody MultipartFile file) throws IOException {
-        String fileType = chatFileService.getFilteredFileType(Objects.requireNonNull(file.getContentType()));
-        String fileName = chatFileService.saveFileAndGetFileName(file.getBytes(), WAV);
-        ChatMessageDto chatMessageDto = new ChatMessageDto();
-        chatMessageDto.setFileName(fileName);
-        chatMessageDto.setFileType(fileType);
+    public ResponseEntity<ChatMessageDto> uploadVoice(@RequestBody MultipartFile file) {
+        ChatMessageDto chatMessageDto = this.azureFileService.saveVoiceMessage(file);
         return ResponseEntity.status(HttpStatus.OK).body(chatMessageDto);
     }
 
@@ -231,7 +214,7 @@ public class ChatController {
      */
     @DeleteMapping("/delete/file/{fileName}")
     public ResponseEntity<HttpStatus> deleteFile(@PathVariable("fileName") String fileName) {
-        this.chatFileService.deleteFile(fileName);
+        this.azureFileService.deleteFile(fileName);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

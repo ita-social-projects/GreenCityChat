@@ -8,8 +8,8 @@ import greencity.entity.ChatRoom;
 import greencity.exception.exceptions.ChatRoomNotFoundException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
+import greencity.service.AzureFileService;
 import greencity.service.ChatMessageService;
-import greencity.service.ChatRoomService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,24 +22,23 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 /**
- * Implementation of {@link ChatRoomService}.
+ * Implementation of {@link ChatMessageService}.
  */
 @Service
 @AllArgsConstructor
 public class ChatMessageServiceImpl implements ChatMessageService {
     private final ChatMessageRepo chatMessageRepo;
-    private final ChatRoomService chatRoomService;
     private final SimpMessagingTemplate messagingTemplate;
     private final ModelMapper modelMapper;
     private final ChatRoomRepo chatRoomRepo;
-
+    private final AzureFileService azureFileService;
     private static final String ROOM_LINK = "/room/";
     private static final String MESSAGE_LINK = "/queue/messages";
     private static final String HEADER_DELETE = "delete";
     private static final String HEADER_UPDATE = "update";
 
     /**
-     * {@inheritDoc}
+     * {@inheritDoc}.
      */
     @Override
     public List<ChatMessageDto> findAllMessagesByChatRoomId(Long chatRoomId) {
@@ -50,6 +49,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         return chatMessageDtos;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void processMessage(ChatMessageDto chatMessageDto) {
         ChatMessage message = modelMapper.map(chatMessageDto, ChatMessage.class);
@@ -58,16 +60,25 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             ROOM_LINK + chatMessageDto.getRoomId() + MESSAGE_LINK, chatMessageDto);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void deleteMessage(ChatMessageDto chatMessageDto) {
         ChatMessage chatMessage = modelMapper.map(chatMessageDto, ChatMessage.class);
         chatMessageRepo.delete(chatMessage);
+        if (chatMessageDto.getFileName() != null) {
+            this.azureFileService.deleteFile(chatMessage.getFileName());
+        }
         Map<String, Object> headers = new HashMap<>();
         headers.put(HEADER_DELETE, new Object());
         messagingTemplate.convertAndSend(
             ROOM_LINK + chatMessageDto.getRoomId() + MESSAGE_LINK, chatMessageDto, headers);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void updateMessage(ChatMessageDto chatMessageDto) {
         ChatMessage chatMessage = modelMapper.map(chatMessageDto, ChatMessage.class);
@@ -79,11 +90,17 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             ROOM_LINK + chatMessageDto.getRoomId() + MESSAGE_LINK, chatMessageDto, headers);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ChatMessageDto findTopByOrderByIdDesc() {
         return modelMapper.map(chatMessageRepo.findTopByOrderByIdDesc(), ChatMessageDto.class);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void likeMessage(MessageLike messageLike) {
         if (isLiked(messageLike.getMessageId(), messageLike.getParticipantId())) {

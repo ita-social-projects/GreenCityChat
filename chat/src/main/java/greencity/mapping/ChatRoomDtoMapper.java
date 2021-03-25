@@ -52,6 +52,7 @@ public class ChatRoomDtoMapper extends AbstractConverter<ChatRoom, ChatRoomDto> 
                             .content(chatMessage.getContent())
                             .fileName(chatMessage.getFileName())
                             .fileType(chatMessage.getFileType())
+                            .fileUrl(chatMessage.getFileUrl())
                             .senderId(chatMessage.getSender().getId())
                             .roomId(chatRoom.getId()).build())
                     .collect(Collectors.toList()))
