@@ -20,9 +20,9 @@ class ChatMessageMapperTest {
     void init() {
         expected = new ChatMessage(1L, ChatRoom.builder().id(1L).build(),
             Participant.builder().id(1L).build(),
-            "content", ZonedDateTime.now(), "fileName", "fileType");
+            "content", ZonedDateTime.now(), "fileName", "fileType","fileUrl");
         chatMessageDto = new ChatMessageDto(1L, 1L, 1L, "content",
-            null, "fileName", "fileType", null);
+            null, "fileName", "fileType", "fileUrl",null);
     }
 
     @Test
@@ -34,5 +34,6 @@ class ChatMessageMapperTest {
         assertEquals(expected.getFileType(), actual.getFileType());
         assertEquals(expected.getSender(), actual.getSender());
         assertEquals(expected.getRoom(), actual.getRoom());
+        assertEquals(expected.getFileUrl(),actual.getFileUrl());
     }
 }

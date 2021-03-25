@@ -187,6 +187,7 @@ class ChatRoomServiceImplTest {
         verify(messagingTemplate, times(1))
             .convertAndSend(eq("/rooms/user/" + expectedParticipant.getId()), eq(expectedDto), any(Map.class));
     }
+    
 
     @Test
     public void deleteParticipantsFromChatRoom() {

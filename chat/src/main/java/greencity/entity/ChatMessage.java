@@ -34,4 +34,7 @@ public class ChatMessage {
 
     @Column
     private String fileType;
+
+    @Column
+    private String fileUrl;
 }

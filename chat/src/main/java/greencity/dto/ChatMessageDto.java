@@ -20,5 +20,6 @@ public class ChatMessageDto {
     private ZonedDateTime createDate;
     private String fileName;
     private String fileType;
+    private String fileUrl;
     private List<Long> likedUserId;
 }
