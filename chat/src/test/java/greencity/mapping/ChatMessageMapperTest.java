@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
 class ChatMessageMapperTest {
     private ChatMessage expected;
     private ChatMessageDto chatMessageDto;
@@ -20,9 +19,9 @@ class ChatMessageMapperTest {
     void init() {
         expected = new ChatMessage(1L, ChatRoom.builder().id(1L).build(),
             Participant.builder().id(1L).build(),
-            "content", ZonedDateTime.now(), "fileName", "fileType","fileUrl");
+            "content", ZonedDateTime.now(), "fileName", "fileType", "fileUrl");
         chatMessageDto = new ChatMessageDto(1L, 1L, 1L, "content",
-            null, "fileName", "fileType", "fileUrl",null);
+            null, "fileName", "fileType", "fileUrl", null);
     }
 
     @Test
@@ -34,6 +33,6 @@ class ChatMessageMapperTest {
         assertEquals(expected.getFileType(), actual.getFileType());
         assertEquals(expected.getSender(), actual.getSender());
         assertEquals(expected.getRoom(), actual.getRoom());
-        assertEquals(expected.getFileUrl(),actual.getFileUrl());
+        assertEquals(expected.getFileUrl(), actual.getFileUrl());
     }
 }
