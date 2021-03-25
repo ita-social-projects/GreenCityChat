@@ -187,7 +187,6 @@ class ChatRoomServiceImplTest {
         verify(messagingTemplate, times(1))
             .convertAndSend(eq("/rooms/user/" + expectedParticipant.getId()), eq(expectedDto), any(Map.class));
     }
-    
 
     @Test
     public void deleteParticipantsFromChatRoom() {
@@ -254,7 +253,7 @@ class ChatRoomServiceImplTest {
     @Test
     public void findAllChatRoomsByQuery() {
         when(chatRoomRepo.findAllChatRoomsByQuery(anyString(), any())).thenReturn(Collections.singletonList(expected));
-        when(modelMapper.map(any(),any(Type.class))).thenReturn(Collections.singletonList(expectedDto));
+        when(modelMapper.map(any(), any(Type.class))).thenReturn(Collections.singletonList(expectedDto));
 
         ChatRoomDto actual = chatRoomService.findAllChatRoomsByQuery("query", expectedParticipant).get(0);
         assertEquals(expectedDto, actual);

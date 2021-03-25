@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 import org.modelmapper.TypeToken;
 
-
 @ExtendWith(MockitoExtension.class)
 public class LanguageServiceImplTest {
     @InjectMocks
@@ -57,7 +56,8 @@ public class LanguageServiceImplTest {
     @Test
     void getAllLanguages() {
         when(languageRepo.findAll()).thenReturn(Arrays.asList(expected));
-        when(modelMapper.map(languageRepo.findAll(), new TypeToken<List<LanguageDto>>(){}.getType())).thenReturn(expectedDtoList);
+        when(modelMapper.map(languageRepo.findAll(), new TypeToken<List<LanguageDto>>() {
+        }.getType())).thenReturn(expectedDtoList);
         List<LanguageDto> actual = languageService.getAllLanguages();
         assertEquals(expectedDtoList, actual);
     }

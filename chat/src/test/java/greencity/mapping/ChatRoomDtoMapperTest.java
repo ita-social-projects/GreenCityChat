@@ -61,7 +61,8 @@ class ChatRoomDtoMapperTest {
                     .fileType(chatMessage.getFileType())
                     .senderId(chatMessage.getSender().getId())
                     .roomId(chatRoom.getId())
-                    .build()).collect(
+                    .build())
+                .collect(
                     Collectors.toList()))
             .build();
     }

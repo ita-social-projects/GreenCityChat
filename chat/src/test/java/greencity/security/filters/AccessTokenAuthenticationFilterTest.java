@@ -27,7 +27,6 @@ import org.springframework.security.core.Authentication;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
-
 @ExtendWith({MockitoExtension.class})
 @MockitoSettings(strictness = Strictness.LENIENT)
 class AccessTokenAuthenticationFilterTest {
@@ -50,7 +49,6 @@ class AccessTokenAuthenticationFilterTest {
 
     @InjectMocks
     private AccessTokenAuthenticationFilter filter;
-
 
     @BeforeEach
     public void setUp() {
@@ -85,7 +83,7 @@ class AccessTokenAuthenticationFilterTest {
         when(jwtTool.getTokenFromHttpServletRequest(request)).thenReturn(token);
         when(authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(token, null)))
-            .thenThrow(ExpiredJwtException.class);
+                .thenThrow(ExpiredJwtException.class);
 
         filter.doFilterInternal(request, response, chain);
         assertTrue(systemOutContent.toString().contains("Token has expired: "));
