@@ -30,8 +30,14 @@ public class ChatController {
     private final AzureFileService azureFileService;
 
     /**
-     * {@inheritDoc}
+     * Method return all rooms.
+     * 
+     * @return list of {@link ChatRoomDto}.
      */
+    @ApiOperation(value = "Get all rooms.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = HttpStatuses.OK, response = ChatRoomDto.class, responseContainer = "List")
+    })
     @GetMapping
     public ResponseEntity<List<ChatRoomDto>> findAllRooms(Principal principal) {
         return ResponseEntity.status(HttpStatus.OK)
@@ -39,8 +45,14 @@ public class ChatController {
     }
 
     /**
-     * {@inheritDoc}
+     * Method return all rooms available for current user.
+     * 
+     * @return list of {@link ChatRoomDto}.
      */
+    @ApiOperation(value = "Get all rooms available for current user.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = HttpStatuses.OK, response = ChatRoomDto.class, responseContainer = "List")
+    })
     @GetMapping("/rooms/visible")
     public ResponseEntity<List<ChatRoomDto>> findAllVisibleRooms(Principal principal) {
         return ResponseEntity.status(HttpStatus.OK)
@@ -48,8 +60,17 @@ public class ChatController {
     }
 
     /**
-     * {@inheritDoc}
+     * Method return all message by room id.
+     * 
+     * @param id id of room.
+     * @return list of {@link ChatMessageDto}.
      */
+    @ApiOperation(value = "Get all messages by room id.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = HttpStatuses.OK, response = ChatMessageDto.class,
+            responseContainer = "List"),
+        @ApiResponse(code = 404, message = HttpStatuses.NOT_FOUND)
+    })
     @GetMapping("/messages/{room_id}")
     public ResponseEntity<List<ChatMessageDto>> findAllMessages(@PathVariable("room_id") Long id) {
         return ResponseEntity.status(HttpStatus.OK)
@@ -57,8 +78,15 @@ public class ChatController {
     }
 
     /**
-     * {@inheritDoc}
+     * Method return private room for current user with other user.
+     * 
+     * @param id - id of user
+     * @return list of {@link ChatRoomDto}.
      */
+    @ApiOperation(value = "Get private room for current user with other user.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = HttpStatuses.OK, response = ChatRoomDto.class)
+    })
     @GetMapping("/user/{id}")
     public ResponseEntity<ChatRoomDto> findPrivateRoomWithUser(@PathVariable Long id, Principal principal) {
         return ResponseEntity.status(HttpStatus.OK)
@@ -66,8 +94,16 @@ public class ChatController {
     }
 
     /**
-     * {@inheritDoc}
+     * Method return chat room by id.
+     * 
+     * @param id id of room.
+     * @return list of {@link ChatMessageDto}.
      */
+    @ApiOperation(value = "Get room by id.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = HttpStatuses.OK, response = ChatRoomDto.class),
+        @ApiResponse(code = 404, message = HttpStatuses.NOT_FOUND)
+    })
     @GetMapping("/room/{room_id}")
     public ResponseEntity<ChatRoomDto> findRoomById(@PathVariable("room_id") Long id) {
         return ResponseEntity.status(HttpStatus.OK)
@@ -75,8 +111,15 @@ public class ChatController {
     }
 
     /**
-     * {@inheritDoc}
+     * Method return current user.
+     * 
+     * @return list of {@link ChatMessageDto}.
      */
+    @ApiOperation(value = "Get current user.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = HttpStatuses.OK, response = ParticipantDto.class),
+        @ApiResponse(code = 404, message = HttpStatuses.NOT_FOUND)
+    })
     @GetMapping("/user")
     public ResponseEntity<ParticipantDto> getCurrentUser(Principal principal) {
         return ResponseEntity.status(HttpStatus.OK)
@@ -84,8 +127,16 @@ public class ChatController {
     }
 
     /**
-     * {@inheritDoc}
+     * Method return user by name.
+     * 
+     * @return list of {@link ChatMessageDto}.
      */
+    @ApiOperation(value = "Get user by name.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = HttpStatuses.OK, response = ParticipantDto.class,
+            responseContainer = "List"),
+        @ApiResponse(code = 404, message = HttpStatuses.NOT_FOUND)
+    })
     @GetMapping(value = {"/users", "/users/{query}"})
     public ResponseEntity<List<ParticipantDto>> getAllParticipantsBy(
         @PathVariable(required = false, value = "query") String query, Principal principal) {
@@ -98,8 +149,15 @@ public class ChatController {
     }
 
     /**
-     * {@inheritDoc}
+     * Method return chat room by name.
+     * 
+     * @return list of {@link ChatMessageDto}.
      */
+    @ApiOperation(value = "Get all chat room by name.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = HttpStatuses.OK, response = ChatRoomDto.class, responseContainer = "List"),
+        @ApiResponse(code = 404, message = HttpStatuses.NOT_FOUND)
+    })
     @GetMapping(value = {"/rooms", "/rooms/{query}"})
     public ResponseEntity<List<ChatRoomDto>> getAllChatRoomsBy(
         @PathVariable(required = false, value = "query") String query, Principal principal) {
@@ -111,8 +169,14 @@ public class ChatController {
     }
 
     /**
-     * {@inheritDoc}
+     * Method return last message id.
+     * 
+     * @return list of {@link ChatMessageDto}.
      */
+    @ApiOperation(value = "Get last message id.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = HttpStatuses.OK, response = Long.class)
+    })
     @GetMapping("/last/message")
     public ResponseEntity<Long> getLastId() {
         return ResponseEntity.status(HttpStatus.OK)
@@ -124,6 +188,7 @@ public class ChatController {
      * 
      * @param groupChatRoomCreateDto of {@link GroupChatRoomCreateDto}
      */
+    @ApiOperation(value = "Create group char room.")
     @MessageMapping("/chat/users/create-room")
     public void getGroupChatRoomsWithUsers(GroupChatRoomCreateDto groupChatRoomCreateDto,
         Principal principal) {
@@ -172,8 +237,14 @@ public class ChatController {
     }
 
     /**
-     * {@inheritDoc}
+     * Method return group chats.
+     * 
+     * @return list of {@link ChatMessageDto}.
      */
+    @ApiOperation(value = "Get group chats.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = HttpStatuses.OK, response = ChatRoomDto.class, responseContainer = "List")
+    })
     @GetMapping("/groups")
     public ResponseEntity<List<ChatRoomDto>> getGroupChats(Principal principal) {
         return ResponseEntity.status(HttpStatus.OK)
@@ -189,20 +260,26 @@ public class ChatController {
      */
     @ApiOperation(value = "Upload an image.")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = HttpStatuses.CREATED, response = String.class),
-        @ApiResponse(code = 303, message = HttpStatuses.SEE_OTHER),
-        @ApiResponse(code = 403, message = HttpStatuses.FORBIDDEN),
-        @ApiResponse(code = 500, message = HttpStatuses.INTERNAL_SERVER_ERROR),
+        @ApiResponse(code = 200, message = HttpStatuses.CREATED, response = String.class),
+        @ApiResponse(code = 400, message = HttpStatuses.BAD_REQUEST),
     })
     @PostMapping("/upload/file")
-    public ResponseEntity<ChatMessageDto> uploadFile(@RequestBody MultipartFile file) throws IOException {
+    public ResponseEntity<ChatMessageDto> uploadFile(@RequestBody MultipartFile file) {
         ChatMessageDto chatMessageDto = azureFileService.saveFile(file);
         return ResponseEntity.status(HttpStatus.OK).body(chatMessageDto);
     }
 
     /**
-     * {@inheritDoc}
+     * Method for uploading an voice file.
+     *
+     * @param file voice file to save.
+     * @return url of the saved image.
      */
+    @ApiOperation(value = "Upload an voice file.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = HttpStatuses.OK, response = ChatMessageDto.class),
+        @ApiResponse(code = 400, message = HttpStatuses.BAD_REQUEST),
+    })
     @PostMapping("/upload/voice")
     public ResponseEntity<ChatMessageDto> uploadVoice(@RequestBody MultipartFile file) {
         ChatMessageDto chatMessageDto = this.azureFileService.saveVoiceMessage(file);
@@ -210,8 +287,15 @@ public class ChatController {
     }
 
     /**
-     * {@inheritDoc}
+     * Method for deleting file.
+     *
+     * @param fileName - name of file for deleting.
+     * @return url of the saved image.
      */
+    @ApiOperation(value = "Delete file.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = HttpStatuses.OK)
+    })
     @DeleteMapping("/delete/file/{fileName}")
     public ResponseEntity<HttpStatus> deleteFile(@PathVariable("fileName") String fileName) {
         this.azureFileService.deleteFile(fileName);
@@ -243,8 +327,14 @@ public class ChatController {
     }
 
     /**
-     * {@inheritDoc}
+     * Method add user to system chat room.
+     * 
+     * @param userId id of new user.
      */
+    @ApiOperation(value = "Add user to system chat.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = HttpStatuses.OK, response = Long.class)
+    })
     @PostMapping("/user")
     public ResponseEntity<Long> addUserToSystemChatRoom(@RequestBody Long userId) {
         return ResponseEntity.status(HttpStatus.OK).body(chatRoomService.addNewUserToSystemChat(userId));

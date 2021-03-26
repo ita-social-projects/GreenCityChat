@@ -1,5 +1,7 @@
 package greencity.exception.handlers;
 
+import greencity.exception.exceptions.ChatRoomNotFoundException;
+import greencity.exception.exceptions.FileNotSavedException;
 import greencity.exception.exceptions.UserNotFoundException;
 import greencity.exception.exceptions.VoiceMessageNotFoundException;
 import java.util.HashMap;
@@ -53,6 +55,39 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         ExceptionResponse exceptionResponse = new ExceptionResponse(getErrorAttributes(request));
         log.trace(ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exceptionResponse);
+    }
+
+    /**
+     * Method intercept exception
+     * {@link greencity.exception.exceptions.ChatRoomNotFoundException}.
+     *
+     * @param ex      Exception witch should be intercepted.
+     * @param request contain detail about occur exception
+     * @return ResponseEntity witch contain http status and body with message of
+     *         exception.
+     */
+    @ExceptionHandler(ChatRoomNotFoundException.class)
+    public final ResponseEntity<Object> handleChatRoomNotFoundException(ChatRoomNotFoundException ex,
+        WebRequest request) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(getErrorAttributes(request));
+        log.trace(ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exceptionResponse);
+    }
+
+    /**
+     * Method intercept exception {@link FileNotSavedException}.
+     *
+     * @param ex      Exception witch should be intercepted.
+     * @param request contain detail about occur exception
+     * @return ResponseEntity witch contain http status and body with message of
+     *         exception.
+     */
+    @ExceptionHandler(FileNotSavedException.class)
+    public final ResponseEntity<Object> handleFileNotSavedException(FileNotSavedException ex,
+        WebRequest request) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(getErrorAttributes(request));
+        log.trace(ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);
     }
 
     private Map<String, Object> getErrorAttributes(WebRequest webRequest) {
