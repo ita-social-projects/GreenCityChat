@@ -5,9 +5,13 @@ import greencity.dto.ChatMessageDto;
 import greencity.dto.MessageLike;
 import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
+import greencity.entity.Participant;
+import greencity.entity.UnreadMessage;
+import greencity.enums.MessageStatus;
 import greencity.exception.exceptions.ChatRoomNotFoundException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
+import greencity.repository.UnreadMessageRepo;
 import greencity.service.AzureFileService;
 import greencity.service.ChatMessageService;
 
@@ -32,6 +36,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private final ModelMapper modelMapper;
     private final ChatRoomRepo chatRoomRepo;
     private final AzureFileService azureFileService;
+    private final UnreadMessageRepo unreadMessageRepo;
     private static final String ROOM_LINK = "/room/";
     private static final String MESSAGE_LINK = "/queue/messages";
     private static final String HEADER_DELETE = "delete";
@@ -56,6 +61,15 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     public void processMessage(ChatMessageDto chatMessageDto) {
         ChatMessage message = modelMapper.map(chatMessageDto, ChatMessage.class);
         chatMessageRepo.save(message);
+        ArrayList<Participant> participants = new ArrayList<>(
+            chatRoomRepo.getPatricipantsByChatRoomId(chatMessageDto.getRoomId()));
+
+        for (Participant current : participants) {
+            if (current.getId() != message.getSender().getId()) {
+                unreadMessageRepo.save(fillUnreadMessage(message, current));
+            }
+        }
+
         messagingTemplate.convertAndSend(
             ROOM_LINK + chatMessageDto.getRoomId() + MESSAGE_LINK, chatMessageDto);
     }
@@ -135,5 +149,13 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             chatMessageDtos.add(dto);
         }
         return chatMessageDtos;
+    }
+
+    private UnreadMessage fillUnreadMessage(ChatMessage message, Participant participant) {
+        return UnreadMessage.builder()
+            .message(message)
+            .participant(participant)
+            .status(MessageStatus.UNREAD)
+            .build();
     }
 }

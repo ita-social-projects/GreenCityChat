@@ -34,4 +34,8 @@ public class Participant {
     @Enumerated(value = EnumType.ORDINAL)
     @Column(nullable = false, name = "role")
     private Role role;
+
+    @OneToMany(mappedBy = "participant")
+    private List<UnreadMessage> unreadMessages;
+
 }
