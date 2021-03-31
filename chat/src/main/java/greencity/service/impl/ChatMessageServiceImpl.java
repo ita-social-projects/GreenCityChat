@@ -11,15 +11,19 @@ import greencity.enums.MessageStatus;
 import greencity.exception.exceptions.ChatRoomNotFoundException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
+import greencity.repository.ParticipantRepo;
 import greencity.repository.UnreadMessageRepo;
 import greencity.service.AzureFileService;
 import greencity.service.ChatMessageService;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -35,6 +39,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private final SimpMessagingTemplate messagingTemplate;
     private final ModelMapper modelMapper;
     private final ChatRoomRepo chatRoomRepo;
+    private final ParticipantRepo participantRepo;
     private final AzureFileService azureFileService;
     private final UnreadMessageRepo unreadMessageRepo;
     private static final String ROOM_LINK = "/room/";
@@ -130,6 +135,17 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         chatMessageDto.setLikedUserId(chatMessageRepo.getLikesByMessageId(messageLike.getMessageId()));
         messagingTemplate.convertAndSend(
             ROOM_LINK + chatMessage.getRoom().getId() + MESSAGE_LINK, chatMessageDto, headers);
+    }
+
+    @Override
+    public void cleanUnreadMessages(Long userId, Long roomId) {
+        Optional<Participant> fromDB = participantRepo.findById(userId);
+        Participant participant = fromDB.get();
+        Optional<ChatRoom> optionalChatRoom = chatRoomRepo.findById(roomId);
+        ChatRoom room = optionalChatRoom.get();
+        List<Long> messageIds =
+            chatMessageRepo.findAllByRoom(room).stream().map(x -> x.getId()).collect(Collectors.toList());
+        unreadMessageRepo.cleanUnreadMessage(userId, messageIds);
     }
 
     private boolean isLiked(Long messageId, Long userId) {

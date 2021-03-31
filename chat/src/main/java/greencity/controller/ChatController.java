@@ -31,7 +31,7 @@ public class ChatController {
 
     /**
      * Method return all rooms.
-     * 
+     *
      * @return list of {@link ChatRoomDto}.
      */
     @ApiOperation(value = "Get all rooms.")
@@ -46,7 +46,7 @@ public class ChatController {
 
     /**
      * Method return all rooms available for current user.
-     * 
+     *
      * @return list of {@link ChatRoomDto}.
      */
     @ApiOperation(value = "Get all rooms available for current user.")
@@ -61,7 +61,7 @@ public class ChatController {
 
     /**
      * Method return all message by room id.
-     * 
+     *
      * @param id id of room.
      * @return list of {@link ChatMessageDto}.
      */
@@ -79,7 +79,7 @@ public class ChatController {
 
     /**
      * Method return private room for current user with other user.
-     * 
+     *
      * @param id - id of user
      * @return list of {@link ChatRoomDto}.
      */
@@ -95,7 +95,7 @@ public class ChatController {
 
     /**
      * Method return chat room by id.
-     * 
+     *
      * @param id id of room.
      * @return list of {@link ChatMessageDto}.
      */
@@ -111,8 +111,16 @@ public class ChatController {
     }
 
     /**
+     * Method clean unread messages.
+     */
+    @DeleteMapping("/room/{user_id}/{room_id}")
+    public void cleanUnreadMessages(@PathVariable("user_id") Long userId, @PathVariable("room_id") Long roomId) {
+        chatMessageService.cleanUnreadMessages(userId, roomId);
+    }
+
+    /**
      * Method return current user.
-     * 
+     *
      * @return list of {@link ChatMessageDto}.
      */
     @ApiOperation(value = "Get current user.")
@@ -128,7 +136,7 @@ public class ChatController {
 
     /**
      * Method return user by name.
-     * 
+     *
      * @return list of {@link ChatMessageDto}.
      */
     @ApiOperation(value = "Get user by name.")
@@ -150,7 +158,7 @@ public class ChatController {
 
     /**
      * Method return chat room by name.
-     * 
+     *
      * @return list of {@link ChatMessageDto}.
      */
     @ApiOperation(value = "Get all chat room by name.")
@@ -170,7 +178,7 @@ public class ChatController {
 
     /**
      * Method return last message id.
-     * 
+     *
      * @return list of {@link ChatMessageDto}.
      */
     @ApiOperation(value = "Get last message id.")
@@ -185,7 +193,7 @@ public class ChatController {
 
     /**
      * Create new group chat room.
-     * 
+     *
      * @param groupChatRoomCreateDto of {@link GroupChatRoomCreateDto}
      */
     @ApiOperation(value = "Create group char room.")
@@ -197,7 +205,7 @@ public class ChatController {
 
     /**
      * Delete participants from group chat room.
-     * 
+     *
      * @param chatRoomDto of {@link ChatRoomDto}
      */
     @MessageMapping("/chat/users/delete-participants-room")
@@ -207,7 +215,7 @@ public class ChatController {
 
     /**
      * Add participants from group chat room.
-     * 
+     *
      * @param chatRoomDto of {@link ChatRoomDto}
      */
     @MessageMapping("/chat/users/update-room")
@@ -217,7 +225,7 @@ public class ChatController {
 
     /**
      * Delete current user from group chat room.
-     * 
+     *
      * @param chatRoomDto of {@link ChatRoomDto}
      */
     @MessageMapping("/chat/users/leave-room")
@@ -227,7 +235,7 @@ public class ChatController {
 
     /**
      * Delete chat room.
-     * 
+     *
      * @param chatRoomDto of {@link ChatRoomDto}
      */
     @MessageMapping("/chat/users/delete-room")
@@ -238,7 +246,7 @@ public class ChatController {
 
     /**
      * Method return group chats.
-     * 
+     *
      * @return list of {@link ChatMessageDto}.
      */
     @ApiOperation(value = "Get group chats.")
@@ -328,7 +336,7 @@ public class ChatController {
 
     /**
      * Method add user to system chat room.
-     * 
+     *
      * @param userId id of new user.
      */
     @ApiOperation(value = "Add user to system chat.")
