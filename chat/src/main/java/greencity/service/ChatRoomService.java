@@ -5,6 +5,7 @@ import greencity.dto.GroupChatRoomCreateDto;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.enums.ChatType;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 

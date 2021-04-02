@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.io.*;
 import java.security.Principal;
+import java.util.HashMap;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -199,7 +200,7 @@ public class ChatController {
     @ApiOperation(value = "Create group char room.")
     @MessageMapping("/chat/users/create-room")
     public void getGroupChatRoomsWithUsers(GroupChatRoomCreateDto groupChatRoomCreateDto,
-        Principal principal) {
+                                           Principal principal) {
         chatRoomService.createNewChatRoom(groupChatRoomCreateDto, principal.getName());
     }
 

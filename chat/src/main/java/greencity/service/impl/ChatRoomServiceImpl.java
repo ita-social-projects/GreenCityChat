@@ -57,11 +57,20 @@ public class ChatRoomServiceImpl implements ChatRoomService {
      */
     public List<ChatRoomDto> findAllVisibleRooms(String name) {
         Participant participant = participantService.findByEmail(name);
+
         List<ChatRoom> rooms = chatRoomRepo.findAllByParticipant(participant).stream()
             .filter(chatRoom -> !chatRoom.getMessages().isEmpty() && chatRoom.getType().equals(ChatType.PRIVATE)
                 || chatRoom.getType().equals(ChatType.GROUP) || chatRoom.getType().equals(ChatType.SYSTEM))
             .collect(Collectors.toList());
-        return mapListChatMessageDto(rooms);
+
+        List<Long> roomIds = rooms.stream().map(x -> x.getId()).collect(Collectors.toList());
+        ;
+
+        List<ChatRoomDto> roomDtos = mapListChatMessageDto(rooms);
+        roomDtos.stream()
+            .forEach(x -> x.setAmountUnreadMessages(chatRoomRepo.countUnreadMessages(participant.getId(), x.getId())));
+
+        return roomDtos;
     }
 
     /**
@@ -143,7 +152,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
      * {@inheritDoc}
      */
     private List<ChatRoomDto> filterGroupRoom(List<ChatRoom> chatRoom, Set<Participant> participants,
-        String chatName, Participant owner) {
+                                              String chatName, Participant owner) {
         List<ChatRoom> toReturn = new ArrayList<>();
         if (chatRoom.isEmpty()) {
             toReturn.add(chatRoomRepo.save(
@@ -162,7 +171,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     /**
      * Method create new group chat room.
-     * 
+     *
      * @param dto      of {@link GroupChatRoomCreateDto}
      * @param userName of {@link String} name of current user. {@inheritDoc}
      */
@@ -195,7 +204,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     /**
      * Method delete participants from chat room.
-     * 
+     *
      * @param chatRoomDto of {@link ChatRoomDto} {@inheritDoc}
      */
     @Override
@@ -215,7 +224,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     /**
      * Method for rename and add new participant to chat room.
-     * 
+     *
      * @param chatRoomDto of {@link ChatRoomDto}
      */
     @Override
@@ -234,7 +243,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     /**
      * Method delete chat room.
-     * 
+     *
      * @param chatRoomDto of {@link ChatRoomDto} {@inheritDoc}
      */
     @Override
@@ -249,7 +258,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     /**
      * Method delete current user from chat room.
-     * 
+     *
      * @param chatRoomDto of {@link ChatRoomDto}
      * @param userEmail   of {@link String} email of current user.
      */
