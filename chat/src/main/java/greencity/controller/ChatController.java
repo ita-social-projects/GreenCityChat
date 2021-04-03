@@ -190,9 +190,8 @@ public class ChatController {
      */
     @ApiOperation(value = "Create group char room.")
     @MessageMapping("/chat/users/create-room")
-    public void getGroupChatRoomsWithUsers(GroupChatRoomCreateDto groupChatRoomCreateDto,
-        Principal principal) {
-        chatRoomService.createNewChatRoom(groupChatRoomCreateDto, principal.getName());
+    public void getGroupChatRoomsWithUsers(GroupChatRoomCreateDto groupChatRoomCreateDto) {
+        chatRoomService.createNewChatRoom(groupChatRoomCreateDto);
     }
 
     /**
@@ -218,11 +217,11 @@ public class ChatController {
     /**
      * Delete current user from group chat room.
      * 
-     * @param chatRoomDto of {@link ChatRoomDto}
+     * @param leaveChatDto of {@link LeaveChatDto}
      */
     @MessageMapping("/chat/users/leave-room")
-    public void leaveRoom(ChatRoomDto chatRoomDto, Principal principal) {
-        chatRoomService.leaveChatRoom(chatRoomDto, principal.getName());
+    public void leaveRoom(LeaveChatDto leaveChatDto) {
+        chatRoomService.leaveChatRoom(leaveChatDto);
     }
 
     /**

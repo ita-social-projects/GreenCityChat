@@ -11,4 +11,5 @@ import lombok.*;
 public class GroupChatRoomCreateDto {
     private List<Long> usersId;
     private String chatName;
+    private Long ownerId;
 }
