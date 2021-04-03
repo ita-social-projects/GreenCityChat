@@ -2,6 +2,7 @@ package greencity.service.impl;
 
 import greencity.dto.ChatRoomDto;
 import greencity.dto.GroupChatRoomCreateDto;
+import greencity.dto.LeaveChatDto;
 import greencity.dto.ParticipantDto;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
@@ -173,16 +174,16 @@ class ChatRoomServiceImplTest {
 
     @Test
     public void createNewChatRoom() {
+        // FIX TESTS
         expected.setParticipants(Collections.singleton(expectedParticipant));
 
         List<Long> userId = Collections.singletonList(1L);
 
-        when(participantService.findByEmail(anyString())).thenReturn(expectedParticipant);
         when(participantService.findById(any())).thenReturn(expectedParticipant);
         when(chatRoomRepo.findByParticipantsAndStatus(any(), any(), any())).thenReturn(expectedListEmpty);
         when(chatRoomRepo.save(any())).thenReturn(expected);
         when(modelMapper.map(expected, ChatRoomDto.class)).thenReturn(expectedDto);
-        chatRoomService.createNewChatRoom(new GroupChatRoomCreateDto(userId, "chatName"), "name");
+        chatRoomService.createNewChatRoom(new GroupChatRoomCreateDto(userId, "chatName", 1L));
 
         verify(messagingTemplate, times(1))
             .convertAndSend(eq("/rooms/user/" + expectedParticipant.getId()), eq(expectedDto), any(Map.class));
@@ -228,6 +229,31 @@ class ChatRoomServiceImplTest {
 
     @Test
     public void leaveChatRoom() {
+//        ChatRoomDto chatRoomDto = leaveChatDto.getChatRoomDto();
+//        ChatRoom chatRoom = modelMapper.map(chatRoomDto, ChatRoom.class);
+//        chatRoom.setOwner(participantService.findById(chatRoomDto.getOwnerId()));
+//        chatRoom.setType(ChatType.GROUP);
+//        chatRoom.getParticipants().removeIf(participant -> participant.getId().equals(leaveChatDto.getUserId()));
+//        chatRoomRepo.save(chatRoom);
+//        chatRoomDto = modelMapper.map(chatRoom, ChatRoomDto.class);
+//        Map<String, Object> headers = new HashMap<>();
+//        headers.put(HEADER_LEAVE_ROOM, new Object());
+//        for (ParticipantDto participant : chatRoomDto.getParticipants()) {
+//            messagingTemplate.convertAndSend(ROOM_LINK + participant.getId(), chatRoomDto, headers);
+//        }
+//        LeaveChatDto leaveChatDto = new LeaveChatDto();
+//        expectedDto.setParticipants(Collections.singleton(expectedParticipantDto));
+//        leaveChatDto.setChatRoomDto(expectedDto);
+//        leaveChatDto.setUserId(1L);
+//        when(modelMapper.map(expectedDto, ChatRoom.class)).thenReturn(expected);
+//
+//        when(chatRoomRepo.save())
+
+        // Fix
+        LeaveChatDto leaveChatDto = LeaveChatDto.builder()
+            .chatRoomDto(expectedDto)
+            .userId(1L)
+            .build();
         expectedDto.setParticipants(Collections.singleton(expectedParticipantDto));
 
         when(modelMapper.map(any(), eq(ChatRoom.class))).thenReturn(expected);
@@ -235,7 +261,7 @@ class ChatRoomServiceImplTest {
         when(chatRoomRepo.save(any())).thenReturn(expected);
         when(modelMapper.map(any(), eq(ChatRoomDto.class))).thenReturn(expectedDto);
 
-        chatRoomService.leaveChatRoom(expectedDto, "mail");
+        chatRoomService.leaveChatRoom(leaveChatDto);
 
         verify(messagingTemplate, times(1))
             .convertAndSend(eq("/rooms/user/" + expectedParticipant.getId()), eq(expectedDto), any(Map.class));
