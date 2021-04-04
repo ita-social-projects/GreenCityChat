@@ -44,4 +44,9 @@ public interface ChatMessageService {
      * @param messageLike {@link MessageLike}.
      */
     void likeMessage(MessageLike messageLike);
+
+    /**
+     * {@inheritDoc}
+     */
+    void cleanUnreadMessages(Long userId, Long roomId);
 }

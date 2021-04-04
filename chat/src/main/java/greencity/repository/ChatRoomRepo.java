@@ -3,6 +3,7 @@ package greencity.repository;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.enums.ChatType;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -86,4 +87,10 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
      */
     @Query("select cr.participants from ChatRoom cr where cr.id = :id")
     Set<Participant> getPatricipantsByChatRoomId(@Param("id") Long id);
+
+    /**
+     * {@inheritDoc}
+     */
+    @Query("SELECT COUNT(id) from UnreadMessage where participant.id = :userId and message.room.id = :roomId")
+    Long countUnreadMessages(Long userId, Long roomId);
 }

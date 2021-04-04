@@ -58,7 +58,13 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             .filter(chatRoom -> !chatRoom.getMessages().isEmpty() && chatRoom.getType().equals(ChatType.PRIVATE)
                 || chatRoom.getType().equals(ChatType.GROUP) || chatRoom.getType().equals(ChatType.SYSTEM))
             .collect(Collectors.toList());
-        return mapListChatMessageDto(rooms);
+        List<Long> roomIds = rooms.stream().map(x -> x.getId()).collect(Collectors.toList());
+
+        List<ChatRoomDto> roomDtos = mapListChatMessageDto(rooms);
+        roomDtos.stream()
+            .forEach(x -> x.setAmountUnreadMessages(chatRoomRepo.countUnreadMessages(participant.getId(), x.getId())));
+
+        return roomDtos;
     }
 
     /**
@@ -159,7 +165,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     /**
      * Method create new group chat room.
-     * 
+     *
      * @param dto of {@link GroupChatRoomCreateDto}
      */
     @Override
@@ -191,7 +197,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     /**
      * Method delete participants from chat room.
-     * 
+     *
      * @param chatRoomDto of {@link ChatRoomDto} {@inheritDoc}
      */
     @Override
@@ -211,7 +217,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     /**
      * Method for rename and add new participant to chat room.
-     * 
+     *
      * @param chatRoomDto of {@link ChatRoomDto}
      */
     @Override
@@ -230,7 +236,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     /**
      * Method delete chat room.
-     * 
+     *
      * @param chatRoomDto of {@link ChatRoomDto} {@inheritDoc}
      */
     @Override
@@ -245,9 +251,8 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     /**
      * Method delete current user from chat room.
-     * 
-     * @param leaveChatDto of {@link LeaveChatDto}
      *
+     * @param leaveChatDto of {@link LeaveChatDto}
      */
     @Override
     public void leaveChatRoom(LeaveChatDto leaveChatDto) {

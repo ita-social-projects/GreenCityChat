@@ -1,6 +1,7 @@
 package greencity.entity;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import javax.persistence.*;
 
 import lombok.AllArgsConstructor;
@@ -37,4 +38,7 @@ public class ChatMessage {
 
     @Column
     private String fileUrl;
+
+    @OneToMany(mappedBy = "message")
+    private List<UnreadMessage> unreadMessages;
 }

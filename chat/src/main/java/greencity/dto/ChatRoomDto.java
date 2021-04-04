@@ -18,4 +18,5 @@ public class ChatRoomDto {
     private ChatType chatType;
     private Set<ParticipantDto> participants;
     private Long ownerId;
+    private Long amountUnreadMessages;
 }
