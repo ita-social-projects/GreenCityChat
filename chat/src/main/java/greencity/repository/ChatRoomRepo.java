@@ -44,8 +44,8 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
         + " GROUP BY cr.id"
         + " HAVING COUNT(cr.id) = CAST(:participantsCount AS long)")
     List<ChatRoom> findByParticipantsAndStatus(@Param("participants") Set<Participant> participants,
-                                               @Param("participantsCount") Integer participantsCount,
-                                               @Param("chatType") ChatType chatType);
+        @Param("participantsCount") Integer participantsCount,
+        @Param("chatType") ChatType chatType);
 
     /**
      * {@inheritDoc}
@@ -88,6 +88,9 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
     @Query("select cr.participants from ChatRoom cr where cr.id = :id")
     Set<Participant> getPatricipantsByChatRoomId(@Param("id") Long id);
 
+    /**
+     * {@inheritDoc}
+     */
     @Query("SELECT COUNT(id) from UnreadMessage where participant.id = :userId and message.room.id = :roomId")
     Long countUnreadMessages(Long userId, Long roomId);
 }

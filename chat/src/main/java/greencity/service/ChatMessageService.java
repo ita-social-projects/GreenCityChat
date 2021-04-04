@@ -45,5 +45,8 @@ public interface ChatMessageService {
      */
     void likeMessage(MessageLike messageLike);
 
+    /**
+     * {@inheritDoc}
+     */
     void cleanUnreadMessages(Long userId, Long roomId);
 }

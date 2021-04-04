@@ -37,5 +37,4 @@ public class Participant {
 
     @OneToMany(mappedBy = "participant")
     private List<UnreadMessage> unreadMessages;
-
 }

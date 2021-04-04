@@ -146,7 +146,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
      * {@inheritDoc}
      */
     private List<ChatRoomDto> filterGroupRoom(List<ChatRoom> chatRoom, Set<Participant> participants,
-                                              String chatName, Participant owner) {
+        String chatName, Participant owner) {
         List<ChatRoom> toReturn = new ArrayList<>();
         if (chatRoom.isEmpty()) {
             toReturn.add(chatRoomRepo.save(

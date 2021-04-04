@@ -13,6 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface UnreadMessageRepo extends JpaRepository<UnreadMessage, Long>,
     JpaSpecificationExecutor<ChatMessage> {
+    /**
+     * {@inheritDoc}
+     */
     @Modifying
     @Transactional
     @Query(nativeQuery = true,
