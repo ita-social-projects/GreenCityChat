@@ -1,10 +1,7 @@
 package greencity.service.impl;
 
 import greencity.constant.ErrorMessage;
-import greencity.dto.ChatMessageDto;
-import greencity.dto.ChatRoomDto;
-import greencity.dto.GroupChatRoomCreateDto;
-import greencity.dto.ParticipantDto;
+import greencity.dto.*;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.enums.ChatType;
@@ -57,14 +54,11 @@ public class ChatRoomServiceImpl implements ChatRoomService {
      */
     public List<ChatRoomDto> findAllVisibleRooms(String name) {
         Participant participant = participantService.findByEmail(name);
-
         List<ChatRoom> rooms = chatRoomRepo.findAllByParticipant(participant).stream()
             .filter(chatRoom -> !chatRoom.getMessages().isEmpty() && chatRoom.getType().equals(ChatType.PRIVATE)
                 || chatRoom.getType().equals(ChatType.GROUP) || chatRoom.getType().equals(ChatType.SYSTEM))
             .collect(Collectors.toList());
-
         List<Long> roomIds = rooms.stream().map(x -> x.getId()).collect(Collectors.toList());
-        ;
 
         List<ChatRoomDto> roomDtos = mapListChatMessageDto(rooms);
         roomDtos.stream()
@@ -172,12 +166,11 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     /**
      * Method create new group chat room.
      *
-     * @param dto      of {@link GroupChatRoomCreateDto}
-     * @param userName of {@link String} name of current user. {@inheritDoc}
+     * @param dto of {@link GroupChatRoomCreateDto}
      */
     @Override
-    public void createNewChatRoom(GroupChatRoomCreateDto dto, String userName) {
-        Participant owner = participantService.findByEmail(userName);
+    public void createNewChatRoom(GroupChatRoomCreateDto dto) {
+        Participant owner = participantService.findById(dto.getOwnerId());
         Set<Participant> participants = new HashSet<>();
         participants.add(owner);
         dto.getUsersId().forEach(id -> participants.add(participantService.findById(id)));
@@ -259,15 +252,15 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     /**
      * Method delete current user from chat room.
      *
-     * @param chatRoomDto of {@link ChatRoomDto}
-     * @param userEmail   of {@link String} email of current user.
+     * @param leaveChatDto of {@link LeaveChatDto}
      */
     @Override
-    public void leaveChatRoom(ChatRoomDto chatRoomDto, String userEmail) {
+    public void leaveChatRoom(LeaveChatDto leaveChatDto) {
+        ChatRoomDto chatRoomDto = leaveChatDto.getChatRoomDto();
         ChatRoom chatRoom = modelMapper.map(chatRoomDto, ChatRoom.class);
         chatRoom.setOwner(participantService.findById(chatRoomDto.getOwnerId()));
         chatRoom.setType(ChatType.GROUP);
-        chatRoom.getParticipants().removeIf(participant -> participant.getEmail().equals(userEmail));
+        chatRoom.getParticipants().removeIf(participant -> participant.getId().equals(leaveChatDto.getUserId()));
         chatRoomRepo.save(chatRoom);
         chatRoomDto = modelMapper.map(chatRoom, ChatRoomDto.class);
         Map<String, Object> headers = new HashMap<>();

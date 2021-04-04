@@ -2,6 +2,7 @@ package greencity.service;
 
 import greencity.dto.ChatRoomDto;
 import greencity.dto.GroupChatRoomCreateDto;
+import greencity.dto.LeaveChatDto;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.enums.ChatType;
@@ -70,7 +71,7 @@ public interface ChatRoomService {
     /**
      * {@inheritDoc}
      */
-    void createNewChatRoom(GroupChatRoomCreateDto dto, String userName);
+    void createNewChatRoom(GroupChatRoomCreateDto dto);
 
     /**
      * {@inheritDoc}
@@ -90,5 +91,5 @@ public interface ChatRoomService {
     /**
      * {@inheritDoc}
      */
-    void leaveChatRoom(ChatRoomDto chatRoomDto, String userEmail);
+    void leaveChatRoom(LeaveChatDto leaveChatDto);
 }
