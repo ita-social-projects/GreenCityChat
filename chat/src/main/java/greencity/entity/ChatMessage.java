@@ -39,6 +39,6 @@ public class ChatMessage {
     @Column
     private String fileUrl;
 
-    @OneToMany(mappedBy = "message")
+    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL)
     private List<UnreadMessage> unreadMessages;
 }
