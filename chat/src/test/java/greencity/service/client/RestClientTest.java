@@ -59,12 +59,12 @@ public class RestClientTest {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS");
         Date date = new Date();
         when(request.getHeader("Authorization")).thenReturn(accessToken);
-        when(restTemplate.exchange(greenCityUserServerAddress + "/user/"
-            + 1L + "/updateUserLastActivityTime/" + dateFormat.format(date),
+        when(restTemplate.exchange(greenCityUserServerAddress + "/user/updateUserLastActivityTime/"
+            + dateFormat.format(date),
             HttpMethod.PUT, entity, Object.class)).thenReturn(ResponseEntity.ok(Object));
-        restClient.updateUserLastActivityTime(1L, date);
+        restClient.updateUserLastActivityTime(date);
         verify(restTemplate).exchange(greenCityUserServerAddress
-            + "/user/1/updateUserLastActivityTime/" + dateFormat.format(date),
+            + "/user/updateUserLastActivityTime/" + dateFormat.format(date),
             HttpMethod.PUT, entity, Object.class);
     }
 

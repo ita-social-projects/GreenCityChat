@@ -39,16 +39,14 @@ public class RestClient {
     /**
      * Updates last activity time for a given user.
      *
-     * @param userId               - {link User}'s id
      * @param userLastActivityTime - new {link User}'s last activity time
      * @author Orest Mamchuk
      */
-    public void updateUserLastActivityTime(Long userId, Date userLastActivityTime) {
+    public void updateUserLastActivityTime(Date userLastActivityTime) {
         HttpEntity<String> entity = new HttpEntity<>(setHeader());
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS");
         String strDate = dateFormat.format(userLastActivityTime);
-        restTemplate.exchange(greenCityUserServerAddress + "/user/"
-            + userId + "/updateUserLastActivityTime/" + strDate,
+        restTemplate.exchange(greenCityUserServerAddress + "/user/updateUserLastActivityTime/" + strDate,
             HttpMethod.PUT, entity, Object.class);
     }
 
