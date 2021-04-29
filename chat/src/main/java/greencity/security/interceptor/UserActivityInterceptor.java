@@ -33,9 +33,8 @@ public class UserActivityInterceptor extends HandlerInterceptorAdapter {
         if (authentication != null) {
             String email = authentication.getPrincipal().toString();
             if (!email.equals("anonymousUser")) {
-                Long userId = restClient.findIdByEmail(email);
                 Date userLastActivityTime = new Date();
-                restClient.updateUserLastActivityTime(userId, userLastActivityTime);
+                restClient.updateUserLastActivityTime(userLastActivityTime);
             }
         }
         return super.preHandle(request, response, handler);
