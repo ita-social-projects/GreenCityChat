@@ -56,7 +56,7 @@ public class RestClientTest {
         headers.set("Authorization", accessToken);
         HttpEntity<String> entity = new HttpEntity<>(headers);
         RestClient restClient = new RestClient(restTemplate, request);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd.HH:mm:ss.SSSSSS");
         Date date = new Date();
         when(request.getHeader("Authorization")).thenReturn(accessToken);
         when(restTemplate.exchange(greenCityUserServerAddress + "/user/updateUserLastActivityTime/"
