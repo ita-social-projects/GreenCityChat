@@ -57,8 +57,6 @@ class ChatRoomDtoMapperTest {
                 .map(chatMessage -> ChatMessageDto.builder()
                     .id(chatMessage.getId())
                     .content(chatMessage.getContent())
-                    .fileName(chatMessage.getFileName())
-                    .fileType(chatMessage.getFileType())
                     .senderId(chatMessage.getSender().getId())
                     .roomId(chatRoom.getId())
                     .build())
@@ -88,5 +86,4 @@ class ChatRoomDtoMapperTest {
         assertEquals(chatRoomDto.getOwnerId(), actual.getOwnerId());
         assertArrayEquals(chatRoomDto.getParticipants().toArray(), actual.getParticipants().toArray());
     }
-
 }

@@ -8,7 +8,6 @@ import greencity.service.*;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import java.io.*;
 import java.security.Principal;
 import java.util.List;
 
@@ -18,6 +17,8 @@ import org.springframework.http.*;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.validation.Valid;
 
 @RestController
 @AllArgsConstructor
@@ -354,5 +355,29 @@ public class ChatController {
     @MessageMapping("/chat/like")
     public void likeMessage(MessageLike messageLike) {
         chatMessageService.likeMessage(messageLike);
+    }
+
+    /**
+     * Method for send a message.
+     *
+     * @param userId of user.
+     * @param roomId of room
+     * @return url of the send message.
+     */
+    @ApiOperation(value = "Sent message")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = HttpStatuses.CREATED, response = ChatMessageDto.class),
+        @ApiResponse(code = 401, message = HttpStatuses.UNAUTHORIZED),
+        @ApiResponse(code = 400, message = HttpStatuses.BAD_REQUEST),
+        @ApiResponse(code = 403, message = HttpStatuses.FORBIDDEN),
+        @ApiResponse(code = 404, message = HttpStatuses.NOT_FOUND)
+    })
+    @PostMapping("/sent-message/{userId}/{roomId}")
+    public ResponseEntity<ChatMessageDto> sentMessage(
+        @Valid @PathVariable("userId") Long userId,
+        @Valid @PathVariable("roomId") Long roomId,
+        @RequestParam String content) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(chatMessageService.sentMessage(userId, roomId, content));
     }
 }

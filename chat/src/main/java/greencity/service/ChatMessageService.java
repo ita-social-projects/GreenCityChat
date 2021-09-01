@@ -49,4 +49,9 @@ public interface ChatMessageService {
      * {@inheritDoc}
      */
     void cleanUnreadMessages(Long userId, Long roomId);
+
+    /**
+     * {@inheritDoc}
+     */
+    ChatMessageDto sentMessage(Long userId, Long chatId, String content);
 }

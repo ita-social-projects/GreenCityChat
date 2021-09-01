@@ -26,9 +26,6 @@ public class ChatMessageMapper extends AbstractConverter<ChatMessageDto, ChatMes
         return ChatMessage.builder()
             .id(chatMessageDto.getId())
             .content(chatMessageDto.getContent())
-            .fileName(chatMessageDto.getFileName())
-            .fileType(chatMessageDto.getFileType())
-            .fileUrl(chatMessageDto.getFileUrl())
             .sender(
                 Participant.builder()
                     .id(chatMessageDto.getSenderId()).build())
