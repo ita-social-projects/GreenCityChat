@@ -1,6 +1,5 @@
 package greencity.dto;
 
-import java.util.List;
 import lombok.*;
 
 import java.time.ZonedDateTime;
@@ -18,8 +17,4 @@ public class ChatMessageDto {
     private Long senderId;
     private String content;
     private ZonedDateTime createDate;
-    private String fileName;
-    private String fileType;
-    private String fileUrl;
-    private List<Long> likedUserId;
 }

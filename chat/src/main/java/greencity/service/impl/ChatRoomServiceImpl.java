@@ -58,7 +58,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             .filter(chatRoom -> !chatRoom.getMessages().isEmpty() && chatRoom.getType().equals(ChatType.PRIVATE)
                 || chatRoom.getType().equals(ChatType.GROUP) || chatRoom.getType().equals(ChatType.SYSTEM))
             .collect(Collectors.toList());
-        List<Long> roomIds = rooms.stream().map(x -> x.getId()).collect(Collectors.toList());
 
         List<ChatRoomDto> roomDtos = mapListChatMessageDto(rooms);
         roomDtos.stream()
@@ -315,11 +314,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         List<ChatRoomDto> chatRoomDtos = new ArrayList<>();
         for (ChatRoom room : rooms) {
             ChatRoomDto chatRoomDto = modelMapper.map(room, ChatRoomDto.class);
-            if (chatRoomDto.getMessages() != null) {
-                for (ChatMessageDto messageDto : chatRoomDto.getMessages()) {
-                    messageDto.setLikedUserId(chatMessageRepo.getLikesByMessageId(messageDto.getId()));
-                }
-            }
             chatRoomDtos.add(chatRoomDto);
         }
         return chatRoomDtos;

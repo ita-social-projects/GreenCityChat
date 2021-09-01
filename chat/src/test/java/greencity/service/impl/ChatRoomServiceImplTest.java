@@ -10,7 +10,6 @@ import greencity.enums.ChatType;
 import greencity.enums.Role;
 import greencity.enums.UserStatus;
 import greencity.exception.exceptions.ChatRoomNotFoundException;
-import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
 import greencity.service.ParticipantService;
 import java.lang.reflect.Type;
@@ -47,8 +46,6 @@ class ChatRoomServiceImplTest {
     private ModelMapper modelMapper;
     @Mock
     private SimpMessagingTemplate messagingTemplate;
-    @Mock
-    private ChatMessageRepo chatMessageRepo;
 
     private final String email = "test.artur@mail.com";
     Participant expectedParticipant;

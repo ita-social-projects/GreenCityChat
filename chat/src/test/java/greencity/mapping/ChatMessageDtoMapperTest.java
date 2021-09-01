@@ -23,9 +23,9 @@ class ChatMessageDtoMapperTest {
             ChatType.GROUP, null),
             new Participant(1L, "name", "asd@asd.asd", null,
                 null, UserStatus.ACTIVATED, Role.ROLE_USER, null),
-            "content", null, "fileName", "fileType", "fileUrl", null);
+            "content", null, null);
         expected = new ChatMessageDto(1L, 1L, 1L, "content",
-            null, "fileName", "fileType", "fileUrl", null);
+            null);
     }
 
     @Test

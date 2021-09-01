@@ -9,6 +9,8 @@ import greencity.entity.Participant;
 import greencity.entity.UnreadMessage;
 import greencity.enums.MessageStatus;
 import greencity.exception.exceptions.ChatRoomNotFoundException;
+import greencity.exception.exceptions.UserNotBelongToThisChat;
+import greencity.exception.exceptions.UserNotFoundException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
 import greencity.repository.ParticipantRepo;
@@ -16,7 +18,7 @@ import greencity.repository.UnreadMessageRepo;
 import greencity.service.AzureFileService;
 import greencity.service.ChatMessageService;
 
-import java.security.Principal;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -86,9 +88,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     public void deleteMessage(ChatMessageDto chatMessageDto) {
         ChatMessage chatMessage = modelMapper.map(chatMessageDto, ChatMessage.class);
         chatMessageRepo.delete(chatMessage);
-        if (chatMessageDto.getFileName() != null) {
-            this.azureFileService.deleteFile(chatMessage.getFileName());
-        }
         Map<String, Object> headers = new HashMap<>();
         headers.put(HEADER_DELETE, new Object());
         messagingTemplate.convertAndSend(
@@ -101,7 +100,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Override
     public void updateMessage(ChatMessageDto chatMessageDto) {
         ChatMessage chatMessage = modelMapper.map(chatMessageDto, ChatMessage.class);
-        chatMessageDto.setLikedUserId(chatMessageRepo.getLikesByMessageId(chatMessageDto.getId()));
         chatMessageRepo.save(chatMessage);
         Map<String, Object> headers = new HashMap<>();
         headers.put(HEADER_UPDATE, new Object());
@@ -132,15 +130,12 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         ChatMessage chatMessage = chatMessageRepo.findById(messageLike.getMessageId()).get();
         ChatMessageDto chatMessageDto = modelMapper.map(chatMessage,
             ChatMessageDto.class);
-        chatMessageDto.setLikedUserId(chatMessageRepo.getLikesByMessageId(messageLike.getMessageId()));
         messagingTemplate.convertAndSend(
             ROOM_LINK + chatMessage.getRoom().getId() + MESSAGE_LINK, chatMessageDto, headers);
     }
 
     @Override
     public void cleanUnreadMessages(Long userId, Long roomId) {
-        Optional<Participant> fromDB = participantRepo.findById(userId);
-        Participant participant = fromDB.get();
         Optional<ChatRoom> optionalChatRoom = chatRoomRepo.findById(roomId);
         ChatRoom room = optionalChatRoom.get();
         List<Long> messageIds =
@@ -161,7 +156,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         List<ChatMessageDto> chatMessageDtos = new ArrayList<>();
         for (ChatMessage message : messages) {
             ChatMessageDto dto = modelMapper.map(message, ChatMessageDto.class);
-            dto.setLikedUserId(chatMessageRepo.getLikesByMessageId(message.getId()));
             chatMessageDtos.add(dto);
         }
         return chatMessageDtos;
@@ -173,5 +167,27 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             .participant(participant)
             .status(MessageStatus.UNREAD)
             .build();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ChatMessageDto sentMessage(Long userId, Long chatRoomId, String content) {
+        ChatRoom chatRoom = chatRoomRepo.findById(chatRoomId)
+            .orElseThrow(() -> new ChatRoomNotFoundException(ErrorMessage.CHAT_ROOM_NOT_FOUND_BY_ID));
+        Participant participant = participantRepo.findById(userId)
+            .orElseThrow(() -> new UserNotFoundException(ErrorMessage.USER_NOT_FOUND_BY_ID));
+        if (!chatRoom.getParticipants().contains(participant)) {
+            throw new UserNotBelongToThisChat(ErrorMessage.USER_NOT_BELONG_TO_CHAT);
+        }
+        ChatMessageDto dto = ChatMessageDto.builder()
+            .senderId(participant.getId())
+            .roomId(chatRoom.getId())
+            .content(content)
+            .createDate(ZonedDateTime.now())
+            .build();
+        ChatMessage chatMessage = modelMapper.map(dto, ChatMessage.class);
+        return modelMapper.map(chatMessageRepo.save(chatMessage), ChatMessageDto.class);
     }
 }
