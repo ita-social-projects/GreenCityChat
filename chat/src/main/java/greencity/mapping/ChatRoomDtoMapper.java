@@ -29,6 +29,7 @@ public class ChatRoomDtoMapper extends AbstractConverter<ChatRoom, ChatRoomDto> 
                 .ownerId(chatRoom.getOwner().getId())
                 .chatType(chatRoom.getType())
                 .name(chatRoom.getName())
+                .logo(chatRoom.getLogo())
                 .participants(chatRoom.getParticipants().stream().map(
                     participant -> ParticipantDto.builder()
                         .name(participant.getName())
@@ -44,6 +45,7 @@ public class ChatRoomDtoMapper extends AbstractConverter<ChatRoom, ChatRoomDto> 
                 .id(chatRoom.getId())
                 .ownerId(chatRoom.getOwner().getId())
                 .chatType(chatRoom.getType())
+                .logo(chatRoom.getLogo())
                 .messages(chatRoom.getMessages().stream()
                     .filter(Objects::nonNull)
                     .map(

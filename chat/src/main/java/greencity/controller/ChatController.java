@@ -6,6 +6,7 @@ import greencity.enums.ChatType;
 import greencity.service.*;
 
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.security.Principal;
@@ -194,17 +195,6 @@ public class ChatController {
     }
 
     /**
-     * Create new group chat room.
-     *
-     * @param groupChatRoomCreateDto of {@link GroupChatRoomCreateDto}
-     */
-    @ApiOperation(value = "Create group char room.")
-    @MessageMapping("/chat/users/create-room")
-    public void getGroupChatRoomsWithUsers(GroupChatRoomCreateDto groupChatRoomCreateDto) {
-        chatRoomService.createNewChatRoom(groupChatRoomCreateDto);
-    }
-
-    /**
      * Delete participants from group chat room.
      *
      * @param chatRoomDto of {@link ChatRoomDto}
@@ -379,5 +369,23 @@ public class ChatController {
         @RequestParam String content) {
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(chatMessageService.sentMessage(userId, roomId, content));
+    }
+
+    /**
+     * Method for create a new chat.
+     */
+    @ApiOperation(value = "Create new chat room")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = HttpStatuses.CREATED, response = ChatRoomDto.class),
+        @ApiResponse(code = 401, message = HttpStatuses.UNAUTHORIZED),
+        @ApiResponse(code = 400, message = HttpStatuses.BAD_REQUEST),
+        @ApiResponse(code = 403, message = HttpStatuses.FORBIDDEN),
+        @ApiResponse(code = 404, message = HttpStatuses.NOT_FOUND)
+    })
+    @PostMapping(value = "/create-chatRoom")
+    public ResponseEntity<ChatRoomDto> createChatRoom(
+        @Valid @RequestBody GroupChatRoomCreateDto dto) {
+        chatRoomService.createNewChatRoom(dto);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 }

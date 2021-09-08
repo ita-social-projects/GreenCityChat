@@ -38,4 +38,7 @@ public class ChatRoom {
         joinColumns = @JoinColumn(name = "room_id"),
         inverseJoinColumns = @JoinColumn(name = "participant_id"))
     private Set<Participant> participants;
+
+    @Column(name = "logo")
+    private String logo;
 }

@@ -9,6 +9,7 @@ import greencity.exception.exceptions.ChatRoomNotFoundException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
 import greencity.service.ChatRoomService;
+import greencity.service.FileService;
 import greencity.service.ParticipantService;
 
 import java.util.*;
@@ -19,6 +20,9 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import static greencity.constant.AppConstant.DEFAULT_URL_ADDRESS;
 
 /**
  * Implementation of {@link ChatRoomService}.
@@ -31,7 +35,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     private final ModelMapper modelMapper;
     private final ChatMessageRepo chatMessageRepo;
     private final SimpMessagingTemplate messagingTemplate;
-
+    private final FileService fileService;
     private static final String ROOM_LINK = "/rooms/user/";
     private static final String HEADER_CREATE_ROOM = "createRoom";
     private static final String HEADER_UPDATE_ROOM = "updateRoom";
@@ -163,35 +167,26 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     }
 
     /**
-     * Method create new group chat room.
+     * Method create new chat room.
      *
      * @param dto of {@link GroupChatRoomCreateDto}
      */
     @Override
-    public void createNewChatRoom(GroupChatRoomCreateDto dto) {
+    public ChatRoomDto createNewChatRoom(GroupChatRoomCreateDto dto) {
         Participant owner = participantService.findById(dto.getOwnerId());
         Set<Participant> participants = new HashSet<>();
         participants.add(owner);
         dto.getUsersId().forEach(id -> participants.add(participantService.findById(id)));
-        List<ChatRoom> chatRooms =
-            chatRoomRepo.findByParticipantsAndStatus(participants, participants.size(), ChatType.GROUP);
-        System.out.println(chatRooms.size());
-        if (chatRooms.isEmpty()) {
-            ChatRoom room = chatRoomRepo.save(ChatRoom
-                .builder()
-                .participants(participants)
-                .owner(owner)
-                .type(ChatType.GROUP)
-                .name(dto.getChatName())
-                .build());
-            Map<String, Object> headers = new HashMap<>();
-            headers.put(HEADER_CREATE_ROOM, new Object());
-            ChatRoomDto chatRoomDto = modelMapper.map(room, ChatRoomDto.class);
+        ChatRoom room = chatRoomRepo.save(ChatRoom
+            .builder()
+            .participants(participants)
+            .owner(owner)
+            .type(ChatType.GROUP)
+            .name(dto.getChatName())
+            .logo(dto.getLogo())
+            .build());
 
-            for (Participant p : room.getParticipants()) {
-                messagingTemplate.convertAndSend(ROOM_LINK + p.getId(), chatRoomDto, headers);
-            }
-        }
+        return modelMapper.map(room, ChatRoomDto.class);
     }
 
     /**
