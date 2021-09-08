@@ -20,7 +20,7 @@ class ChatMessageDtoMapperTest {
     @BeforeEach
     void init() {
         chatMessage = new ChatMessage(1L, new ChatRoom(1L, "name", null, null,
-            ChatType.GROUP, null),
+            ChatType.GROUP, null, null),
             new Participant(1L, "name", "asd@asd.asd", null,
                 null, UserStatus.ACTIVATED, Role.ROLE_USER, null),
             "content", null, null);
