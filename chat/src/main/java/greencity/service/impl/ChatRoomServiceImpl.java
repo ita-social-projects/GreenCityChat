@@ -9,7 +9,6 @@ import greencity.exception.exceptions.ChatRoomNotFoundException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
 import greencity.service.ChatRoomService;
-import greencity.service.FileService;
 import greencity.service.ParticipantService;
 
 import java.util.*;
@@ -20,9 +19,6 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import static greencity.constant.AppConstant.DEFAULT_URL_ADDRESS;
 
 /**
  * Implementation of {@link ChatRoomService}.
@@ -35,7 +31,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     private final ModelMapper modelMapper;
     private final ChatMessageRepo chatMessageRepo;
     private final SimpMessagingTemplate messagingTemplate;
-    private final FileService fileService;
     private static final String ROOM_LINK = "/rooms/user/";
     private static final String HEADER_CREATE_ROOM = "createRoom";
     private static final String HEADER_UPDATE_ROOM = "updateRoom";
