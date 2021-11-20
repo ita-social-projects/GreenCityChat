@@ -1,7 +1,7 @@
 package greencity.security.filters;
 
 import greencity.client.RestClient;
-import greencity.dto.UserVO;
+import greencity.entity.User;
 import greencity.jwt.JwtTool;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.slf4j.Slf4j;
@@ -67,7 +67,7 @@ public class AccessTokenAuthenticationFilter extends OncePerRequestFilter {
             try {
                 Authentication authentication = authenticationManager
                     .authenticate(new UsernamePasswordAuthenticationToken(token, null));
-                Optional<UserVO> user =
+                Optional<User> user =
                     restClient.findNotDeactivatedByEmail((String) authentication.getPrincipal());
                 if (user.isPresent()) {
                     log.debug("User successfully authenticate - {}", authentication.getPrincipal());

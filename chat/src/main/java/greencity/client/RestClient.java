@@ -1,6 +1,6 @@
 package greencity.client;
 
-import greencity.dto.UserVO;
+import greencity.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -63,17 +63,17 @@ public class RestClient {
     }
 
     /**
-     * Method that allow you to find not 'DEACTIVATED' {@link UserVO} by email.
+     * Method that allow you to find not 'DEACTIVATED' {@link User} by email.
      *
-     * @param email - {@link UserVO}'s email
-     * @return {@link UserVO}
+     * @param email - {@link User}'s email
+     * @return {@link User}
      * @author Orest Mamchuk
      */
-    public Optional<UserVO> findNotDeactivatedByEmail(String email) {
+    public Optional<User> findNotDeactivatedByEmail(String email) {
         HttpEntity<String> entity = new HttpEntity<>(setHeader());
-        UserVO body = restTemplate.exchange(greenCityUserServerAddress
+        User body = restTemplate.exchange(greenCityUserServerAddress
             + "/user/findNotDeactivatedByEmail" + "?email="
-            + email, HttpMethod.GET, entity, UserVO.class)
+            + email, HttpMethod.GET, entity, User.class)
             .getBody();
         assert body != null;
         return Optional.of(body);
