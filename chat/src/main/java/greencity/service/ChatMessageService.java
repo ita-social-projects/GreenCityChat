@@ -14,6 +14,7 @@ public interface ChatMessageService {
      */
     List<ChatMessageDto> findAllMessagesByChatRoomId(Long chatRoomId);
 
+
     /**
      * Method to process all {@link ChatMessageDto}'s that are sent from client
      * side.

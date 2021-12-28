@@ -46,6 +46,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             }.getType());
     }
 
+
     @Override
     public void processMessage(ChatMessageDto chatMessageDto) {
         ChatMessage message = modelMapper.map(chatMessageDto, ChatMessage.class);
