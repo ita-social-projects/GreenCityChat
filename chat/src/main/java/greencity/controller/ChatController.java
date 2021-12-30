@@ -221,7 +221,7 @@ public class ChatController {
     /**
      * {@inheritDoc}
      */
-    @MessageMapping("/chat")
+    @MessageMapping("/message")
     public void processMessage(ChatMessageDto chatMessageDto) throws IOException {
         chatMessageService.processMessage(chatMessageDto);
     }
@@ -229,7 +229,7 @@ public class ChatController {
     /**
      * {@inheritDoc}
      */
-    @MessageMapping("/chat/delete")
+    @MessageMapping("/message/delete")
     public void deleteMessage(ChatMessageDto chatMessageDto) {
         chatMessageService.deleteMessage(chatMessageDto);
     }
@@ -237,7 +237,7 @@ public class ChatController {
     /**
      * {@inheritDoc}
      */
-    @MessageMapping("/chat/update")
+    @MessageMapping("/message/update")
     public void updateMessage(ChatMessageDto chatMessageDto) {
         chatMessageService.updateMessage(chatMessageDto);
     }
