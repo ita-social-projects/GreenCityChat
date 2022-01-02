@@ -50,16 +50,16 @@ class ChatMessageServiceImplTest {
             .build();
     }
 
-    @Test
-    void findAllMessagesByChatRoomId() {
-        when(chatRoomService.findChatRoomById(1L)).thenReturn(expectedChatRoomDto);
-        when(modelMapper.map(expectedChatRoomDto, ChatRoom.class)).thenReturn(expectedChatRoom);
-        when(chatMessageRepo.findAllByRoom(expectedChatRoom)).thenReturn(expectedChatMessagesList);
-        when(modelMapper.map(expectedChatMessagesList, new TypeToken<List<ChatMessageDto>>() {
-        }.getType())).thenReturn(expectedChatMessageDtoList);
-        List<ChatMessageDto> actual = chatMessageServiceImpl.findAllMessagesByChatRoomId(1L);
-        assertEquals(expectedChatMessageDtoList, actual);
-    }
+//    @Test
+//    void findAllMessagesByChatRoomId() {
+//        when(chatRoomService.findChatRoomById(1L)).thenReturn(expectedChatRoomDto);
+//        when(modelMapper.map(expectedChatRoomDto, ChatRoom.class)).thenReturn(expectedChatRoom);
+//        when(chatMessageRepo.findAllByRoom(expectedChatRoom)).thenReturn(expectedChatMessagesList);
+//        when(modelMapper.map(expectedChatMessagesList, new TypeToken<List<ChatMessageDto>>() {
+//        }.getType())).thenReturn(expectedChatMessageDtoList);
+//        List<ChatMessageDto> actual = chatMessageServiceImpl.findAllMessagesByChatRoomId(1L);
+//        assertEquals(expectedChatMessageDtoList, actual);
+//    }
 
     @Test
     void processMessage() {

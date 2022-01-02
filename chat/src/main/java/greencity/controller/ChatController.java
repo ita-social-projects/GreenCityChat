@@ -1,7 +1,9 @@
 package greencity.controller;
 
+import greencity.annotations.ApiPageable;
 import greencity.dto.ChatMessageDto;
 import greencity.dto.ChatRoomDto;
+import greencity.dto.PageableDto;
 import greencity.dto.ParticipantDto;
 import greencity.enums.ChatType;
 import greencity.service.ChatMessageService;
@@ -23,10 +25,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.*;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
 
 @RestController
 @AllArgsConstructor
@@ -58,10 +63,13 @@ public class ChatController {
     /**
      * {@inheritDoc}
      */
+    @ApiPageable
     @GetMapping("/messages/{room_id}")
-    public ResponseEntity<List<ChatMessageDto>> findAllMessages(@PathVariable("room_id") Long id) {
+    public ResponseEntity<PageableDto<ChatMessageDto>> findAllMessages(
+            @ApiIgnore Pageable pageable,
+            @PathVariable("room_id") Long id) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(chatMessageService.findAllMessagesByChatRoomId(id));
+            .body(chatMessageService.findAllMessagesByChatRoomId(id, pageable));
     }
 
     /**

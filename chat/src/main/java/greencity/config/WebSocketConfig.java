@@ -18,7 +18,7 @@ import org.springframework.web.socket.config.annotation.WebSocketTransportRegist
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/message");
+        config.enableSimpleBroker("chat/message");
         config.setApplicationDestinationPrefixes("/app");
 //        config.setPreservePublishOrder(true);
 //        config.enableSimpleBroker("/room");
