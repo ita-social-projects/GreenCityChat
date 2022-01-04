@@ -3,6 +3,7 @@ package greencity.service.impl;
 import greencity.constant.ErrorMessage;
 import greencity.dto.ChatMessageDto;
 import greencity.dto.MessageLike;
+import greencity.dto.PageableDto;
 import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
@@ -28,6 +29,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -53,12 +57,19 @@ public class ChatMessageServiceImpl implements ChatMessageService {
      * {@inheritDoc}.
      */
     @Override
-    public List<ChatMessageDto> findAllMessagesByChatRoomId(Long chatRoomId) {
+    public PageableDto<ChatMessageDto> findAllMessagesByChatRoomId(Long chatRoomId, Pageable pageable) {
         ChatRoom chatRoom = chatRoomRepo.findById(chatRoomId)
             .orElseThrow(() -> new ChatRoomNotFoundException(ErrorMessage.CHAT_ROOM_NOT_FOUND_BY_ID));
-        List<ChatMessage> messages = chatMessageRepo.findAllByRoom(chatRoom);
-        List<ChatMessageDto> chatMessageDtos = mapListChatMessageDto(messages);
-        return chatMessageDtos;
+
+        Page<ChatMessage> messages = chatMessageRepo.findAllByRoom(modelMapper.map(chatRoom, ChatRoom.class), pageable);
+        List<ChatMessageDto> messageDtos = modelMapper.map(messages.getContent(),
+                new TypeToken<List<ChatMessageDto>>() {
+                }.getType());
+        return new PageableDto<>(
+                messageDtos,
+                messages.getTotalElements(),
+                messages.getPageable().getPageNumber(),
+                messages.getTotalPages());
     }
 
     /**

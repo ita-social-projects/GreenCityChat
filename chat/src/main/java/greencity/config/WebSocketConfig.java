@@ -18,14 +18,19 @@ import org.springframework.web.socket.config.annotation.WebSocketTransportRegist
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.setPreservePublishOrder(true);
         config.enableSimpleBroker("/room");
         config.setApplicationDestinationPrefixes("/app");
+        config.setPreservePublishOrder(true);
+//        config.enableSimpleBroker("/room");
+//        config.setApplicationDestinationPrefixes("/app");
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws").setAllowedOrigins("*").withSockJS();
+        registry.addEndpoint("/socket")
+                .setAllowedOrigins("http://localhost:4200", "http://localhost:4300")
+                .withSockJS();
+//        registry.addEndpoint("/ws").setAllowedOrigins("*").withSockJS();
     }
 
     @Override

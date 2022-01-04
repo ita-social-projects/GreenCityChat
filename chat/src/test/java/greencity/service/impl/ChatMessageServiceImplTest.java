@@ -47,38 +47,38 @@ class ChatMessageServiceImplTest {
             .build();
     }
 
-    @Test
-    void findAllMessagesByChatRoomId() {
-        Participant owner = Participant.builder()
-            .id(1L)
-            .build();
-        ChatRoom chatRoom = ChatRoom.builder()
-            .id(1L)
-            .name("TestName")
-            .owner(owner)
-            .build();
-        Optional<ChatRoom> roomOptional = Optional.of(chatRoom);
-        ChatMessage chatMessage = ChatMessage.builder()
-            .id(1L)
-            .content("test")
-            .room(chatRoom)
-            .sender(owner)
-            .build();
-        List<ChatMessage> messages = Collections.singletonList(chatMessage);
-        ChatMessageDto chatMessageDto = ChatMessageDto.builder()
-            .id(1L)
-            .content("test")
-            .roomId(1L)
-            .senderId(1L)
-            .build();
-        List<ChatMessageDto> chatMessageDtos = Collections.singletonList(chatMessageDto);
-
-        when(chatRoomRepo.findById(1L)).thenReturn(roomOptional);
-        when(chatMessageRepo.findAllByRoom(chatRoom)).thenReturn(messages);
-        when(modelMapper.map(chatMessage, ChatMessageDto.class)).thenReturn(chatMessageDto);
-        List<ChatMessageDto> actual = chatMessageServiceImpl.findAllMessagesByChatRoomId(1L);
-        assertEquals(chatMessageDtos, actual);
-    }
+//    @Test
+//    void findAllMessagesByChatRoomId() {
+//        Participant owner = Participant.builder()
+//            .id(1L)
+//            .build();
+//        ChatRoom chatRoom = ChatRoom.builder()
+//            .id(1L)
+//            .name("TestName")
+//            .owner(owner)
+//            .build();
+//        Optional<ChatRoom> roomOptional = Optional.of(chatRoom);
+//        ChatMessage chatMessage = ChatMessage.builder()
+//            .id(1L)
+//            .content("test")
+//            .room(chatRoom)
+//            .sender(owner)
+//            .build();
+//        List<ChatMessage> messages = Collections.singletonList(chatMessage);
+//        ChatMessageDto chatMessageDto = ChatMessageDto.builder()
+//            .id(1L)
+//            .content("test")
+//            .roomId(1L)
+//            .senderId(1L)
+//            .build();
+//        List<ChatMessageDto> chatMessageDtos = Collections.singletonList(chatMessageDto);
+//
+//        when(chatRoomRepo.findById(1L)).thenReturn(roomOptional);
+//        when(chatMessageRepo.findAllByRoom(chatRoom)).thenReturn(messages);
+//        when(modelMapper.map(chatMessage, ChatMessageDto.class)).thenReturn(chatMessageDto);
+//        List<ChatMessageDto> actual = chatMessageServiceImpl.findAllMessagesByChatRoomId(1L);
+//        assertEquals(chatMessageDtos, actual);
+//    }
 
     @Test
     void processMessage() {
