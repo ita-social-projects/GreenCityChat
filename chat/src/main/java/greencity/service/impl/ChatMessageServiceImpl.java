@@ -78,7 +78,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Override
     public void processMessage(ChatMessageDto chatMessageDto) {
         ChatMessage message = modelMapper.map(chatMessageDto, ChatMessage.class);
-        chatMessageRepo.save(message);
+        chatMessageDto = modelMapper.map(chatMessageRepo.save(message), ChatMessageDto.class);
         ArrayList<Participant> participants = new ArrayList<>(
             chatRoomRepo.getPatricipantsByChatRoomId(chatMessageDto.getRoomId()));
 
@@ -87,7 +87,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 unreadMessageRepo.save(fillUnreadMessage(message, current));
             }
         }
-
         messagingTemplate.convertAndSend(ROOM_LINK + "/message/chat-messages", chatMessageDto);
     }
 
