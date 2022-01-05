@@ -88,8 +88,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             }
         }
 
-        messagingTemplate.convertAndSend(
-            ROOM_LINK + chatMessageDto.getRoomId() + MESSAGE_LINK, chatMessageDto);
+        messagingTemplate.convertAndSend(ROOM_LINK + "/message/chat-messages", chatMessageDto);
     }
 
     /**
@@ -199,6 +198,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             .createDate(ZonedDateTime.now())
             .build();
         ChatMessage chatMessage = modelMapper.map(dto, ChatMessage.class);
+        processMessage(modelMapper.map(chatMessageRepo.save(chatMessage), ChatMessageDto.class));
         return modelMapper.map(chatMessageRepo.save(chatMessage), ChatMessageDto.class);
     }
 }
