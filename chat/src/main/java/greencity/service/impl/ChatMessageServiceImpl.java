@@ -2,6 +2,7 @@ package greencity.service.impl;
 
 import greencity.constant.ErrorMessage;
 import greencity.dto.ChatMessageDto;
+import greencity.dto.ChatMessageResponseDto;
 import greencity.dto.MessageLike;
 import greencity.dto.PageableDto;
 import greencity.entity.ChatMessage;
@@ -20,6 +21,7 @@ import greencity.service.AzureFileService;
 import greencity.service.ChatMessageService;
 
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -80,14 +82,16 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         ChatMessage message = modelMapper.map(chatMessageDto, ChatMessage.class);
         chatMessageDto = modelMapper.map(chatMessageRepo.save(message), ChatMessageDto.class);
         ArrayList<Participant> participants = new ArrayList<>(
-            chatRoomRepo.getPatricipantsByChatRoomId(chatMessageDto.getRoomId()));
+                chatRoomRepo.getPatricipantsByChatRoomId(chatMessageDto.getRoomId()));
 
         for (Participant current : participants) {
             if (current.getId() != message.getSender().getId()) {
                 unreadMessageRepo.save(fillUnreadMessage(message, current));
             }
         }
-        messagingTemplate.convertAndSend(ROOM_LINK + "/message/chat-messages", chatMessageDto);
+        ChatMessageResponseDto responseDto = modelMapper.map(chatMessageDto, ChatMessageResponseDto.class);
+        responseDto.setCreateDate(chatMessageDto.getCreateDate().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        messagingTemplate.convertAndSend(ROOM_LINK + "/message/chat-messages", responseDto);
     }
 
     /**
