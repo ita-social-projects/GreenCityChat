@@ -10,12 +10,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
-public interface ChatMessageRepo extends JpaRepository<ChatMessage, Long>,
+public interface ChatMessageRepo extends PagingAndSortingRepository<ChatMessage, Long>,
     JpaSpecificationExecutor<ChatMessage> {
     /**
      * Method to find all {@link ChatMessage}'s by {@link ChatRoom} id.
@@ -31,7 +32,7 @@ public interface ChatMessageRepo extends JpaRepository<ChatMessage, Long>,
      * @param chatRoom {@link ChatRoom} instance.
      * @return list of {@link ChatMessage} instances.
      */
-    Page<ChatMessage> findAllByRoom(ChatRoom chatRoom, Pageable pageable);
+    Page<ChatMessage> findAllByRoom(@Param(value = "chatRoom") ChatRoom chatRoom, Pageable pageable);
 
     /**
      * {@inheritDoc}

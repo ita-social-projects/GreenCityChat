@@ -16,7 +16,6 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.*;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
@@ -80,7 +79,7 @@ public class ChatController {
     @GetMapping("/messages/{room_id}")
     public ResponseEntity<PageableDto<ChatMessageDto>> findAllMessages(
             @ApiIgnore Pageable pageable,
-            @PathVariable("room_id") Long id) {
+            @PathVariable("room_id") Long id ){
         return ResponseEntity.status(HttpStatus.OK)
                 .body(chatMessageService.findAllMessagesByChatRoomId(id, pageable));
     }

@@ -10,6 +10,7 @@ import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.entity.UnreadMessage;
 import greencity.enums.MessageStatus;
+import greencity.enums.SortOrder;
 import greencity.exception.exceptions.ChatRoomNotFoundException;
 import greencity.exception.exceptions.UserNotBelongToThisChat;
 import greencity.exception.exceptions.UserNotFoundException;
@@ -33,9 +34,13 @@ import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+
+import javax.swing.*;
 
 /**
  * Implementation of {@link ChatMessageService}.
@@ -63,7 +68,10 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         ChatRoom chatRoom = chatRoomRepo.findById(chatRoomId)
             .orElseThrow(() -> new ChatRoomNotFoundException(ErrorMessage.CHAT_ROOM_NOT_FOUND_BY_ID));
 
-        Page<ChatMessage> messages = chatMessageRepo.findAllByRoom(modelMapper.map(chatRoom, ChatRoom.class), pageable);
+        Sort sort =  Sort.by(Sort.Direction.valueOf(SortOrder.DESC.toString()), "createDate");
+        pageable  = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+
+        Page<ChatMessage> messages = chatMessageRepo.findAllByRoom(chatRoom, pageable);
         List<ChatMessageDto> messageDtos = modelMapper.map(messages.getContent(),
                 new TypeToken<List<ChatMessageDto>>() {
                 }.getType());
