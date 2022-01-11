@@ -23,12 +23,8 @@ import greencity.service.ChatMessageService;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -75,6 +71,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         List<ChatMessageDto> messageDtos = modelMapper.map(messages.getContent(),
                 new TypeToken<List<ChatMessageDto>>() {
                 }.getType());
+        Collections.reverse(messageDtos);
         return new PageableDto<>(
                 messageDtos,
                 messages.getTotalElements(),
