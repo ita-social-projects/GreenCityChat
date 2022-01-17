@@ -92,4 +92,9 @@ public interface ChatRoomService {
      * {@inheritDoc}
      */
     void leaveChatRoom(LeaveChatDto leaveChatDto);
+
+    /**
+     * {@inheritDoc}
+     */
+    public void findPrivateByParticipantsForSockets(Long id, String name);
 }

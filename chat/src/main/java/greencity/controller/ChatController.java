@@ -210,6 +210,19 @@ public class ChatController {
     }
 
     /**
+     * Method return private chat for current user.
+     *
+     * @param id - id of user
+     * @return list of {@link ChatRoomDto}.
+     */
+    @MessageMapping("/chat/user/{id}")
+
+    public ResponseEntity<ChatRoomDto> createNewPrivateChatIfNotExist(@PathVariable Long id, Principal principal) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(chatRoomService.findPrivateByParticipants(id, principal.getName()));
+    }
+
+    /**
      * Add participants from group chat room.
      *
      * @param chatRoomDto of {@link ChatRoomDto}
