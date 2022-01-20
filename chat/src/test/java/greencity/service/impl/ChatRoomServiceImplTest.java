@@ -98,7 +98,6 @@ class ChatRoomServiceImplTest {
         expectedDto = ChatRoomDto.builder()
             .id(1L)
             .name("test")
-            .messages(new LinkedList<>())
             .chatType(ChatType.PRIVATE)
             .participants(new HashSet<>())
             .build();

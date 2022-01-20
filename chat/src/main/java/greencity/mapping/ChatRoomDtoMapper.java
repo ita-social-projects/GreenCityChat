@@ -46,16 +46,6 @@ public class ChatRoomDtoMapper extends AbstractConverter<ChatRoom, ChatRoomDto> 
                 .ownerId(chatRoom.getOwner().getId())
                 .chatType(chatRoom.getType())
                 .logo(chatRoom.getLogo())
-                .messages(chatRoom.getMessages().stream()
-                    .filter(Objects::nonNull)
-                    .map(
-                        chatMessage -> ChatMessageDto.builder()
-                            .id(chatMessage.getId())
-                            .content(chatMessage.getContent())
-                            .senderId(chatMessage.getSender().getId())
-                            .roomId(chatRoom.getId()).build())
-                    .collect(Collectors.toList()))
-                .name(chatRoom.getName())
                 .participants(chatRoom.getParticipants().stream().map(
                     participant -> ParticipantDto.builder()
                         .name(participant.getName())

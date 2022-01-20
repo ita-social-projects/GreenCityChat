@@ -1,5 +1,6 @@
 package greencity.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import greencity.enums.ChatType;
 import java.util.List;
 import java.util.Set;
@@ -14,7 +15,6 @@ import lombok.*;
 public class ChatRoomDto {
     private Long id;
     private String name;
-    private List<ChatMessageDto> messages;
     private ChatType chatType;
     private Set<ParticipantDto> participants;
     private Long ownerId;
