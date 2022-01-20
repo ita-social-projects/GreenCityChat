@@ -20,12 +20,11 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
     /**
      * Method to find all {@link ChatRoom}'s by {@link Participant}/{@code User} id.
      *
-     * @param participant {@link Participant} id.
+     * @param id {@link Long} id.
      * @return list of {@link ChatRoom} instances.
      */
-    @Query(value = "SELECT room FROM ChatRoom room"
-        + " WHERE :part IN elements(room.participants)")
-    List<ChatRoom> findAllByParticipant(@Param("part") Participant participant);
+    @Query(value = "SELECT * FROM chat_rooms room INNER JOIN chat_rooms_participants crp on room.id = crp.room_id WHERE crp.participant_id = :id", nativeQuery = true)
+    List<ChatRoom> findAllByParticipant(@Param("id") Long id);
 
     /**
      * Method to find all {@link ChatRoom}'s by {@link Participant}/{@code User}'s

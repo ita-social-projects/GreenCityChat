@@ -215,9 +215,9 @@ public class ChatController {
      * @param id - id of user
      * @return list of {@link ChatRoomDto}.
      */
-    @MessageMapping("/chat/{id}/user/")
-    public void createNewPrivateChatIfNotExist(CreateNewChatDto createNewChatDto) {
-        //chatRoomService.findPrivateByParticipantsForSockets(id, "qqq@email.com");
+    @MessageMapping("/chat/user")
+    public void createNewPrivateChatIfNotExist(@RequestBody CreateNewChatDto createNewChatDto) {
+        chatRoomService.findPrivateByParticipantsForSockets(createNewChatDto.getParticipantsIds(), "qqq@email.com");
     }
 
     /**

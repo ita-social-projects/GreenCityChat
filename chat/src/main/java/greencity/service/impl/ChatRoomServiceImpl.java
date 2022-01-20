@@ -43,7 +43,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     @Override
     public List<ChatRoomDto> findAllByParticipantName(String name) {
         Participant participant = participantService.findByEmail(name);
-        List<ChatRoom> chatRooms = chatRoomRepo.findAllByParticipant(participant).stream()
+        List<ChatRoom> chatRooms = chatRoomRepo.findAllByParticipant(participant.getId()).stream()
                 .peek(chatRoom -> chatRoom.setName(chatRoom.getName().replaceAll(participant.getName(), "")
                         .replaceAll(":", ""))).collect(Collectors.toList());
         return modelMapper
@@ -56,7 +56,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
      */
     public List<ChatRoomDto> findAllVisibleRooms(String name) {
         Participant participant = participantService.findByEmail(name);
-        List<ChatRoom> rooms = chatRoomRepo.findAllByParticipant(participant).stream()
+        List<ChatRoom> rooms = chatRoomRepo.findAllByParticipant(participant.getId()).stream()
             .filter(chatRoom -> !chatRoom.getMessages().isEmpty() && chatRoom.getType().equals(ChatType.PRIVATE)
                 || chatRoom.getType().equals(ChatType.GROUP) || chatRoom.getType().equals(ChatType.SYSTEM))
             .collect(Collectors.toList());

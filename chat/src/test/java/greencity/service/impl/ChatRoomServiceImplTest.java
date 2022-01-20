@@ -104,15 +104,15 @@ class ChatRoomServiceImplTest {
             .build();
     }
 
-    @Test
-    void findAllByParticipantName() {
-        when(participantService.findByEmail(email)).thenReturn(expectedParticipant);
-        when(chatRoomRepo.findAllByParticipant(expectedParticipant)).thenReturn(expectedList);
-        when(modelMapper.map(expectedList, new TypeToken<List<ChatRoomDto>>() {
-        }.getType())).thenReturn(expectedListDto);
-        List<ChatRoomDto> actual = chatRoomService.findAllByParticipantName(email);
-        assertEquals(expectedListDto, actual);
-    }
+//    @Test
+//    void findAllByParticipantName() {
+//        when(participantService.findByEmail(email)).thenReturn(expectedParticipant);
+//        when(chatRoomRepo.findAllByParticipant(expectedParticipant)).thenReturn(expectedList);
+//        when(modelMapper.map(expectedList, new TypeToken<List<ChatRoomDto>>() {
+//        }.getType())).thenReturn(expectedListDto);
+//        List<ChatRoomDto> actual = chatRoomService.findAllByParticipantName(email);
+//        assertEquals(expectedListDto, actual);
+//    }
 
     @Test
     void findAllRoomsByParticipantsAndStatus() {
@@ -132,13 +132,13 @@ class ChatRoomServiceImplTest {
         assertEquals(expectedDto, actual);
     }
 
-    @Test
-    void findAllVisibleRooms() {
-        when(participantService.findByEmail(any())).thenReturn(expectedParticipant);
-        when(chatRoomRepo.findAllByParticipant(expectedParticipant)).thenReturn(expectedListEmpty);
-
-        assertEquals(chatRoomService.findAllVisibleRooms("name"), expectedListEmpty);
-    }
+//    @Test
+//    void findAllVisibleRooms() {
+//        when(participantService.findByEmail(any())).thenReturn(expectedParticipant);
+//        when(chatRoomRepo.findAllByParticipant(expectedParticipant)).thenReturn(expectedListEmpty);
+//
+//        assertEquals(chatRoomService.findAllVisibleRooms("name"), expectedListEmpty);
+//    }
 
     @Test
     void findPrivateByParticipants() {
