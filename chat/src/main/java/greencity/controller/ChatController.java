@@ -217,7 +217,7 @@ public class ChatController {
      */
     @MessageMapping("/chat/user")
     public void createNewPrivateChatIfNotExist(@RequestBody CreateNewChatDto createNewChatDto) {
-        chatRoomService.findPrivateByParticipantsForSockets(createNewChatDto.getParticipantsIds(), "qqq@email.com");
+        chatRoomService.findPrivateByParticipantsForSockets(createNewChatDto.getParticipantsIds(), createNewChatDto.getCurrentUserId());
     }
 
     /**

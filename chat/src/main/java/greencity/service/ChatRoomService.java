@@ -96,5 +96,5 @@ public interface ChatRoomService {
     /**
      * {@inheritDoc}
      */
-    void findPrivateByParticipantsForSockets(Long id, String name);
+    void findPrivateByParticipantsForSockets(Long id, Long currentUserId);
 }

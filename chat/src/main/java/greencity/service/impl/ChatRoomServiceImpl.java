@@ -316,16 +316,16 @@ public class ChatRoomServiceImpl implements ChatRoomService {
      * {@inheritDoc}
      */
     @Override
-    public void findPrivateByParticipantsForSockets(Long id, String name) {
+    public void findPrivateByParticipantsForSockets(Long participantId, Long currentUserId) {
         Set<Participant> participants = new LinkedHashSet<>();
-        Participant owner = participantService.findByEmail(name);
+        Participant owner = participantService.findById(currentUserId);
         participants.add(owner);
-        participants.add(participantService.findById(id));
+        participants.add(participantService.findById(participantId));
         List<ChatRoom> chatRoom = chatRoomRepo.findByParticipantsAndStatus(participants, participants.size(),
                 ChatType.PRIVATE);
         ChatRoomDto chatRoomDto = filterPrivateRoom(chatRoom, participants, owner);
 
-        messagingTemplate.convertAndSend(ROOM_LINK + ("/new-chats/"+id) + chatRoomDto);
-        messagingTemplate.convertAndSend(ROOM_LINK + ("/new-chats/"+owner.getId()) + chatRoomDto);
+        messagingTemplate.convertAndSend(ROOM_LINK + ("/new-chats/"+participantId.toString()) + chatRoomDto);
+        messagingTemplate.convertAndSend(ROOM_LINK + ("/new-chats/"+owner.getId().toString()) + chatRoomDto);
     }
 }
