@@ -96,7 +96,11 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         }
         ChatMessageResponseDto responseDto = modelMapper.map(chatMessageDto, ChatMessageResponseDto.class);
         responseDto.setCreateDate(chatMessageDto.getCreateDate().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-        messagingTemplate.convertAndSend(ROOM_LINK + "/message/chat-messages", responseDto);
+        participants.stream().forEach(participant -> {
+            messagingTemplate.convertAndSend(ROOM_LINK + "/message/chat-messages.", responseDto,
+                    Collections.singletonMap("id", participant.getId()));
+        });
+
     }
 
     /**
