@@ -113,16 +113,10 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                 ChatRoom.builder()
                     .name(participants.stream().map(Participant::getName).collect(Collectors.joining(":")))
                     .owner(owner)
-                    .messages(new ArrayList<>())
                     .participants(participants)
                     .type(ChatType.PRIVATE)
                     .build());
             ChatRoomDto chatRoomDto = modelMapper.map(toReturn, ChatRoomDto.class);
-            Map<String, Object> headers = new HashMap<>();
-            headers.put(HEADER_CREATE_ROOM, new Object());
-            for (Participant p : participants) {
-                messagingTemplate.convertAndSend(ROOM_LINK + p.getId(), chatRoomDto, headers);
-            }
         } else {
             toReturn = chatRooms.get(0);
         }
@@ -324,8 +318,8 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         List<ChatRoom> chatRoom = chatRoomRepo.findByParticipantsAndStatus(participants, participants.size(),
                 ChatType.PRIVATE);
         ChatRoomDto chatRoomDto = filterPrivateRoom(chatRoom, participants, owner);
-
-        messagingTemplate.convertAndSend(ROOM_LINK + ("/new-chats/"+participantId.toString()) + chatRoomDto);
-        messagingTemplate.convertAndSend(ROOM_LINK + ("/new-chats/"+owner.getId().toString()) + chatRoomDto);
+//
+//        messagingTemplate.convertAndSend(ROOM_LINK + ("/new-chats/"+participantId.toString()) + chatRoomDto);
+//        messagingTemplate.convertAndSend(ROOM_LINK + ("/new-chats/"+owner.getId().toString()) + chatRoomDto);
     }
 }

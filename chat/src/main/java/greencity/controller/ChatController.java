@@ -212,11 +212,10 @@ public class ChatController {
     /**
      * Method return private chat for current user.
      *
-     * @param id - id of user
      * @return list of {@link ChatRoomDto}.
      */
     @MessageMapping("/chat/user")
-    public void createNewPrivateChatIfNotExist(@RequestBody CreateNewChatDto createNewChatDto) {
+    public void createNewPrivateChatIfNotExist( @RequestBody CreateNewChatDto createNewChatDto) {
         chatRoomService.findPrivateByParticipantsForSockets(createNewChatDto.getParticipantsIds(), createNewChatDto.getCurrentUserId());
     }
 

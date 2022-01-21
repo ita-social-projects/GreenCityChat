@@ -35,6 +35,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import reactor.util.annotation.Nullable;
 
 import javax.swing.*;
 
@@ -94,13 +95,12 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 unreadMessageRepo.save(fillUnreadMessage(message, current));
             }
         }
+
         ChatMessageResponseDto responseDto = modelMapper.map(chatMessageDto, ChatMessageResponseDto.class);
         responseDto.setCreateDate(chatMessageDto.getCreateDate().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
         participants.stream().forEach(participant -> {
-            messagingTemplate.convertAndSend(ROOM_LINK + "/message/chat-messages.", responseDto,
-                    Collections.singletonMap("id", participant.getId()));
+            messagingTemplate.convertAndSend( ROOM_LINK + "/message/chat-messages"+participant.getId().toString(), responseDto);
         });
-
     }
 
     /**
