@@ -318,8 +318,10 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         List<ChatRoom> chatRoom = chatRoomRepo.findByParticipantsAndStatus(participants, participants.size(),
                 ChatType.PRIVATE);
         ChatRoomDto chatRoomDto = filterPrivateRoom(chatRoom, participants, owner);
-//
-//        messagingTemplate.convertAndSend(ROOM_LINK + ("/new-chats/"+participantId.toString()) + chatRoomDto);
-//        messagingTemplate.convertAndSend(ROOM_LINK + ("/new-chats/"+owner.getId().toString()) + chatRoomDto);
+
+        participants.stream().forEach(participant -> {
+            messagingTemplate.convertAndSend(   ROOM_LINK+"new-chats"+participant.getId().toString(), chatRoomDto);
+        });
+
     }
 }
