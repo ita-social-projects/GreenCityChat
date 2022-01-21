@@ -12,6 +12,7 @@ import lombok.*;
 @Setter
 @EqualsAndHashCode
 @Builder
+@ToString
 public class ChatRoomDto {
     private Long id;
     private String name;

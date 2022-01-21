@@ -116,7 +116,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                     .participants(participants)
                     .type(ChatType.PRIVATE)
                     .build());
-            ChatRoomDto chatRoomDto = modelMapper.map(toReturn, ChatRoomDto.class);
         } else {
             toReturn = chatRooms.get(0);
         }
@@ -322,6 +321,5 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         participants.stream().forEach(participant -> {
             messagingTemplate.convertAndSend(   ROOM_LINK+"new-chats"+participant.getId().toString(), chatRoomDto);
         });
-
     }
 }
