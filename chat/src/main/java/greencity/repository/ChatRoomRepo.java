@@ -11,8 +11,11 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.servlet.http.Part;
 
 @Repository
 public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
@@ -92,4 +95,7 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
      */
     @Query("SELECT COUNT(id) from UnreadMessage where participant.id = :userId and message.room.id = :roomId")
     Long countUnreadMessages(Long userId, Long roomId);
+
+    @Query(value = " SELECT DISTINCT room_id FROM chat_rooms_participants where participant_id IN(:first, :second) GROUP  BY room_id HAVING COUNT( room_id) = 2 ", nativeQuery = true)
+    List<Long> chatExistBetweenTwo(@Param("first") Long firstUser, @Param("second") Long secondUser);
 }

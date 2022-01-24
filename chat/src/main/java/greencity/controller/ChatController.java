@@ -403,4 +403,19 @@ public class ChatController {
         chatRoomService.createNewChatRoom(dto);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
+
+    /**
+     * Method return if there is already created conversation between two users.
+     *
+     * @return {@link Boolean}.
+     */
+    @ApiOperation(value = "Is there already created conversation between two users")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = HttpStatuses.OK, response = Long.class)
+    })
+    @GetMapping("/exist/{fistUserId}/{secondUserId}")
+    public ResponseEntity<Boolean> chatExist(@PathVariable Long fistUserId, @PathVariable Long secondUserId) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(chatMessageService.chatExist(fistUserId, secondUserId));
+    }
 }

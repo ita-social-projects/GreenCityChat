@@ -35,9 +35,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import reactor.util.annotation.Nullable;
-
-import javax.swing.*;
 
 /**
  * Implementation of {@link ChatMessageService}.
@@ -212,5 +209,10 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         ChatMessage chatMessage = modelMapper.map(dto, ChatMessage.class);
         processMessage(modelMapper.map(chatMessageRepo.save(chatMessage), ChatMessageDto.class));
         return modelMapper.map(chatMessageRepo.save(chatMessage), ChatMessageDto.class);
+    }
+
+    @Override
+    public Boolean chatExist(Long fistUserId, Long secondUserId) {
+        return !chatRoomRepo.chatExistBetweenTwo(fistUserId, secondUserId).isEmpty();
     }
 }

@@ -7,7 +7,6 @@ import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 
 public interface ChatMessageService {
     /**
@@ -57,4 +56,11 @@ public interface ChatMessageService {
      * {@inheritDoc}
      */
     ChatMessageDto sentMessage(Long userId, Long chatId, String content);
+
+    /**
+     * Method return if there is already created conversation between two users.
+     *
+     * @return  {@link Boolean}.
+     */
+    Boolean chatExist(Long fistUserId, Long secondUserId);
 }
