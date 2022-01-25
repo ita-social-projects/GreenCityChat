@@ -1,6 +1,7 @@
 package greencity.service;
 
 import greencity.dto.ChatMessageDto;
+import greencity.dto.FriendsChatDto;
 import greencity.dto.MessageLike;
 import greencity.dto.PageableDto;
 import greencity.entity.ChatMessage;
@@ -62,5 +63,5 @@ public interface ChatMessageService {
      *
      * @return  {@link Boolean}.
      */
-    Boolean chatExist(Long fistUserId, Long secondUserId);
+    FriendsChatDto chatExist(Long fistUserId, Long secondUserId);
 }

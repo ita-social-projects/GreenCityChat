@@ -1,10 +1,7 @@
 package greencity.service.impl;
 
 import greencity.constant.ErrorMessage;
-import greencity.dto.ChatMessageDto;
-import greencity.dto.ChatMessageResponseDto;
-import greencity.dto.MessageLike;
-import greencity.dto.PageableDto;
+import greencity.dto.*;
 import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
@@ -212,7 +209,14 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     }
 
     @Override
-    public Boolean chatExist(Long fistUserId, Long secondUserId) {
-        return !chatRoomRepo.chatExistBetweenTwo(fistUserId, secondUserId).isEmpty();
+    public FriendsChatDto chatExist(Long fistUserId, Long secondUserId) {
+        List<Long> chatList = chatRoomRepo.chatExistBetweenTwo(fistUserId, secondUserId);
+        FriendsChatDto friendsChatDto = FriendsChatDto.builder()
+                .chatExists(!chatRoomRepo.chatExistBetweenTwo(fistUserId, secondUserId).isEmpty())
+                .build();
+        if(friendsChatDto.getChatExists()){
+            friendsChatDto.setChatId(chatList.get(0));
+        }
+        return friendsChatDto;
     }
 }

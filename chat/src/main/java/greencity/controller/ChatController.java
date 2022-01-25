@@ -414,7 +414,7 @@ public class ChatController {
             @ApiResponse(code = 200, message = HttpStatuses.OK, response = Long.class)
     })
     @GetMapping("/exist/{fistUserId}/{secondUserId}")
-    public ResponseEntity<Boolean> chatExist(@PathVariable Long fistUserId, @PathVariable Long secondUserId) {
+    public ResponseEntity<FriendsChatDto> chatExist(@PathVariable Long fistUserId, @PathVariable Long secondUserId) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(chatMessageService.chatExist(fistUserId, secondUserId));
     }
