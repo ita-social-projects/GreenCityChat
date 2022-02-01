@@ -2,6 +2,8 @@ package greencity.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import greencity.enums.ChatType;
+
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 import lombok.*;
@@ -21,4 +23,6 @@ public class ChatRoomDto {
     private Long ownerId;
     private Long amountUnreadMessages;
     private String logo;
+    private String lastMessage;
+    private ZonedDateTime lastMessageDateTime;
 }

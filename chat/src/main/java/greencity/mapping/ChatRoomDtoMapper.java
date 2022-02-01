@@ -23,22 +23,22 @@ public class ChatRoomDtoMapper extends AbstractConverter<ChatRoom, ChatRoomDto> 
      */
     @Override
     protected ChatRoomDto convert(ChatRoom chatRoom) {
-            return ChatRoomDto.builder()
-                    .id(chatRoom.getId())
-                    .ownerId(chatRoom.getOwner().getId())
-                    .chatType(chatRoom.getType())
-                    .name(chatRoom.getName())
-                    .logo(chatRoom.getLogo())
-                    .participants(chatRoom.getParticipants().stream()
-                            .map(participant -> ParticipantDto.builder()
-                                    .id(participant.getId())
-                                    .name(participant.getName())
-                                    .email(participant.getEmail())
-                                    .role(participant.getRole())
-                                    .userStatus(participant.getUserStatus())
-                                    .profilePicture(participant.getProfilePicture())
-                                    .build()
-                            ).collect(Collectors.toSet()))
-                    .build();
+        return ChatRoomDto.builder()
+            .id(chatRoom.getId())
+            .ownerId(chatRoom.getOwner().getId())
+            .chatType(chatRoom.getType())
+            .name(chatRoom.getName())
+            .logo(chatRoom.getLogo())
+            .participants(chatRoom.getParticipants().stream()
+                .map(participant -> ParticipantDto.builder()
+                    .id(participant.getId())
+                    .name(participant.getName())
+                    .email(participant.getEmail())
+                    .role(participant.getRole())
+                    .userStatus(participant.getUserStatus())
+                    .profilePicture(participant.getProfilePicture())
+                    .build())
+                .collect(Collectors.toSet()))
+            .build();
     }
 }

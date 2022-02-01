@@ -23,16 +23,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         config.enableSimpleBroker("/room");
         config.setApplicationDestinationPrefixes("/app");
         config.setPreservePublishOrder(true);
-//        config.enableSimpleBroker("/room");
-//        config.setApplicationDestinationPrefixes("/app");
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/socket")
-                .setAllowedOrigins("*")
-                .withSockJS();
-//        registry.addEndpoint("/ws").setAllowedOrigins("*").withSockJS();
+            .setAllowedOrigins("*")
+            .withSockJS();
     }
 
     @Override

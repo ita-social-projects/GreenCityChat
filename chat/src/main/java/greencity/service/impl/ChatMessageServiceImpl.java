@@ -59,19 +59,19 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         ChatRoom chatRoom = chatRoomRepo.findById(chatRoomId)
             .orElseThrow(() -> new ChatRoomNotFoundException(ErrorMessage.CHAT_ROOM_NOT_FOUND_BY_ID));
 
-        Sort sort =  Sort.by(Sort.Direction.valueOf(SortOrder.DESC.toString()), "createDate");
-        pageable  = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+        Sort sort = Sort.by(Sort.Direction.valueOf(SortOrder.DESC.toString()), "createDate");
+        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
 
         Page<ChatMessage> messages = chatMessageRepo.findAllByRoom(chatRoom, pageable);
-        List<ChatMessageDto> messageDtos = modelMapper.map(messages.getContent(),
-                new TypeToken<List<ChatMessageDto>>() {
-                }.getType());
+        List<ChatMessageDto> messageDtos = messages.getContent().stream()
+                .map(message -> modelMapper.map(message, ChatMessageDto.class)).collect(Collectors.toList());
+
         Collections.reverse(messageDtos);
         return new PageableDto<>(
-                messageDtos,
-                messages.getTotalElements(),
-                messages.getPageable().getPageNumber(),
-                messages.getTotalPages());
+            messageDtos,
+            messages.getTotalElements(),
+            messages.getPageable().getPageNumber(),
+            messages.getTotalPages());
     }
 
     /**
@@ -82,7 +82,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         ChatMessage message = modelMapper.map(chatMessageDto, ChatMessage.class);
         chatMessageDto = modelMapper.map(chatMessageRepo.save(message), ChatMessageDto.class);
         ArrayList<Participant> participants = new ArrayList<>(
-                chatRoomRepo.getPatricipantsByChatRoomId(chatMessageDto.getRoomId()));
+            chatRoomRepo.getPatricipantsByChatRoomId(chatMessageDto.getRoomId()));
 
         for (Participant current : participants) {
             if (current.getId() != message.getSender().getId()) {
@@ -93,7 +93,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         ChatMessageResponseDto responseDto = modelMapper.map(chatMessageDto, ChatMessageResponseDto.class);
         responseDto.setCreateDate(chatMessageDto.getCreateDate().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
         participants.stream().forEach(participant -> {
-            messagingTemplate.convertAndSend( ROOM_LINK + "/message/chat-messages"+participant.getId().toString(), responseDto);
+            messagingTemplate.convertAndSend(ROOM_LINK + "/message/chat-messages" + participant.getId(),
+                responseDto);
         });
     }
 
@@ -204,7 +205,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             .createDate(ZonedDateTime.now())
             .build();
         ChatMessage chatMessage = modelMapper.map(dto, ChatMessage.class);
-        processMessage(modelMapper.map(chatMessageRepo.save(chatMessage), ChatMessageDto.class));
         return modelMapper.map(chatMessageRepo.save(chatMessage), ChatMessageDto.class);
     }
 
@@ -212,9 +212,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     public FriendsChatDto chatExist(Long fistUserId, Long secondUserId) {
         List<Long> chatList = chatRoomRepo.chatExistBetweenTwo(fistUserId, secondUserId);
         FriendsChatDto friendsChatDto = FriendsChatDto.builder()
-                .chatExists(!chatRoomRepo.chatExistBetweenTwo(fistUserId, secondUserId).isEmpty())
-                .build();
-        if(friendsChatDto.getChatExists()){
+            .chatExists(!chatRoomRepo.chatExistBetweenTwo(fistUserId, secondUserId).isEmpty())
+            .build();
+        if (friendsChatDto.getChatExists()) {
             friendsChatDto.setChatId(chatList.get(0));
         }
         return friendsChatDto;

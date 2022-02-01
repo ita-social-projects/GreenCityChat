@@ -26,7 +26,11 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
      * @param id {@link Long} id.
      * @return list of {@link ChatRoom} instances.
      */
-    @Query(value = "SELECT * FROM chat_rooms room INNER JOIN chat_rooms_participants crp on room.id = crp.room_id WHERE crp.participant_id = :id", nativeQuery = true)
+    @Query(
+        value = "SELECT * FROM chat_rooms room "
+            + "INNER JOIN chat_rooms_participants crp on room.id = crp.room_id "
+            + "WHERE crp.participant_id = :id",
+        nativeQuery = true)
     List<ChatRoom> findAllByParticipant(@Param("id") Long id);
 
     /**
@@ -96,6 +100,13 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
     @Query("SELECT COUNT(id) from UnreadMessage where participant.id = :userId and message.room.id = :roomId")
     Long countUnreadMessages(Long userId, Long roomId);
 
-    @Query(value = " SELECT DISTINCT room_id FROM chat_rooms_participants where participant_id IN(:first, :second) GROUP  BY room_id HAVING COUNT( room_id) = 2 ", nativeQuery = true)
+    /**
+     * Method returns ids of chats between two people if exist.
+     *
+     */
+    @Query(value = "SELECT DISTINCT room_id FROM chat_rooms_participants "
+        + "where participant_id IN(:first, :second) "
+        + "GROUP  BY room_id HAVING COUNT(room_id) = 2 ",
+        nativeQuery = true)
     List<Long> chatExistBetweenTwo(@Param("first") Long firstUser, @Param("second") Long secondUser);
 }

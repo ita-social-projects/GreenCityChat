@@ -64,7 +64,6 @@ class ChatRoomDtoMapperTest {
         assertEquals(chatRoomDto.getName(), actual.getName());
         assertEquals(chatRoomDto.getOwnerId(), actual.getOwnerId());
         assertArrayEquals(chatRoomDto.getParticipants().toArray(), actual.getParticipants().toArray());
-//        assertArrayEquals(chatRoomDto.getMessages().toArray(), actual.getMessages().toArray());
     }
 
     @Test

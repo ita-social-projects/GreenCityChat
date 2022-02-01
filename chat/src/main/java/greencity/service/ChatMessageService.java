@@ -8,7 +8,6 @@ import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import org.springframework.data.domain.Pageable;
 
-
 public interface ChatMessageService {
     /**
      * Method to find all {@link ChatMessage}'s by {@link ChatRoom} id.
@@ -61,7 +60,7 @@ public interface ChatMessageService {
     /**
      * Method return if there is already created conversation between two users.
      *
-     * @return  {@link Boolean}.
+     * @return {@link Boolean}.
      */
     FriendsChatDto chatExist(Long fistUserId, Long secondUserId);
 }

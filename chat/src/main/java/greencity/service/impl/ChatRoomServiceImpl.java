@@ -2,6 +2,7 @@ package greencity.service.impl;
 
 import greencity.constant.ErrorMessage;
 import greencity.dto.*;
+import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.enums.ChatType;
@@ -44,11 +45,19 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     public List<ChatRoomDto> findAllByParticipantName(String name) {
         Participant participant = participantService.findByEmail(name);
         List<ChatRoom> chatRooms = chatRoomRepo.findAllByParticipant(participant.getId()).stream()
-                .peek(chatRoom -> chatRoom.setName(chatRoom.getName().replaceAll(participant.getName(), "")
-                        .replaceAll(":", ""))).collect(Collectors.toList());
-        return modelMapper
-            .map(chatRooms, new TypeToken<List<ChatRoomDto>>() {
+            .peek(chatRoom -> chatRoom.setName(chatRoom.getName().replaceAll(participant.getName(), "")
+                .replaceAll(":", "")))
+            .collect(Collectors.toList());
+        List<ChatRoomDto> chatRoomDtos = modelMapper.map(chatRooms, new TypeToken<List<ChatRoomDto>>() {
             }.getType());
+        chatRoomDtos.stream().forEach(chatRoom -> {
+            chatMessageRepo.getLastByRoomId(chatRoom.getId()).stream().findFirst().ifPresent(chatMessage -> {
+                chatRoom.setLastMessage(chatMessage.getContent());
+                chatRoom.setLastMessageDateTime(chatMessage.getCreateDate());
+            });
+
+        });
+        return chatRoomDtos;
     }
 
     /**
@@ -116,6 +125,8 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                     .participants(participants)
                     .type(ChatType.PRIVATE)
                     .build());
+            toReturn.setName(toReturn.getName().replaceAll(owner.getName(), "")
+                .replaceAll(":", ""));
         } else {
             toReturn = chatRooms.get(0);
         }
@@ -315,11 +326,14 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         participants.add(owner);
         participants.add(participantService.findById(participantId));
         List<ChatRoom> chatRoom = chatRoomRepo.findByParticipantsAndStatus(participants, participants.size(),
-                ChatType.PRIVATE);
+            ChatType.PRIVATE).stream().peek(
+                chat -> chat.setName(chat.getName().replaceAll(owner.getName(), "")
+                    .replaceAll(":", "")))
+            .collect(Collectors.toList());
         ChatRoomDto chatRoomDto = filterPrivateRoom(chatRoom, participants, owner);
 
         participants.stream().forEach(participant -> {
-            messagingTemplate.convertAndSend(   ROOM_LINK+"new-chats"+participant.getId().toString(), chatRoomDto);
+            messagingTemplate.convertAndSend(ROOM_LINK + "new-chats" + participant.getId(), chatRoomDto);
         });
     }
 }

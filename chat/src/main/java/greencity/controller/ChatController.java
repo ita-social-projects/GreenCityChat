@@ -78,10 +78,10 @@ public class ChatController {
     @ApiPageable
     @GetMapping("/messages/{room_id}")
     public ResponseEntity<PageableDto<ChatMessageDto>> findAllMessages(
-            @ApiIgnore Pageable pageable,
-            @PathVariable("room_id") Long id ){
+        @ApiIgnore Pageable pageable,
+        @PathVariable("room_id") Long id) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(chatMessageService.findAllMessagesByChatRoomId(id, pageable));
+            .body(chatMessageService.findAllMessagesByChatRoomId(id, pageable));
     }
 
     /**
@@ -210,13 +210,12 @@ public class ChatController {
     }
 
     /**
-     * Method return private chat for current user.
-     *
-     * @return list of {@link ChatRoomDto}.
+     * Method return private chat for current user..
      */
     @MessageMapping("/chat/user")
-    public void createNewPrivateChatIfNotExist( @RequestBody CreateNewChatDto createNewChatDto) {
-        chatRoomService.findPrivateByParticipantsForSockets(createNewChatDto.getParticipantsIds(), createNewChatDto.getCurrentUserId());
+    public void createNewPrivateChatIfNotExist(@RequestBody CreateNewChatDto createNewChatDto) {
+        chatRoomService.findPrivateByParticipantsForSockets(createNewChatDto.getParticipantsIds(),
+            createNewChatDto.getCurrentUserId());
     }
 
     /**
@@ -411,11 +410,11 @@ public class ChatController {
      */
     @ApiOperation(value = "Is there already created conversation between two users")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = HttpStatuses.OK, response = Long.class)
+        @ApiResponse(code = 200, message = HttpStatuses.OK, response = Long.class)
     })
     @GetMapping("/exist/{fistUserId}/{secondUserId}")
     public ResponseEntity<FriendsChatDto> chatExist(@PathVariable Long fistUserId, @PathVariable Long secondUserId) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(chatMessageService.chatExist(fistUserId, secondUserId));
+            .body(chatMessageService.chatExist(fistUserId, secondUserId));
     }
 }
