@@ -12,6 +12,7 @@ import java.util.List;
 @Setter
 @EqualsAndHashCode
 @Builder
+@ToString
 public class ParticipantDto {
     private Long id;
     private String name;

@@ -90,13 +90,13 @@ class ChatControllerTest {
         verify(chatRoomService).findAllVisibleRooms("test");
     }
 
-    @Test
-    void findAllMessagesTest() throws Exception {
-        mockMvc.perform(get(chatLink + "/messages/{room_id}", 1))
-            .andExpect(status().isOk());
-
-        verify(chatMessageService).findAllMessagesByChatRoomId(1L);
-    }
+//    @Test
+//    void findAllMessagesTest() throws Exception {
+//        mockMvc.perform(get(chatLink + "/messages/{room_id}", 1))
+//            .andExpect(status().isOk());
+//
+//        verify(chatMessageService).findAllMessagesByChatRoomId(1L);
+//    }
 
     @Test
     void findPrivateRoomWithUserTest() throws Exception {

@@ -11,8 +11,11 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.servlet.http.Part;
 
 @Repository
 public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
@@ -20,12 +23,15 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
     /**
      * Method to find all {@link ChatRoom}'s by {@link Participant}/{@code User} id.
      *
-     * @param participant {@link Participant} id.
+     * @param id {@link Long} id.
      * @return list of {@link ChatRoom} instances.
      */
-    @Query(value = "SELECT room FROM ChatRoom room"
-        + " WHERE :part IN elements(room.participants)")
-    List<ChatRoom> findAllByParticipant(@Param("part") Participant participant);
+    @Query(
+        value = "SELECT * FROM chat_rooms room "
+            + "INNER JOIN chat_rooms_participants crp on room.id = crp.room_id "
+            + "WHERE crp.participant_id = :id",
+        nativeQuery = true)
+    List<ChatRoom> findAllByParticipant(@Param("id") Long id);
 
     /**
      * Method to find all {@link ChatRoom}'s by {@link Participant}/{@code User}'s
@@ -93,4 +99,14 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
      */
     @Query("SELECT COUNT(id) from UnreadMessage where participant.id = :userId and message.room.id = :roomId")
     Long countUnreadMessages(Long userId, Long roomId);
+
+    /**
+     * Method returns ids of chats between two people if exist.
+     *
+     */
+    @Query(value = "SELECT DISTINCT room_id FROM chat_rooms_participants "
+        + "where participant_id IN(:first, :second) "
+        + "GROUP  BY room_id HAVING COUNT(room_id) = 2 ",
+        nativeQuery = true)
+    List<Long> chatExistBetweenTwo(@Param("first") Long firstUser, @Param("second") Long secondUser);
 }

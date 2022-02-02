@@ -1,13 +1,13 @@
 package greencity.service.impl;
 
 import greencity.constant.ErrorMessage;
-import greencity.dto.ChatMessageDto;
-import greencity.dto.MessageLike;
+import greencity.dto.*;
 import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.entity.UnreadMessage;
 import greencity.enums.MessageStatus;
+import greencity.enums.SortOrder;
 import greencity.exception.exceptions.ChatRoomNotFoundException;
 import greencity.exception.exceptions.UserNotBelongToThisChat;
 import greencity.exception.exceptions.UserNotFoundException;
@@ -19,15 +19,17 @@ import greencity.service.AzureFileService;
 import greencity.service.ChatMessageService;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -53,12 +55,23 @@ public class ChatMessageServiceImpl implements ChatMessageService {
      * {@inheritDoc}.
      */
     @Override
-    public List<ChatMessageDto> findAllMessagesByChatRoomId(Long chatRoomId) {
+    public PageableDto<ChatMessageDto> findAllMessagesByChatRoomId(Long chatRoomId, Pageable pageable) {
         ChatRoom chatRoom = chatRoomRepo.findById(chatRoomId)
             .orElseThrow(() -> new ChatRoomNotFoundException(ErrorMessage.CHAT_ROOM_NOT_FOUND_BY_ID));
-        List<ChatMessage> messages = chatMessageRepo.findAllByRoom(chatRoom);
-        List<ChatMessageDto> chatMessageDtos = mapListChatMessageDto(messages);
-        return chatMessageDtos;
+
+        Sort sort = Sort.by(Sort.Direction.valueOf(SortOrder.DESC.toString()), "createDate");
+        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+
+        Page<ChatMessage> messages = chatMessageRepo.findAllByRoom(chatRoom, pageable);
+        List<ChatMessageDto> messageDtos = messages.getContent().stream()
+            .map(message -> modelMapper.map(message, ChatMessageDto.class)).collect(Collectors.toList());
+
+        Collections.reverse(messageDtos);
+        return new PageableDto<>(
+            messageDtos,
+            messages.getTotalElements(),
+            messages.getPageable().getPageNumber(),
+            messages.getTotalPages());
     }
 
     /**
@@ -67,7 +80,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Override
     public void processMessage(ChatMessageDto chatMessageDto) {
         ChatMessage message = modelMapper.map(chatMessageDto, ChatMessage.class);
-        chatMessageRepo.save(message);
+        chatMessageDto = modelMapper.map(chatMessageRepo.save(message), ChatMessageDto.class);
         ArrayList<Participant> participants = new ArrayList<>(
             chatRoomRepo.getPatricipantsByChatRoomId(chatMessageDto.getRoomId()));
 
@@ -77,8 +90,12 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             }
         }
 
-        messagingTemplate.convertAndSend(
-            ROOM_LINK + chatMessageDto.getRoomId() + MESSAGE_LINK, chatMessageDto);
+        ChatMessageResponseDto responseDto = modelMapper.map(chatMessageDto, ChatMessageResponseDto.class);
+        responseDto.setCreateDate(chatMessageDto.getCreateDate().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        participants.stream().forEach(participant -> {
+            messagingTemplate.convertAndSend(ROOM_LINK + "/message/chat-messages" + participant.getId(),
+                responseDto);
+        });
     }
 
     /**
@@ -189,5 +206,17 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             .build();
         ChatMessage chatMessage = modelMapper.map(dto, ChatMessage.class);
         return modelMapper.map(chatMessageRepo.save(chatMessage), ChatMessageDto.class);
+    }
+
+    @Override
+    public FriendsChatDto chatExist(Long fistUserId, Long secondUserId) {
+        List<Long> chatList = chatRoomRepo.chatExistBetweenTwo(fistUserId, secondUserId);
+        FriendsChatDto friendsChatDto = FriendsChatDto.builder()
+            .chatExists(!chatRoomRepo.chatExistBetweenTwo(fistUserId, secondUserId).isEmpty())
+            .build();
+        if (friendsChatDto.getChatExists()) {
+            friendsChatDto.setChatId(chatList.get(0));
+        }
+        return friendsChatDto;
     }
 }

@@ -53,15 +53,6 @@ class ChatRoomDtoMapperTest {
                     .role(participantt.getRole())
                     .build())
                 .collect(Collectors.toSet()))
-            .messages(chatRoom.getMessages().stream()
-                .map(chatMessage -> ChatMessageDto.builder()
-                    .id(chatMessage.getId())
-                    .content(chatMessage.getContent())
-                    .senderId(chatMessage.getSender().getId())
-                    .roomId(chatRoom.getId())
-                    .build())
-                .collect(
-                    Collectors.toList()))
             .build();
     }
 
@@ -73,7 +64,6 @@ class ChatRoomDtoMapperTest {
         assertEquals(chatRoomDto.getName(), actual.getName());
         assertEquals(chatRoomDto.getOwnerId(), actual.getOwnerId());
         assertArrayEquals(chatRoomDto.getParticipants().toArray(), actual.getParticipants().toArray());
-        assertArrayEquals(chatRoomDto.getMessages().toArray(), actual.getMessages().toArray());
     }
 
     @Test

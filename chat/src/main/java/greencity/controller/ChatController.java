@@ -1,12 +1,12 @@
 package greencity.controller;
 
+import greencity.annotations.ApiPageable;
 import greencity.constant.HttpStatuses;
 import greencity.dto.*;
 import greencity.enums.ChatType;
 import greencity.service.*;
 
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.security.Principal;
@@ -18,6 +18,8 @@ import org.springframework.http.*;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
+import org.springframework.data.domain.Pageable;
 
 import javax.validation.Valid;
 
@@ -73,10 +75,13 @@ public class ChatController {
             responseContainer = "List"),
         @ApiResponse(code = 404, message = HttpStatuses.NOT_FOUND)
     })
+    @ApiPageable
     @GetMapping("/messages/{room_id}")
-    public ResponseEntity<List<ChatMessageDto>> findAllMessages(@PathVariable("room_id") Long id) {
+    public ResponseEntity<PageableDto<ChatMessageDto>> findAllMessages(
+        @ApiIgnore Pageable pageable,
+        @PathVariable("room_id") Long id) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(chatMessageService.findAllMessagesByChatRoomId(id));
+            .body(chatMessageService.findAllMessagesByChatRoomId(id, pageable));
     }
 
     /**
@@ -202,6 +207,15 @@ public class ChatController {
     @MessageMapping("/chat/users/delete-participants-room")
     public void deleteParticipantsFromChatRoom(ChatRoomDto chatRoomDto) {
         chatRoomService.deleteParticipantsFromChatRoom(chatRoomDto);
+    }
+
+    /**
+     * Method return private chat for current user..
+     */
+    @MessageMapping("/chat/user")
+    public void createNewPrivateChatIfNotExist(@RequestBody CreateNewChatDto createNewChatDto) {
+        chatRoomService.findPrivateByParticipantsForSockets(createNewChatDto.getParticipantsIds(),
+            createNewChatDto.getCurrentUserId());
     }
 
     /**
@@ -387,5 +401,20 @@ public class ChatController {
         @Valid @RequestBody GroupChatRoomCreateDto dto) {
         chatRoomService.createNewChatRoom(dto);
         return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    /**
+     * Method return if there is already created conversation between two users.
+     *
+     * @return {@link Boolean}.
+     */
+    @ApiOperation(value = "Is there already created conversation between two users")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = HttpStatuses.OK, response = Long.class)
+    })
+    @GetMapping("/exist/{fistUserId}/{secondUserId}")
+    public ResponseEntity<FriendsChatDto> chatExist(@PathVariable Long fistUserId, @PathVariable Long secondUserId) {
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(chatMessageService.chatExist(fistUserId, secondUserId));
     }
 }

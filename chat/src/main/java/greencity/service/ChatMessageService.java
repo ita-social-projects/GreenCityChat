@@ -1,10 +1,12 @@
 package greencity.service;
 
 import greencity.dto.ChatMessageDto;
+import greencity.dto.FriendsChatDto;
 import greencity.dto.MessageLike;
+import greencity.dto.PageableDto;
 import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
-import java.util.List;
+import org.springframework.data.domain.Pageable;
 
 public interface ChatMessageService {
     /**
@@ -13,7 +15,7 @@ public interface ChatMessageService {
      * @param chatRoomId {@link ChatMessage} id.
      * @return list of {@link ChatMessage} instances.
      */
-    List<ChatMessageDto> findAllMessagesByChatRoomId(Long chatRoomId);
+    PageableDto<ChatMessageDto> findAllMessagesByChatRoomId(Long chatRoomId, Pageable pageable);
 
     /**
      * Method to process all {@link ChatMessageDto}'s that are sent from client
@@ -54,4 +56,11 @@ public interface ChatMessageService {
      * {@inheritDoc}
      */
     ChatMessageDto sentMessage(Long userId, Long chatId, String content);
+
+    /**
+     * Method return if there is already created conversation between two users.
+     *
+     * @return {@link Boolean}.
+     */
+    FriendsChatDto chatExist(Long fistUserId, Long secondUserId);
 }

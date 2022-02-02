@@ -23,49 +23,22 @@ public class ChatRoomDtoMapper extends AbstractConverter<ChatRoom, ChatRoomDto> 
      */
     @Override
     protected ChatRoomDto convert(ChatRoom chatRoom) {
-        if (chatRoom.getMessages() == null) {
-            return ChatRoomDto.builder()
-                .id(chatRoom.getId())
-                .ownerId(chatRoom.getOwner().getId())
-                .chatType(chatRoom.getType())
-                .name(chatRoom.getName())
-                .logo(chatRoom.getLogo())
-                .participants(chatRoom.getParticipants().stream().map(
-                    participant -> ParticipantDto.builder()
-                        .name(participant.getName())
-                        .profilePicture(participant.getProfilePicture())
-                        .id(participant.getId())
-                        .email(participant.getEmail())
-                        .role(participant.getRole())
-                        .build())
-                    .collect(Collectors.toSet()))
-                .build();
-        } else {
-            return ChatRoomDto.builder()
-                .id(chatRoom.getId())
-                .ownerId(chatRoom.getOwner().getId())
-                .chatType(chatRoom.getType())
-                .logo(chatRoom.getLogo())
-                .messages(chatRoom.getMessages().stream()
-                    .filter(Objects::nonNull)
-                    .map(
-                        chatMessage -> ChatMessageDto.builder()
-                            .id(chatMessage.getId())
-                            .content(chatMessage.getContent())
-                            .senderId(chatMessage.getSender().getId())
-                            .roomId(chatRoom.getId()).build())
-                    .collect(Collectors.toList()))
-                .name(chatRoom.getName())
-                .participants(chatRoom.getParticipants().stream().map(
-                    participant -> ParticipantDto.builder()
-                        .name(participant.getName())
-                        .profilePicture(participant.getProfilePicture())
-                        .id(participant.getId())
-                        .email(participant.getEmail())
-                        .role(participant.getRole())
-                        .build())
-                    .collect(Collectors.toSet()))
-                .build();
-        }
+        return ChatRoomDto.builder()
+            .id(chatRoom.getId())
+            .ownerId(chatRoom.getOwner().getId())
+            .chatType(chatRoom.getType())
+            .name(chatRoom.getName())
+            .logo(chatRoom.getLogo())
+            .participants(chatRoom.getParticipants().stream()
+                .map(participant -> ParticipantDto.builder()
+                    .id(participant.getId())
+                    .name(participant.getName())
+                    .email(participant.getEmail())
+                    .role(participant.getRole())
+                    .userStatus(participant.getUserStatus())
+                    .profilePicture(participant.getProfilePicture())
+                    .build())
+                .collect(Collectors.toSet()))
+            .build();
     }
 }
