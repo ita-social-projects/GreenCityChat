@@ -27,9 +27,7 @@ import java.util.stream.Collectors;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -131,13 +129,13 @@ class ChatRoomServiceImplTest {
         assertEquals(expectedDto, actual);
     }
 
-//    @Test
-//    void findAllVisibleRooms() {
-//        when(participantService.findByEmail(any())).thenReturn(expectedParticipant);
-//        when(chatRoomRepo.findAllByParticipant(expectedParticipant)).thenReturn(expectedListEmpty);
-//
-//        assertEquals(chatRoomService.findAllVisibleRooms("name"), expectedListEmpty);
-//    }
+    @Test
+    void findAllVisibleRooms() {
+        when(participantService.findByEmail(any())).thenReturn(expectedParticipant);
+        when(chatRoomRepo.findAllByParticipant(anyLong())).thenReturn(expectedListEmpty);
+
+        assertEquals(chatRoomService.findAllVisibleRooms("name"), expectedListEmpty);
+    }
 
     @Test
     void findPrivateByParticipants() {
@@ -150,7 +148,6 @@ class ChatRoomServiceImplTest {
         ChatRoomDto actual = chatRoomService.findPrivateByParticipants(1L, "name");
 
         assertEquals(expectedDto, actual);
-        verify(messagingTemplate).convertAndSend(anyString(), eq(expectedDto), any(Map.class));
     }
 
     @Test
@@ -167,23 +164,6 @@ class ChatRoomServiceImplTest {
         assertEquals(actual, expectedDto);
 
     }
-
-//    @Test
-//    public void createNewChatRoom() {
-//        // FIX TESTS
-//        expected.setParticipants(Collections.singleton(expectedParticipant));
-//
-//        List<Long> userId = Collections.singletonList(1L);
-//
-//        when(participantService.findById(any())).thenReturn(expectedParticipant);
-//        when(chatRoomRepo.findByParticipantsAndStatus(any(), any(), any())).thenReturn(expectedListEmpty);
-//        when(chatRoomRepo.save(any())).thenReturn(expected);
-//        when(modelMapper.map(expected, ChatRoomDto.class)).thenReturn(expectedDto);
-//        chatRoomService.createNewChatRoom(new GroupChatRoomCreateDto(userId, "chatName", 1L));
-//
-//        verify(messagingTemplate, times(1))
-//            .convertAndSend(eq("/rooms/user/" + expectedParticipant.getId()), eq(expectedDto), any(Map.class));
-//    }
 
     @Test
     public void deleteParticipantsFromChatRoom() {

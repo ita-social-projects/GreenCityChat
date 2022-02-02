@@ -52,45 +52,46 @@ class ChatMessageServiceImplTest {
     ChatMessage expectedChatMessage;
     ChatMessageResponseDto responseDto;
     Set<Participant> participants;
+
     @BeforeEach
     void init() {
         expectedChatMessageDto = ChatMessageDto.builder()
             .roomId(1L)
             .senderId(1L)
-                .createDate(ZonedDateTime.of(2022, 12, 12,  12, 12 ,12, 12, ZoneId.systemDefault()))
+            .createDate(ZonedDateTime.of(2022, 12, 12, 12, 12, 12, 12, ZoneId.systemDefault()))
             .content("test").senderId(1L)
             .build();
         expectedChatMessage = ChatMessage.builder()
+            .id(1L)
+            .content("Content")
+            .createDate(ZonedDateTime.of(2022, 12, 12, 12, 12, 12, 12, ZoneId.systemDefault()))
+            .sender(Participant.builder()
                 .id(1L)
-                .content("Content")
-                .createDate(ZonedDateTime.of(2022, 12, 12,  12, 12 ,12, 12, ZoneId.systemDefault()))
-                .sender(Participant.builder()
-                        .id(1L)
-                        .name("User").build())
-                .build();
+                .name("User").build())
+            .build();
         responseDto = ChatMessageResponseDto.builder()
-                .id(1L)
-                .content("Content")
-                .createDate(ZonedDateTime.of(2022, 12, 12,  12, 12 ,12, 12, ZoneId.systemDefault()).toString())
-                .senderId(1L)
-                .roomId(1L)
-                .build();
+            .id(1L)
+            .content("Content")
+            .createDate(ZonedDateTime.of(2022, 12, 12, 12, 12, 12, 12, ZoneId.systemDefault()).toString())
+            .senderId(1L)
+            .roomId(1L)
+            .build();
         chatMessageDto = ChatMessageDto.builder()
-                .roomId(1L)
-                .senderId(1L)
-                .createDate(ZonedDateTime.of(2022, 12, 12,  12, 12 ,12, 12, ZoneId.systemDefault()))
-                .content("test").senderId(1L)
-                .build();
+            .roomId(1L)
+            .senderId(1L)
+            .createDate(ZonedDateTime.of(2022, 12, 12, 12, 12, 12, 12, ZoneId.systemDefault()))
+            .content("test").senderId(1L)
+            .build();
         participants = Set.of(Participant.builder()
-                .id(1L)
-                .name("User").build());
+            .id(1L)
+            .name("User").build());
     }
 
     @Test
     void findAllMessagesByChatRoomId() {
         Participant owner = Participant.builder()
-                .id(1L)
-                .build();
+            .id(1L)
+            .build();
         ChatRoom chatRoom = ChatRoom.builder()
             .id(1L)
             .name("TestName")
@@ -103,8 +104,9 @@ class ChatMessageServiceImplTest {
             .room(chatRoom)
             .sender(owner)
             .build();
-        PageRequest pageRequest = PageRequest.of(0, 1, Sort.by(Sort.Direction.valueOf(SortOrder.DESC.toString()), "createDate"));
-        Page<ChatMessage> messages = new PageImpl<>(Collections.singletonList(chatMessage),pageRequest, 1);
+        PageRequest pageRequest =
+            PageRequest.of(0, 1, Sort.by(Sort.Direction.valueOf(SortOrder.DESC.toString()), "createDate"));
+        Page<ChatMessage> messages = new PageImpl<>(Collections.singletonList(chatMessage), pageRequest, 1);
         ChatMessageDto chatMessageDto = ChatMessageDto.builder()
             .id(1L)
             .content("test")
@@ -113,10 +115,10 @@ class ChatMessageServiceImplTest {
             .build();
         List<ChatMessageDto> chatMessageDtos = Collections.singletonList(chatMessageDto);
         PageableDto pageableDto = new PageableDto<>(
-                chatMessageDtos,
-                messages.getTotalElements(),
-                messages.getPageable().getPageNumber(),
-                messages.getTotalPages());
+            chatMessageDtos,
+            messages.getTotalElements(),
+            messages.getPageable().getPageNumber(),
+            messages.getTotalPages());
 
         when(chatRoomRepo.findById(1L)).thenReturn(roomOptional);
 
@@ -139,7 +141,6 @@ class ChatMessageServiceImplTest {
         when(chatRoomRepo.getPatricipantsByChatRoomId(anyLong())).thenReturn(participants);
 
         when(modelMapper.map(chatMessageDto, ChatMessageResponseDto.class)).thenReturn(responseDto);
-
 
         chatMessageServiceImpl.processMessage(expectedChatMessageDto);
 

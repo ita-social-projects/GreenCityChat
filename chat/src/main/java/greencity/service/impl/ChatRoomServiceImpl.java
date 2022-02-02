@@ -33,7 +33,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     private final ChatMessageRepo chatMessageRepo;
     private final SimpMessagingTemplate messagingTemplate;
     private static final String ROOM_LINK = "/rooms/user/";
-    private static final String HEADER_CREATE_ROOM = "createRoom";
     private static final String HEADER_UPDATE_ROOM = "updateRoom";
     private static final String HEADER_DELETE_ROOM = "deleteRoom";
     private static final String HEADER_LEAVE_ROOM = "leaveRoom";
@@ -49,13 +48,12 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                 .replaceAll(":", "")))
             .collect(Collectors.toList());
         List<ChatRoomDto> chatRoomDtos = modelMapper.map(chatRooms, new TypeToken<List<ChatRoomDto>>() {
-            }.getType());
+        }.getType());
         chatRoomDtos.stream().forEach(chatRoom -> {
             chatMessageRepo.getLastByRoomId(chatRoom.getId()).stream().findFirst().ifPresent(chatMessage -> {
                 chatRoom.setLastMessage(chatMessage.getContent());
                 chatRoom.setLastMessageDateTime(chatMessage.getCreateDate());
             });
-
         });
         return chatRoomDtos;
     }
@@ -73,7 +71,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         List<ChatRoomDto> roomDtos = mapListChatMessageDto(rooms);
         roomDtos.stream()
             .forEach(x -> x.setAmountUnreadMessages(chatRoomRepo.countUnreadMessages(participant.getId(), x.getId())));
-
         return roomDtos;
     }
 

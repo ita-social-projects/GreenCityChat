@@ -67,9 +67,11 @@ public interface ChatMessageRepo extends PagingAndSortingRepository<ChatMessage,
      * Method returns last message from chat room.
      *
      * @param roomId {@link Long} id of chat room.
-     * @return  {@link ChatMessage} instance.
+     * @return {@link ChatMessage} instance.
      */
-    @Query(nativeQuery = true, value = "SELECT *  from chat_messages where room_id = :roomId ORDER BY chat_messages.create_date DESC limit 1")
+    @Query(nativeQuery = true, value = "SELECT *  from chat_messages "
+        + "where room_id = :roomId "
+        + "ORDER BY chat_messages.create_date DESC limit 1")
     List<ChatMessage> getLastByRoomId(@Param("roomId") Long roomId);
 
     /**
@@ -80,7 +82,7 @@ public interface ChatMessageRepo extends PagingAndSortingRepository<ChatMessage,
      * @return list of {@link Long} instances.
      */
     @Query(nativeQuery = true, value = "select participant_id from message_like where "
-            + "message_id = :messageId")
+        + "message_id = :messageId")
     List<Long> getLikesByMessageId(@Param("messageId") Long messageId);
 
     /**

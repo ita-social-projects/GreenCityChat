@@ -64,7 +64,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
         Page<ChatMessage> messages = chatMessageRepo.findAllByRoom(chatRoom, pageable);
         List<ChatMessageDto> messageDtos = messages.getContent().stream()
-                .map(message -> modelMapper.map(message, ChatMessageDto.class)).collect(Collectors.toList());
+            .map(message -> modelMapper.map(message, ChatMessageDto.class)).collect(Collectors.toList());
 
         Collections.reverse(messageDtos);
         return new PageableDto<>(
