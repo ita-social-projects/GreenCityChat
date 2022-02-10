@@ -2,7 +2,6 @@ package greencity.service.impl;
 
 import greencity.constant.ErrorMessage;
 import greencity.dto.*;
-import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.enums.ChatType;
@@ -49,12 +48,11 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             .collect(Collectors.toList());
         List<ChatRoomDto> chatRoomDtos = modelMapper.map(chatRooms, new TypeToken<List<ChatRoomDto>>() {
         }.getType());
-        chatRoomDtos.stream().forEach(chatRoom -> {
-            chatMessageRepo.getLastByRoomId(chatRoom.getId()).stream().findFirst().ifPresent(chatMessage -> {
+        chatRoomDtos.forEach(chatRoom -> chatMessageRepo.getLastByRoomId(chatRoom.getId()).stream().findFirst()
+            .ifPresent(chatMessage -> {
                 chatRoom.setLastMessage(chatMessage.getContent());
                 chatRoom.setLastMessageDateTime(chatMessage.getCreateDate());
-            });
-        });
+            }));
         return chatRoomDtos;
     }
 
@@ -69,7 +67,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             .collect(Collectors.toList());
 
         List<ChatRoomDto> roomDtos = mapListChatMessageDto(rooms);
-        roomDtos.stream()
+        roomDtos
             .forEach(x -> x.setAmountUnreadMessages(chatRoomRepo.countUnreadMessages(participant.getId(), x.getId())));
         return roomDtos;
     }
@@ -329,8 +327,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             .collect(Collectors.toList());
         ChatRoomDto chatRoomDto = filterPrivateRoom(chatRoom, participants, owner);
 
-        participants.stream().forEach(participant -> {
-            messagingTemplate.convertAndSend(ROOM_LINK + "new-chats" + participant.getId(), chatRoomDto);
-        });
+        participants.forEach(participant -> messagingTemplate
+            .convertAndSend(ROOM_LINK + "new-chats" + participant.getId(), chatRoomDto));
     }
 }
