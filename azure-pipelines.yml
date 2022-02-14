@@ -30,11 +30,11 @@ stages:
               options: '-Dmaven.test.skip=true'
               # mavenOptions: '-Dmaven.test.skip=true'
 
-          - script: mv core/target/*.jar core/target/app.jar
-            displayName: Rename core jar to app
-
-          - script: mv email/target/*.jar email/target/app.jar
-            displayName: Rename email jar to app
+#          - script: mv core/target/*.jar core/target/app.jar
+#            displayName: Rename core jar to app
+#
+#          - script: mv email/target/*.jar email/target/app.jar
+#            displayName: Rename email jar to app
 
           - task: CopyFiles@2
             displayName: Copy Files
