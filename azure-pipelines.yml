@@ -61,9 +61,9 @@ stages:
               PathtoPublish: $(build.artifactstagingdirectory)
               artifactName: drop
 
-  - stage: Deploy
+  - stage: deploy
     jobs:
-      - deployment: DeployUbs
+      - deployment: deploy
         displayName: Deploy GreenCityChat app service
         pool:
           vmImage: $(agentOS)
