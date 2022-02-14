@@ -21,8 +21,8 @@ variables:
   userRepoName: core
   onbootJarName: app.jar
 
-  azureSub: GreenCity
-  resourceGroup: GreenCity
+  azureSub: GreenCityChat
+  resourceGroup: GreenCityChat
   chatServiceName: greencity-chat
 
 stages:
