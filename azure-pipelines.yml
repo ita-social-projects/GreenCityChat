@@ -17,7 +17,7 @@ variables:
   azKeyVault: key-vault-greencity
   jsonSecret: google-credentials
 
-  artifactName: drop
+  artifactName: dropp
   userRepoName: chat
   onbootJarName: app.jar
 
@@ -55,11 +55,11 @@ stages:
               Contents: '/target/*.jar'
               TargetFolder: $(build.artifactstagingdirectory)
 
-          - task: PublishBuildArtifacts@1
-            displayName: Publish Artifact
-            inputs:
-              PathtoPublish: $(build.artifactstagingdirectory)
-              artifactName: drop
+      - task: PublishBuildArtifacts@1
+        displayName: Publish Artifact
+        inputs:
+          PathtoPublish: '$(build.artifactstagingdirectory)'
+          artifactName: '$(artifactName)'
 
   - stage: deploy
     jobs:
