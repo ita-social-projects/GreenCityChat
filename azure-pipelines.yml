@@ -55,11 +55,11 @@ stages:
               Contents: '/target/*.jar'
               TargetFolder: $(build.artifactstagingdirectory)
 
-      - task: PublishBuildArtifacts@1
-        displayName: Publish Artifact
-        inputs:
-          PathtoPublish: '$(build.artifactstagingdirectory)'
-          artifactName: '$(artifactName)'
+          - task: PublishBuildArtifacts@1
+            displayName: Publish Artifact
+            inputs:
+              PathtoPublish: '$(build.artifactstagingdirectory)'
+              artifactName: '$(artifactName)'
 
   - stage: deploy
     jobs:
