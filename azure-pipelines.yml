@@ -80,13 +80,9 @@ stages:
               jdkVersionOption: '1.11'
               mavenVersionOption: 'Default'
               options: '-Dmaven.test.skip=true'
-              # mavenOptions: '-Dmaven.test.skip=true'
 
-          #          - script: mv core/target/*.jar core/target/app.jar
-          #            displayName: Rename core jar to app
-          #
-          #          - script: mv email/target/*.jar email/target/app.jar
-          #            displayName: Rename email jar to app
+          - script: mv $(userRepoName)/target/*.jar $(userRepoName)/target/$(onbootJarName)
+            displayName: Rename user jar to app
 
           - task: CopyFiles@2
             displayName: Copy Files
