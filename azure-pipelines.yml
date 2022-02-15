@@ -23,7 +23,7 @@ variables:
 
   azureSub: GreenCity
   resourceGroup: GreenCity
-  chatServiceName: greencity-chat
+  chatServiceName: greencity-ubs
 
 stages:
   - stage: Build
