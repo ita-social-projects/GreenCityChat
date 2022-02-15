@@ -1,12 +1,12 @@
 trigger:
-  batch: true
   branches:
     include:
-      - dev
+      - dev, master
   paths:
     exclude:
       - README.md
 
+pr: none
 
 variables:
   jsonFile: google-creds.json
