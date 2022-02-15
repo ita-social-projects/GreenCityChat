@@ -18,7 +18,7 @@ variables:
   jsonSecret: google-credentials
 
   artifactName: drop
-  userRepoName: chat
+  userRepoName: core
   onbootJarName: app.jar
 
   azureSub: GreenCity
