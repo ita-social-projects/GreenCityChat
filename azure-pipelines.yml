@@ -17,7 +17,7 @@ variables:
   azKeyVault: key-vault-greencity
   jsonSecret: google-credentials
 
-  artifactName: dropp
+  artifactName: drop
   userRepoName: chat
   onbootJarName: app.jar
 
