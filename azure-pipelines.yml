@@ -19,7 +19,7 @@ variables:
 
   artifactName: drop
   userRepoName: chat
-  onbootJarName: chat-1.0-SNAPSHOT.jar
+  onbootJarName: app.jar
 
   azureSub: GreenCity
   resourceGroup: GreenCity
