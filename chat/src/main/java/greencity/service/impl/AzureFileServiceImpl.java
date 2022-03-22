@@ -22,6 +22,9 @@ public class AzureFileServiceImpl implements AzureFileService {
     private final String containerName;
     private static final String WAV = ".wav";
 
+    /**
+     * constructor.
+     */
     public AzureFileServiceImpl(@Autowired PropertyResolver propertyResolver) {
         this.connectionString = propertyResolver.getProperty("azure.connection.string");
         this.containerName = propertyResolver.getProperty("azure.container.name");

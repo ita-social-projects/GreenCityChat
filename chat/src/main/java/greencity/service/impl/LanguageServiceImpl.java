@@ -20,6 +20,12 @@ public class LanguageServiceImpl implements LanguageService {
     private final ModelMapper modelMapper;
     private HttpServletRequest request;
 
+    /**
+     * Implementation of {@link LanguageService}.
+     *
+     * @author Oleh Kopylchak
+     * @author Vitaliy Dzen
+     */
     @Autowired
     public LanguageServiceImpl(
         LanguageRepo languageRepo,

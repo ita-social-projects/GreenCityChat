@@ -101,7 +101,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 "/chat/create-chatRoom",
                 "/chat/sent-message/{userId}/{roomId}")
             .hasAnyRole(USER, ADMIN, MODERATOR);
-
     }
 
     /**
