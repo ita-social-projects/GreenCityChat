@@ -20,9 +20,6 @@ import org.modelmapper.TypeToken;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-/**
- * Implementation of {@link ChatRoomService}.
- */
 @Service
 @AllArgsConstructor
 public class ChatRoomServiceImpl implements ChatRoomService {
@@ -36,9 +33,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     private static final String HEADER_DELETE_ROOM = "deleteRoom";
     private static final String HEADER_LEAVE_ROOM = "leaveRoom";
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public List<ChatRoomDto> findAllByParticipantName(String name) {
         Participant participant = participantService.findByEmail(name);
@@ -56,9 +50,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         return chatRoomDtos;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public List<ChatRoomDto> findAllVisibleRooms(String name) {
         Participant participant = participantService.findByEmail(name);
         List<ChatRoom> rooms = chatRoomRepo.findAllByParticipant(participant.getId()).stream()
@@ -72,9 +64,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         return roomDtos;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public List<ChatRoomDto> findAllRoomsByParticipantsAndStatus(Set<Participant> participants, ChatType chatType) {
         return modelMapper
@@ -83,9 +72,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                 }.getType());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public ChatRoomDto findChatRoomById(Long id) {
         ChatRoom chatRoom = chatRoomRepo.findById(id)
@@ -93,9 +79,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         return modelMapper.map(chatRoom, ChatRoomDto.class);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public ChatRoomDto findPrivateByParticipants(Long id, String name) {
         Set<Participant> participants = new LinkedHashSet<>();
@@ -107,9 +90,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         return filterPrivateRoom(chatRoom, participants, owner);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     private ChatRoomDto filterPrivateRoom(List<ChatRoom> chatRooms, Set<Participant> participants, Participant owner) {
         ChatRoom toReturn;
         if (chatRooms.isEmpty()) {
@@ -128,9 +108,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         return modelMapper.map(toReturn, ChatRoomDto.class);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public List<ChatRoomDto> findGroupByParticipants(List<Long> ids, String name, String chatName) {
         Set<Participant> participants = new HashSet<>();
@@ -142,9 +119,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         return filterGroupRoom(chatRoom, participants, chatName, owner);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     private List<ChatRoomDto> filterGroupRoom(List<ChatRoom> chatRoom, Set<Participant> participants,
         String chatName, Participant owner) {
         List<ChatRoom> toReturn = new ArrayList<>();
@@ -163,11 +137,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         return toReturn.stream().map(room -> modelMapper.map(room, ChatRoomDto.class)).collect(Collectors.toList());
     }
 
-    /**
-     * Method create new chat room.
-     *
-     * @param dto of {@link GroupChatRoomCreateDto}
-     */
     @Override
     public ChatRoomDto createNewChatRoom(GroupChatRoomCreateDto dto) {
         Participant owner = participantService.findById(dto.getOwnerId());
@@ -186,11 +155,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         return modelMapper.map(room, ChatRoomDto.class);
     }
 
-    /**
-     * Method delete participants from chat room.
-     *
-     * @param chatRoomDto of {@link ChatRoomDto} {@inheritDoc}
-     */
     @Override
     public void deleteParticipantsFromChatRoom(ChatRoomDto chatRoomDto) {
         ChatRoom room = modelMapper.map(chatRoomDto, ChatRoom.class);
@@ -206,11 +170,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         }
     }
 
-    /**
-     * Method for rename and add new participant to chat room.
-     *
-     * @param chatRoomDto of {@link ChatRoomDto}
-     */
     @Override
     public void updateChatRoom(ChatRoomDto chatRoomDto) {
         ChatRoom room = modelMapper.map(chatRoomDto, ChatRoom.class);
@@ -225,11 +184,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         }
     }
 
-    /**
-     * Method delete chat room.
-     *
-     * @param chatRoomDto of {@link ChatRoomDto} {@inheritDoc}
-     */
     @Override
     public void deleteChatRoom(ChatRoomDto chatRoomDto) {
         chatRoomRepo.deleteById(chatRoomDto.getId());
@@ -240,11 +194,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         }
     }
 
-    /**
-     * Method delete current user from chat room.
-     *
-     * @param leaveChatDto of {@link LeaveChatDto}
-     */
     @Override
     public void leaveChatRoom(LeaveChatDto leaveChatDto) {
         ChatRoomDto chatRoomDto = leaveChatDto.getChatRoomDto();
@@ -261,9 +210,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public List<ChatRoomDto> findGroupChatRooms(Participant participant, ChatType chatType) {
         return chatRoomRepo.findGroupChats(participant, chatType).stream()
@@ -271,9 +217,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             .collect(Collectors.toList());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public List<ChatRoomDto> findAllChatRoomsByQuery(String query, Participant participant) {
         List<ChatRoom> rooms = chatRoomRepo.findAllChatRoomsByQuery(query, participant);
@@ -289,9 +232,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                 }.getType());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Long addNewUserToSystemChat(Long userId) {
         chatRoomRepo.findSystemChatRooms()
@@ -299,9 +239,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         return userId;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     private List<ChatRoomDto> mapListChatMessageDto(List<ChatRoom> rooms) {
         List<ChatRoomDto> chatRoomDtos = new ArrayList<>();
         for (ChatRoom room : rooms) {
@@ -311,9 +248,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         return chatRoomDtos;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void findPrivateByParticipantsForSockets(Long participantId, Long currentUserId) {
         Set<Participant> participants = new LinkedHashSet<>();

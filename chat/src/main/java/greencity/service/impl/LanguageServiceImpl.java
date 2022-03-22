@@ -14,23 +14,12 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
-/**
- * Implementation of {@link LanguageService}.
- *
- * @author Oleh Kopylchak
- * @author Vitaliy Dzen
- */
 @Service
 public class LanguageServiceImpl implements LanguageService {
     private final LanguageRepo languageRepo;
     private final ModelMapper modelMapper;
     private HttpServletRequest request;
 
-    /**
-     * Constructor with parameters.
-     *
-     * @author Vitaliy Dzen
-     */
     @Autowired
     public LanguageServiceImpl(
         LanguageRepo languageRepo,
@@ -40,21 +29,12 @@ public class LanguageServiceImpl implements LanguageService {
         this.request = request;
     }
 
-    /**
-     * Method finds all {@link Language}.
-     *
-     * @return List of all {@link LanguageDto}
-     * @author Vitaliy Dzen
-     */
     @Override
     public List<LanguageDto> getAllLanguages() {
         return modelMapper.map(languageRepo.findAll(), new TypeToken<List<LanguageDto>>() {
         }.getType());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String extractLanguageCodeFromRequest() {
         String languageCode = request.getParameter("language");
@@ -66,9 +46,6 @@ public class LanguageServiceImpl implements LanguageService {
         return languageCode;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public LanguageDto findByCode(String code) {
         Language language = languageRepo.findByCode(code)
@@ -76,11 +53,6 @@ public class LanguageServiceImpl implements LanguageService {
         return modelMapper.map(language, LanguageDto.class);
     }
 
-    /**
-     * method, that returns codes of all {@link Language}s.
-     *
-     * @return {@link List} of language code strings.
-     */
     @Override
     public List<String> findAllLanguageCodes() {
         return languageRepo.findAllLanguageCodes();

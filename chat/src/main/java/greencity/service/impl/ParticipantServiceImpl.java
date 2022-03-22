@@ -19,27 +19,18 @@ public class ParticipantServiceImpl implements ParticipantService {
     private final ParticipantRepo participantRepo;
     private final ModelMapper modelMapper;
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Participant findByEmail(String email) {
         return participantRepo.findNotDeactivatedByEmail(email)
             .orElseThrow(() -> new UserNotFoundException(ErrorMessage.USER_NOT_FOUND_BY_EMAIL + email));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Participant findById(Long id) {
         return participantRepo.findById(id)
             .orElseThrow(() -> new UserNotFoundException(ErrorMessage.USER_NOT_FOUND_BY_ID + id));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public ParticipantDto getCurrentParticipantByEmail(String email) {
         return modelMapper.map(

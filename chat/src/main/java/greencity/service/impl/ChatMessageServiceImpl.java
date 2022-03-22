@@ -51,9 +51,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private static final String HEADER_DELETE = "delete";
     private static final String HEADER_UPDATE = "update";
 
-    /**
-     * {@inheritDoc}.
-     */
     @Override
     public PageableDto<ChatMessageDto> findAllMessagesByChatRoomId(Long chatRoomId, Pageable pageable) {
         ChatRoom chatRoom = chatRoomRepo.findById(chatRoomId)
@@ -74,9 +71,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             messages.getTotalPages());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void processMessage(ChatMessageDto chatMessageDto) {
         ChatMessage message = modelMapper.map(chatMessageDto, ChatMessage.class);
@@ -98,9 +92,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         });
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void deleteMessage(ChatMessageDto chatMessageDto) {
         ChatMessage chatMessage = modelMapper.map(chatMessageDto, ChatMessage.class);
@@ -111,9 +102,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             ROOM_LINK + chatMessageDto.getRoomId() + MESSAGE_LINK, chatMessageDto, headers);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void updateMessage(ChatMessageDto chatMessageDto) {
         ChatMessage chatMessage = modelMapper.map(chatMessageDto, ChatMessage.class);
@@ -124,17 +112,11 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             ROOM_LINK + chatMessageDto.getRoomId() + MESSAGE_LINK, chatMessageDto, headers);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public ChatMessageDto findTopByOrderByIdDesc() {
         return modelMapper.map(chatMessageRepo.findTopByOrderByIdDesc(), ChatMessageDto.class);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void likeMessage(MessageLike messageLike) {
         if (isLiked(messageLike.getMessageId(), messageLike.getParticipantId())) {
@@ -186,9 +168,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             .build();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public ChatMessageDto sentMessage(Long userId, Long chatRoomId, String content) {
         ChatRoom chatRoom = chatRoomRepo.findById(chatRoomId)

@@ -78,12 +78,30 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .and()
             .authorizeRequests()
             .antMatchers("/css/**",
-                "/img/**")
+                "/img/**",
+                "/socket",
+                "/socket/**",
+                "/socket/**/**",
+                "/socket/info")
             .permitAll()
             .antMatchers(HttpMethod.GET,
                 "/chat",
-                "/chat/**")
+                "/chat/**",
+                "/chat/create-chatRoom",
+                "/chat/messages/{room_id}",
+                "/chat/room/{room_id}",
+                "/chat/last/message",
+                "/chat/exist/{fistUserId}/{secondUserId}",
+                "/chat/rooms",
+                "/chat/user",
+                "/chat/user/{id}",
+                "/chat/users/**")
+            .hasAnyRole(USER, ADMIN, MODERATOR)
+            .antMatchers(HttpMethod.POST,
+                "/chat/create-chatRoom",
+                "/chat/sent-message/{userId}/{roomId}")
             .hasAnyRole(USER, ADMIN, MODERATOR);
+
     }
 
     /**
