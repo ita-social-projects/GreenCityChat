@@ -12,6 +12,9 @@ import greencity.enums.UserStatus;
 import greencity.exception.exceptions.ChatRoomNotFoundException;
 import greencity.repository.ChatRoomRepo;
 import greencity.service.ParticipantService;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -267,6 +270,21 @@ class ChatRoomServiceImplTest {
         when(chatRoomRepo.findSystemChatRooms()).thenReturn(Collections.singletonList(expected));
         chatRoomService.addNewUserToSystemChat(id);
         verify(chatRoomRepo).addUserToSystemChatRoom(expected.getId(), id);
+    }
+
+    @Test
+    public void mapListChatMessageDto() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Method method = ChatRoomServiceImpl.class.getDeclaredMethod("mapListChatMessageDto", List.class);
+        method.setAccessible(true);
+
+        when(modelMapper.map(expected, ChatRoomDto.class)).thenReturn(expectedDto);
+
+        List<ChatRoomDto> actual = (List<ChatRoomDto>) method.invoke(chatRoomService, expectedList);
+
+        List<ChatRoomDto> expected = new ArrayList<>();
+        expected.add(expectedDto);
+
+        assertEquals(expected, actual);
     }
 
 }
