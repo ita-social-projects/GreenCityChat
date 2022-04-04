@@ -27,13 +27,14 @@ import org.modelmapper.TypeToken;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import org.powermock.api.mockito.PowerMockito;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+
 
 @ExtendWith(MockitoExtension.class)
 class ChatRoomServiceImplTest {
@@ -285,6 +286,37 @@ class ChatRoomServiceImplTest {
         expected.add(expectedDto);
 
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void findPrivateByParticipantsForSockets() throws Exception {
+        when(participantService.findById(1L)).thenReturn(expectedParticipant);
+
+        Participant participant = Participant.builder()
+                .id(2L)
+                .name("Danylo")
+                .email("danylo@mail.com")
+                .profilePicture(null)
+                .userStatus(UserStatus.ACTIVATED)
+                .build();
+        when(participantService.findById(2L)).thenReturn(participant);
+        expectedSet.add(participant);
+        expectedList.add(ChatRoom.builder()
+                .id(1L)
+                .name("test")
+                .messages(new LinkedList<>())
+                .type(ChatType.PRIVATE)
+                .participants(new HashSet<>())
+                .owner(expectedParticipant)
+                .build());
+        when(chatRoomRepo.findByParticipantsAndStatus(expectedSet, expectedSet.size(), ChatType.PRIVATE))
+                .thenReturn(expectedList);
+
+       PowerMockito.when(chatRoomService, "filterPrivateRoom", expectedList, expectedSet, expectedParticipant)
+                .thenReturn(expectedDto);
+
+       chatRoomService.findPrivateByParticipantsForSockets(1L, 2L);
+       verify(messagingTemplate, times(1)).convertAndSend("/rooms/user/new-chats" + 2L, expectedDto);
     }
 
 }
