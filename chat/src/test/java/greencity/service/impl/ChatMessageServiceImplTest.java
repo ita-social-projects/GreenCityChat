@@ -2,6 +2,7 @@ package greencity.service.impl;
 
 import greencity.dto.ChatMessageDto;
 import greencity.dto.ChatMessageResponseDto;
+import greencity.dto.MessageLike;
 import greencity.dto.PageableDto;
 import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
@@ -12,8 +13,8 @@ import greencity.repository.ChatRoomRepo;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.Optional;
+import java.util.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,17 +23,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.powermock.api.mockito.PowerMockito;
 import org.springframework.data.domain.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-
-import java.util.List;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ChatMessageServiceImplTest {
@@ -147,4 +145,16 @@ class ChatMessageServiceImplTest {
         verify(messagingTemplate).convertAndSend("/room/" + "/message/chat-messages" + 1L,
             responseDto);
     }
+
+    @Test
+    void deleteMessage() {
+        when(modelMapper.map(chatMessageDto, ChatMessage.class)).thenReturn(expectedChatMessage);
+        doNothing().when(chatMessageRepo).delete(expectedChatMessage);
+        doNothing().when(messagingTemplate).convertAndSend(eq("/room/1/queue/messages"), eq(chatMessageDto),
+                anyMap());
+        chatMessageServiceImpl.deleteMessage(expectedChatMessageDto);
+
+        verify(chatMessageRepo).delete(expectedChatMessage);
+    }
+
 }
