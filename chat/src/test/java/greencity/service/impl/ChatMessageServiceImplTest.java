@@ -179,7 +179,7 @@ class ChatMessageServiceImplTest {
     }
 
     @Test
-    public void likeMessage() {
+    void likeMessage() {
         MessageLike messageLike = new MessageLike(1L, 1L);
         when(chatMessageRepo.getParticipantIdIfLiked(1L, 1L)).thenReturn(null);
         ChatMessage chatMessage = ChatMessage.builder()

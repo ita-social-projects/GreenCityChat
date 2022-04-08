@@ -273,7 +273,7 @@ class ChatRoomServiceImplTest {
     }
 
     @Test
-    public void mapListChatMessageDto()
+    void mapListChatMessageDto()
         throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Method method = ChatRoomServiceImpl.class.getDeclaredMethod("mapListChatMessageDto", List.class);
         method.setAccessible(true);
@@ -289,7 +289,7 @@ class ChatRoomServiceImplTest {
     }
 
     @Test
-    public void findPrivateByParticipantsForSockets() throws Exception {
+    void findPrivateByParticipantsForSockets() throws Exception {
         when(participantService.findById(1L)).thenReturn(expectedParticipant);
 
         Participant participant = Participant.builder()
