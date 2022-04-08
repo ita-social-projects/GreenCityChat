@@ -151,7 +151,7 @@ class ChatMessageServiceImplTest {
         when(modelMapper.map(chatMessageDto, ChatMessage.class)).thenReturn(expectedChatMessage);
         doNothing().when(chatMessageRepo).delete(expectedChatMessage);
         doNothing().when(messagingTemplate).convertAndSend(eq("/room/1/queue/messages"), eq(chatMessageDto),
-                anyMap());
+            anyMap());
         chatMessageServiceImpl.deleteMessage(expectedChatMessageDto);
 
         verify(chatMessageRepo).delete(expectedChatMessage);
@@ -162,18 +162,18 @@ class ChatMessageServiceImplTest {
         MessageLike messageLike = new MessageLike(1L, 1L);
         when(chatMessageRepo.getParticipantIdIfLiked(1L, 1L)).thenReturn(1L);
         ChatMessage chatMessage = ChatMessage.builder()
+            .id(1L)
+            .content("Content")
+            .createDate(ZonedDateTime.of(2022, 12, 12, 12, 12, 12, 12, ZoneId.systemDefault()))
+            .sender(Participant.builder()
                 .id(1L)
-                .content("Content")
-                .createDate(ZonedDateTime.of(2022, 12, 12, 12, 12, 12, 12, ZoneId.systemDefault()))
-                .sender(Participant.builder()
-                        .id(1L)
-                        .name("User").build())
-                .room(ChatRoom.builder().id(1L).build())
-                .build();
+                .name("User").build())
+            .room(ChatRoom.builder().id(1L).build())
+            .build();
         when(chatMessageRepo.findById(1L))
-                .thenReturn(Optional.of(chatMessage));
+            .thenReturn(Optional.of(chatMessage));
         when(modelMapper.map(chatMessage, ChatMessageDto.class))
-                .thenReturn(expectedChatMessageDto);
+            .thenReturn(expectedChatMessageDto);
         chatMessageServiceImpl.likeMessage(messageLike);
         verify(chatMessageRepo).deleteLikeFromMessage(1L, 1L);
     }
@@ -183,18 +183,18 @@ class ChatMessageServiceImplTest {
         MessageLike messageLike = new MessageLike(1L, 1L);
         when(chatMessageRepo.getParticipantIdIfLiked(1L, 1L)).thenReturn(null);
         ChatMessage chatMessage = ChatMessage.builder()
+            .id(1L)
+            .content("Content")
+            .createDate(ZonedDateTime.of(2022, 12, 12, 12, 12, 12, 12, ZoneId.systemDefault()))
+            .sender(Participant.builder()
                 .id(1L)
-                .content("Content")
-                .createDate(ZonedDateTime.of(2022, 12, 12, 12, 12, 12, 12, ZoneId.systemDefault()))
-                .sender(Participant.builder()
-                        .id(1L)
-                        .name("User").build())
-                .room(ChatRoom.builder().id(1L).build())
-                .build();
+                .name("User").build())
+            .room(ChatRoom.builder().id(1L).build())
+            .build();
         when(chatMessageRepo.findById(1L))
-                .thenReturn(Optional.of(chatMessage));
+            .thenReturn(Optional.of(chatMessage));
         when(modelMapper.map(chatMessage, ChatMessageDto.class))
-                .thenReturn(expectedChatMessageDto);
+            .thenReturn(expectedChatMessageDto);
         chatMessageServiceImpl.likeMessage(messageLike);
         verify(chatMessageRepo).addLikeToMessage(1L, 1L);
     }
