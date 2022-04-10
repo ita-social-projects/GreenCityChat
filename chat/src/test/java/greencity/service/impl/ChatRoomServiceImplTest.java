@@ -169,7 +169,7 @@ class ChatRoomServiceImplTest {
     }
 
     @Test
-    public void findGroupByParticipants() {
+    void findGroupByParticipants() {
         when(participantService.findByEmail(anyString())).thenReturn(expectedParticipant);
         when(participantService.findById(any())).thenReturn(expectedParticipant);
         when(chatRoomRepo.findByParticipantsAndStatus(any(), any(), any())).thenReturn(new ArrayList<>());
@@ -184,7 +184,7 @@ class ChatRoomServiceImplTest {
     }
 
     @Test
-    public void createNewChatRoom() {
+    void createNewChatRoom() {
         when(participantService.findById(expectedCreateDto.getOwnerId())).thenReturn(expectedParticipant);
         when(chatRoomRepo.save(any(ChatRoom.class))).thenReturn(expectedToReturn);
         when(modelMapper.map(expectedToReturn, ChatRoomDto.class)).thenReturn(expectedDto);
@@ -194,7 +194,7 @@ class ChatRoomServiceImplTest {
     }
 
     @Test
-    public void deleteParticipantsFromChatRoom() {
+    void deleteParticipantsFromChatRoom() {
         when(modelMapper.map(any(ChatRoomDto.class), eq(ChatRoom.class))).thenReturn(expected);
         when(participantService.findById(any())).thenReturn(expectedParticipant);
         when(chatRoomRepo.getPatricipantsByChatRoomId(any())).thenReturn(Collections.singleton(expectedParticipant));
@@ -208,7 +208,7 @@ class ChatRoomServiceImplTest {
     }
 
     @Test
-    public void updateChatRoom() {
+    void updateChatRoom() {
         expectedDto.setParticipants(Collections.singleton(expectedParticipantDto));
 
         when(modelMapper.map(any(ChatRoomDto.class), eq(ChatRoom.class))).thenReturn(expected);
@@ -221,7 +221,7 @@ class ChatRoomServiceImplTest {
     }
 
     @Test
-    public void deleteChatRoom() {
+    void deleteChatRoom() {
         expectedDto.setParticipants(Collections.singleton(expectedParticipantDto));
 
         chatRoomService.deleteChatRoom(expectedDto);
@@ -232,7 +232,7 @@ class ChatRoomServiceImplTest {
     }
 
     @Test
-    public void leaveChatRoom() {
+    void leaveChatRoom() {
 //        ChatRoomDto chatRoomDto = leaveChatDto.getChatRoomDto();
 //        ChatRoom chatRoom = modelMapper.map(chatRoomDto, ChatRoom.class);
 //        chatRoom.setOwner(participantService.findById(chatRoomDto.getOwnerId()));
@@ -272,7 +272,7 @@ class ChatRoomServiceImplTest {
     }
 
     @Test
-    public void findGroupChatRooms() {
+    void findGroupChatRooms() {
         when(chatRoomRepo.findGroupChats(any(), any())).thenReturn(Collections.singletonList(expected));
         when(modelMapper.map(expected, ChatRoomDto.class)).thenReturn(expectedDto);
 
@@ -281,7 +281,7 @@ class ChatRoomServiceImplTest {
     }
 
     @Test
-    public void findAllChatRoomsByQuery() {
+    void findAllChatRoomsByQuery() {
         when(chatRoomRepo.findAllChatRoomsByQuery(anyString(), any())).thenReturn(Collections.singletonList(expected));
         when(modelMapper.map(any(), any(Type.class))).thenReturn(Collections.singletonList(expectedDto));
 
@@ -290,7 +290,7 @@ class ChatRoomServiceImplTest {
     }
 
     @Test
-    public void addNewUserToSystemChat() {
+    void addNewUserToSystemChat() {
         Long id = 1L;
         when(chatRoomRepo.findSystemChatRooms()).thenReturn(Collections.singletonList(expected));
         chatRoomService.addNewUserToSystemChat(id);
