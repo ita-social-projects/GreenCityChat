@@ -1,6 +1,5 @@
 package greencity.mapping;
 
-import greencity.dto.ChatMessageDto;
 import greencity.dto.ChatRoomDto;
 import greencity.dto.ParticipantDto;
 import greencity.entity.ChatMessage;
