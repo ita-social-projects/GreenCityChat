@@ -64,6 +64,7 @@ class ChatRoomServiceImplTest {
     List<ChatMessage> expectedChatMessageList;
     Set<Participant> expectedSet;
     ParticipantDto expectedParticipantDto;
+    GroupChatRoomCreateDto expectedCreateDto;
 
     @BeforeEach
     void init() {
@@ -113,6 +114,7 @@ class ChatRoomServiceImplTest {
         expectedChatMessageList.add(ChatMessage.builder().id(1L).room(expected).sender(expectedParticipant).build());
         expectedListDto.add(ChatRoomDto.builder().id(1L).build());
         expectedListDto.add(ChatRoomDto.builder().id(2L).build());
+        expectedCreateDto = GroupChatRoomCreateDto.builder().usersId(List.of(1L, 2L, 3L)).ownerId(4L).build();
     }
 
     @Test
@@ -179,6 +181,16 @@ class ChatRoomServiceImplTest {
 
         assertEquals(actual, expectedDto);
 
+    }
+
+    @Test
+    public void createNewChatRoom() {
+        when(participantService.findById(expectedCreateDto.getOwnerId())).thenReturn(expectedParticipant);
+        when(chatRoomRepo.save(any(ChatRoom.class))).thenReturn(expectedToReturn);
+        when(modelMapper.map(expectedToReturn, ChatRoomDto.class)).thenReturn(expectedDto);
+
+        ChatRoomDto actual = chatRoomService.createNewChatRoom(expectedCreateDto);
+        assertEquals(expectedDto, actual);
     }
 
     @Test
