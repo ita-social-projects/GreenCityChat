@@ -97,6 +97,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         ChatMessage chatMessage = modelMapper.map(chatMessageDto, ChatMessage.class);
         chatMessageRepo.delete(chatMessage);
         Map<String, Object> headers = new HashMap<>();
+
         headers.put(HEADER_DELETE, new Object());
         messagingTemplate.convertAndSend(
             ROOM_LINK + chatMessageDto.getRoomId() + MESSAGE_LINK, chatMessageDto, headers);
@@ -144,11 +145,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
     private boolean isLiked(Long messageId, Long userId) {
         Long id = chatMessageRepo.getParticipantIdIfLiked(messageId, userId);
-        if (id != null) {
-            return true;
-        } else {
-            return false;
-        }
+        return id != null;
     }
 
     private List<ChatMessageDto> mapListChatMessageDto(List<ChatMessage> messages) {
