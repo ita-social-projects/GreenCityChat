@@ -19,6 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -72,7 +73,7 @@ class ChatRoomServiceImplTest {
         expectedListEmpty = new ArrayList<>();
         expectedSet = new LinkedHashSet<>();
         expectedChatMessageList = new ArrayList<>();
-        expectedListDto = new ArrayList<>();
+        expectedListDto = List.of(buildChatRoom(1L), buildChatRoom(2L));
         expectedParticipantDto = ParticipantDto.builder()
             .id(1L)
             .email("email")
@@ -112,9 +113,11 @@ class ChatRoomServiceImplTest {
             .participants(new HashSet<>())
             .build();
         expectedChatMessageList.add(ChatMessage.builder().id(1L).room(expected).sender(expectedParticipant).build());
-        expectedListDto.add(ChatRoomDto.builder().id(1L).build());
-        expectedListDto.add(ChatRoomDto.builder().id(2L).build());
         expectedCreateDto = GroupChatRoomCreateDto.builder().usersId(List.of(1L, 2L, 3L)).ownerId(4L).build();
+    }
+
+    private ChatRoomDto buildChatRoom(long id) {
+        return ChatRoomDto.builder().id(id).build();
     }
 
     @Test
@@ -298,8 +301,8 @@ class ChatRoomServiceImplTest {
     }
 
     @Test
-    void mapListChatMessageDto()
-        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    @SneakyThrows
+    void mapListChatMessageDto() {
         Method method = ChatRoomServiceImpl.class.getDeclaredMethod("mapListChatMessageDto", List.class);
         method.setAccessible(true);
 
