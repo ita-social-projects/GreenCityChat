@@ -164,7 +164,7 @@ class ChatMessageServiceImplTest {
         ChatMessage chatMessage = ChatMessage.builder()
             .id(1L)
             .content("Content")
-            .createDate(ZonedDateTime.of(2022, 12, 12, 12, 12, 12, 12, ZoneId.systemDefault()))
+            .createDate(ZonedDateTime.now())
             .sender(Participant.builder()
                 .id(1L)
                 .name("User").build())
