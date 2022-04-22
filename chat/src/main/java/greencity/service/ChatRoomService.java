@@ -86,7 +86,7 @@ public interface ChatRoomService {
     /**
      * {@inheritDoc}
      */
-    void deleteChatRoom(ChatRoomDto chatRoomDto);
+    void deleteChatRoom(Long ownerId, ChatRoomDto chatRoomDto);
 
     /**
      * {@inheritDoc}
