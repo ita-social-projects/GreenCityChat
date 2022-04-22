@@ -234,6 +234,7 @@ class ChatRoomServiceImplTest {
         verify(messagingTemplate, times(1))
             .convertAndSend(eq("/rooms/user/" + expectedParticipant.getId()), eq(expectedDto), any(Map.class));
     }
+
     @Test
     void deleteChatRoomThrowsException() {
         expectedDto.setOwnerId(1L);
