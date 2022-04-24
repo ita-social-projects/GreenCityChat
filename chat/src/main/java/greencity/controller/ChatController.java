@@ -419,10 +419,10 @@ public class ChatController {
     }
 
     /**
-     * Method deletes all messages from chatroom
+     * Method deletes all messages from chatroom.
      *
-     * @param userId
-     * @param chatId
+     * @param userId of user
+     * @param chatId of chatroom
      * @return
      */
     @DeleteMapping("/room/{userId}/{chatId}/delete")
