@@ -96,5 +96,11 @@ public interface ChatMessageRepo extends PagingAndSortingRepository<ChatMessage,
         + "message_id = :messageId and participant_id = :userId ")
     Long getParticipantIdIfLiked(@Param("messageId") Long messageId, @Param("userId") Long userId);
 
+    /**
+     * Method returns list of {@link ChatMessage}s by room id
+     *
+     * @param roomId
+     * @return list of {@link ChatMessage}
+     */
     List<ChatMessage> getAllByRoomId(Long roomId);
 }

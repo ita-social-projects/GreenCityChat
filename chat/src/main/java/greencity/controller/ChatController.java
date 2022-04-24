@@ -418,6 +418,13 @@ public class ChatController {
             .body(chatMessageService.chatExist(fistUserId, secondUserId));
     }
 
+    /**
+     * Method deletes all messages from chatroom
+     *
+     * @param userId
+     * @param chatId
+     * @return
+     */
     @DeleteMapping("/room/{userId}/{chatId}/delete")
     public ResponseEntity deleteAllMessagesFromChatRoom(@PathVariable Long userId,
         @PathVariable Long chatId) {

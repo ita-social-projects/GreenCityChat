@@ -103,8 +103,6 @@ public interface ChatRoomService {
      *
      * @param roomId {@link Long} chatroom's id
      * @param userId {@link Long} user's id
-     *
-     *               {@inheritDoc}
      */
     void deleteMessagesFromChatRoom(Long roomId, Long userId);
 }
