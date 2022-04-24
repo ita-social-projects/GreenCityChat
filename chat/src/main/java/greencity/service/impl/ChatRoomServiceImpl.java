@@ -264,4 +264,14 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         participants.forEach(participant -> messagingTemplate
             .convertAndSend(ROOM_LINK + "new-chats" + participant.getId(), chatRoomDto));
     }
+
+    @Override
+    public void deleteMessagesFromChatRoom(Long roomId, Long userId) {
+        ChatRoomDto room = findChatRoomById(roomId);
+        if (room.getParticipants().stream().anyMatch(participant -> Objects.equals(participant.getId(), userId))) {
+            chatMessageRepo.deleteAll(chatMessageRepo.getAllByRoomId(roomId));
+        } else {
+            throw new UnsupportedOperationException(ErrorMessage.USER_NOT_BELONG_TO_CHAT);
+        }
+    }
 }

@@ -97,4 +97,14 @@ public interface ChatRoomService {
      * {@inheritDoc}
      */
     void findPrivateByParticipantsForSockets(Long id, Long currentUserId);
+
+    /**
+     * Method deletes all {@link ChatMessage}s from chatroom
+     *
+     * @param roomId {@link Long} chatroom's id
+     * @param userId {@link Long} user's id
+     *
+     *               {@inheritDoc}
+     */
+    void deleteMessagesFromChatRoom(Long roomId, Long userId);
 }

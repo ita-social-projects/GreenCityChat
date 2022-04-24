@@ -417,4 +417,11 @@ public class ChatController {
         return ResponseEntity.status(HttpStatus.OK)
             .body(chatMessageService.chatExist(fistUserId, secondUserId));
     }
+
+    @DeleteMapping("/room/{userId}/{chatId}/delete")
+    public ResponseEntity deleteAllMessagesFromChatRoom(@PathVariable Long userId,
+        @PathVariable Long chatId) {
+        chatRoomService.deleteMessagesFromChatRoom(chatId, userId);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+    }
 }
