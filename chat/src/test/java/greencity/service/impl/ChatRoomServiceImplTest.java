@@ -49,6 +49,8 @@ class ChatRoomServiceImplTest {
     private SimpMessagingTemplate messagingTemplate;
     @Mock
     private ChatMessageRepo chatMessageRepo;
+    @Mock
+    private ChatMessageServiceImpl chatMessageService;
 
     private final String email = "test.artur@mail.com";
     Participant expectedParticipant;
