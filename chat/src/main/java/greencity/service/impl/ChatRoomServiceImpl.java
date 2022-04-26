@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 @Service
 @AllArgsConstructor
 public class ChatRoomServiceImpl implements ChatRoomService {
+    private final ChatMessageServiceImpl chatMessageService;
     private final ChatRoomRepo chatRoomRepo;
     private final ParticipantService participantService;
     private final ModelMapper modelMapper;
@@ -269,7 +270,9 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     public void deleteMessagesFromChatRoom(Long roomId, Long userId) {
         ChatRoomDto room = findChatRoomById(roomId);
         if (room.getParticipants().stream().anyMatch(participant -> Objects.equals(participant.getId(), userId))) {
-            chatMessageRepo.deleteAll(chatMessageRepo.getAllByRoomId(roomId));
+            chatMessageRepo.getAllByRoomId(roomId).stream()
+                    .map(chatMessage -> modelMapper.map(chatMessage, ChatMessageDto.class))
+                    .forEach(chatMessageService::deleteMessage);
         } else {
             throw new UnsupportedOperationException(ErrorMessage.USER_NOT_BELONG_TO_CHAT);
         }

@@ -1,9 +1,6 @@
 package greencity.service.impl;
 
-import greencity.dto.ChatRoomDto;
-import greencity.dto.GroupChatRoomCreateDto;
-import greencity.dto.LeaveChatDto;
-import greencity.dto.ParticipantDto;
+import greencity.dto.*;
 import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
@@ -15,7 +12,6 @@ import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
 import greencity.service.ParticipantService;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
@@ -368,7 +364,6 @@ class ChatRoomServiceImplTest {
             .build();
         when(chatRoomRepo.findById(anyLong())).thenReturn(Optional.ofNullable(chatRoom));
         when(modelMapper.map(chatRoom, ChatRoomDto.class)).thenReturn(chatRoomDto);
-        doNothing().when(chatMessageRepo).deleteAll(any(List.class));
 
         chatRoomService.deleteMessagesFromChatRoom(1L, 378L);
     }
