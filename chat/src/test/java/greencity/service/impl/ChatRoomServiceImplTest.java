@@ -224,14 +224,46 @@ class ChatRoomServiceImplTest {
     }
 
     @Test
-    void deleteChatRoom() {
+    void deleteGroupChatTest() {
+        expectedDto.setChatType(ChatType.GROUP);
+        expectedDto.setOwnerId(1L);
+        chatRoomService.deleteChatRoom(1L, expectedDto);
+
+        verify(chatRoomRepo, times(1)).deleteById(any());
+
+        chatRoomService.deleteChatRoom(1L, expectedDto);
+    }
+
+    @Test
+    void deleteGroupChatThrowsException() {
+        expectedDto.setChatType(ChatType.GROUP);
+        expectedDto.setOwnerId(1L);
+        chatRoomService.deleteChatRoom(1L, expectedDto);
+
+        verify(chatRoomRepo, times(1)).deleteById(any());
+
+        assertThrows(UnsupportedOperationException.class, () -> chatRoomService.deleteChatRoom(2L, expectedDto));
+    }
+
+    @Test
+    void deletePrivateChatRoom() {
+        expectedDto.setOwnerId(1L);
         expectedDto.setParticipants(Collections.singleton(expectedParticipantDto));
 
-        chatRoomService.deleteChatRoom(expectedDto);
+        chatRoomService.deleteChatRoom(1L, expectedDto);
 
         verify(chatRoomRepo, times(1)).deleteById(any());
         verify(messagingTemplate, times(1))
             .convertAndSend(eq("/rooms/user/" + expectedParticipant.getId()), eq(expectedDto), any(Map.class));
+    }
+
+    @Test
+    void deletePrivateChatRoomThrowsException() {
+        expectedDto.setOwnerId(1L);
+        expectedDto.setParticipants(Collections.singleton(expectedParticipantDto));
+
+        assertThrows(UnsupportedOperationException.class, () -> chatRoomService.deleteChatRoom(2L, expectedDto));
+
     }
 
     @Test

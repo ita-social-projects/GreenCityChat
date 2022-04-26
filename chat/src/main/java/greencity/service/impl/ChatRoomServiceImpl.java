@@ -185,12 +185,30 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     }
 
     @Override
-    public void deleteChatRoom(ChatRoomDto chatRoomDto) {
-        chatRoomRepo.deleteById(chatRoomDto.getId());
-        Map<String, Object> headers = new HashMap<>();
-        headers.put(HEADER_DELETE_ROOM, new Object());
-        for (ParticipantDto participant : chatRoomDto.getParticipants()) {
-            messagingTemplate.convertAndSend(ROOM_LINK + participant.getId(), chatRoomDto, headers);
+    public void deleteChatRoom(Long userId, ChatRoomDto chatRoomDto) {
+        if (chatRoomDto.getChatType() == ChatType.GROUP) {
+            if (Objects.equals(chatRoomDto.getOwnerId(), userId)) {
+                chatRoomRepo.deleteById(chatRoomDto.getId());
+                Map<String, Object> headers = new HashMap<>();
+                headers.put(HEADER_DELETE_ROOM, new Object());
+                for (ParticipantDto participant : chatRoomDto.getParticipants()) {
+                    messagingTemplate.convertAndSend(ROOM_LINK + participant.getId(), chatRoomDto, headers);
+                }
+            } else {
+                throw new UnsupportedOperationException(ErrorMessage.USER_NOT_THE_OWNER);
+            }
+        } else if (chatRoomDto.getChatType() == ChatType.PRIVATE) {
+            if (chatRoomDto.getParticipants().stream()
+                .anyMatch(participantDto -> Objects.equals(participantDto.getId(), userId))) {
+                chatRoomRepo.deleteById(chatRoomDto.getId());
+                Map<String, Object> headers = new HashMap<>();
+                headers.put(HEADER_DELETE_ROOM, new Object());
+                for (ParticipantDto participant : chatRoomDto.getParticipants()) {
+                    messagingTemplate.convertAndSend(ROOM_LINK + participant.getId(), chatRoomDto, headers);
+                }
+            } else {
+                throw new UnsupportedOperationException(ErrorMessage.USER_NOT_BELONG_TO_CHAT);
+            }
         }
     }
 

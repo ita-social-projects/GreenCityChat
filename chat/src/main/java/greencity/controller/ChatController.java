@@ -243,10 +243,10 @@ public class ChatController {
      *
      * @param chatRoomDto of {@link ChatRoomDto}
      */
-    @MessageMapping("/chat/users/delete-room")
-    public void deleteChatRoom(ChatRoomDto chatRoomDto) {
+    @MessageMapping("/chat/users/{owner_id}/delete-room")
+    public void deleteChatRoom(@PathVariable long id, ChatRoomDto chatRoomDto) {
         System.out.println("delete");
-        chatRoomService.deleteChatRoom(chatRoomDto);
+        chatRoomService.deleteChatRoom(id, chatRoomDto);
     }
 
     /**
