@@ -271,8 +271,8 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         ChatRoomDto room = findChatRoomById(roomId);
         if (room.getParticipants().stream().anyMatch(participant -> Objects.equals(participant.getId(), userId))) {
             chatMessageRepo.getAllByRoomId(roomId).stream()
-                    .map(chatMessage -> modelMapper.map(chatMessage, ChatMessageDto.class))
-                    .forEach(chatMessageService::deleteMessage);
+                .map(chatMessage -> modelMapper.map(chatMessage, ChatMessageDto.class))
+                .forEach(chatMessageService::deleteMessage);
         } else {
             throw new UnsupportedOperationException(ErrorMessage.USER_NOT_BELONG_TO_CHAT);
         }
