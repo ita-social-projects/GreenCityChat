@@ -417,4 +417,18 @@ public class ChatController {
         return ResponseEntity.status(HttpStatus.OK)
             .body(chatMessageService.chatExist(fistUserId, secondUserId));
     }
+
+    /**
+     * Method deletes all messages from chatroom.
+     *
+     * @param userId of user
+     * @param chatId of chatroom
+     * @return
+     */
+    @DeleteMapping("/room/{userId}/{chatId}/delete")
+    public ResponseEntity deleteAllMessagesFromChatRoom(@PathVariable Long userId,
+        @PathVariable Long chatId) {
+        chatRoomService.deleteMessagesFromChatRoom(chatId, userId);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+    }
 }

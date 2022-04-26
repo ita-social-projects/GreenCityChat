@@ -347,4 +347,56 @@ class ChatRoomServiceImplTest {
         verify(messagingTemplate, times(1)).convertAndSend("/rooms/user/new-chats" + 2L, expectedDto);
     }
 
+    @Test
+    void deleteMessagesFromChatRoomTest() {
+        Participant owner = Participant.builder()
+            .id(378L)
+            .build();
+        ChatRoom chatRoom = ChatRoom.builder()
+            .id(1L)
+            .name("TestRoom")
+            .owner(owner)
+            .participants(Set.of(owner))
+            .build();
+        ChatRoomDto chatRoomDto = ChatRoomDto.builder()
+            .id(1L)
+            .name("TestRoom")
+            .participants(Set.of(ParticipantDto.builder()
+                .id(378L)
+                .build()))
+            .ownerId(378L)
+            .build();
+        when(chatRoomRepo.findById(anyLong())).thenReturn(Optional.ofNullable(chatRoom));
+        when(modelMapper.map(chatRoom, ChatRoomDto.class)).thenReturn(chatRoomDto);
+        doNothing().when(chatMessageRepo).deleteAll(any(List.class));
+
+        chatRoomService.deleteMessagesFromChatRoom(1L, 378L);
+    }
+
+    @Test
+    void deleteMessagesFromChatRoomThrowsExceptionTest() {
+        ChatRoom chatRoom = ChatRoom.builder()
+            .id(1L)
+            .name("TestRoom")
+            .owner(Participant.builder()
+                .id(1L)
+                .build())
+            .participants(Set.of(Participant.builder()
+                .id(1L)
+                .build()))
+            .build();
+        ChatRoomDto chatRoomDto = ChatRoomDto.builder()
+            .id(1L)
+            .name("TestRoom")
+            .participants(Set.of(ParticipantDto.builder()
+                .id(1L)
+                .build()))
+            .ownerId(1L)
+            .build();
+        when(chatRoomRepo.findById(anyLong())).thenReturn(Optional.ofNullable(chatRoom));
+        when(modelMapper.map(chatRoom, ChatRoomDto.class)).thenReturn(chatRoomDto);
+
+        assertThrows(UnsupportedOperationException.class, () -> chatRoomService.deleteMessagesFromChatRoom(1L, 378L));
+    }
+
 }

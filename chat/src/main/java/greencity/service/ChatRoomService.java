@@ -3,6 +3,7 @@ package greencity.service;
 import greencity.dto.ChatRoomDto;
 import greencity.dto.GroupChatRoomCreateDto;
 import greencity.dto.LeaveChatDto;
+import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.enums.ChatType;
@@ -97,4 +98,12 @@ public interface ChatRoomService {
      * {@inheritDoc}
      */
     void findPrivateByParticipantsForSockets(Long id, Long currentUserId);
+
+    /**
+     * Method deletes all {@link ChatMessage}s from chatroom.
+     *
+     * @param roomId {@link Long} chatroom's id
+     * @param userId {@link Long} user's id
+     */
+    void deleteMessagesFromChatRoom(Long roomId, Long userId);
 }

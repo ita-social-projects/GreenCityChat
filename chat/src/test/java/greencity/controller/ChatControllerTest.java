@@ -10,6 +10,7 @@ import greencity.service.AzureFileService;
 import greencity.service.ChatMessageService;
 import greencity.service.ChatRoomService;
 import greencity.service.ParticipantService;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -248,6 +249,13 @@ class ChatControllerTest {
             .andExpect(status().isOk());
 
         verify(chatRoomService).addNewUserToSystemChat(userId);
+    }
+
+    @Test
+    @SneakyThrows
+    void deleteAllMessagesFromChatRoomTest() {
+        mockMvc.perform(delete(chatLink + "/room/378/10/delete"))
+            .andExpect(status().isAccepted());
     }
 
 }
