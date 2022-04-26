@@ -53,6 +53,8 @@ class ChatRoomServiceImplTest {
     private SimpMessagingTemplate messagingTemplate;
     @Mock
     private ChatMessageRepo chatMessageRepo;
+    @Mock
+    private ChatMessageServiceImpl chatMessageService;
 
     private final String email = "test.artur@mail.com";
     Participant expectedParticipant;
@@ -400,7 +402,6 @@ class ChatRoomServiceImplTest {
             .build();
         when(chatRoomRepo.findById(anyLong())).thenReturn(Optional.ofNullable(chatRoom));
         when(modelMapper.map(chatRoom, ChatRoomDto.class)).thenReturn(chatRoomDto);
-        doNothing().when(chatMessageRepo).deleteAll(any(List.class));
 
         chatRoomService.deleteMessagesFromChatRoom(1L, 378L);
     }
