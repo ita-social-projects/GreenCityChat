@@ -96,6 +96,16 @@ stages:
             inputs:
               PathtoPublish: '$(build.artifactstagingdirectory)'
               artifactName: '$(artifactName)'
+              
+          - task: Docker@2
+            inputs:
+              containerRegistry: 'Dockerhub_Skyere'
+              repository: 'skyere/greencitychat'
+              command: 'buildAndPush'
+              Dockerfile: 'Dockerfile'
+              tags: |
+                $(Build.BuildId)
+                latest
 
   - stage: deploy
     jobs:
