@@ -25,7 +25,7 @@ spec:
             cpu: 50m
             memory: 200Mi
           limits:
-            cpu: 2
+            cpu: 500m
             memory: 1024Mi
         env:
         - name: AZURE_CONTAINER
