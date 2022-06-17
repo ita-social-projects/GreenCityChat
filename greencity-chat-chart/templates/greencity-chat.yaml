@@ -1,0 +1,156 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-greencity
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chat-greencity
+  template:
+    metadata:
+      labels:
+        app: chat-greencity
+    spec:
+      nodeSelector:
+        "kubernetes.io/os": linux
+      containers:
+      - name: greencity
+        image: {{ .Values.image }}
+        resources:
+          requests:
+            cpu: 50m
+            memory: 200Mi
+          limits:
+            cpu: 2
+            memory: 1024Mi
+        env:
+        - name: AZURE_CONTAINER
+          valueFrom:
+            secretKeyRef:
+              name: appsecret
+              key: AZURE-CONTAINER
+
+        - name: AZURE_CONNECTION
+          valueFrom:
+            secretKeyRef:
+              name: appsecret
+              key: AZURE-CONNECTION
+
+        - name: CLIENT_ADDRESS
+          valueFrom:
+            secretKeyRef:
+              name: appsecret
+              key: CLIENT-ADDRESS
+
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: appsecret
+              key: DATABASE-PASSWORD
+
+        - name: DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: appsecret
+              key: DATABASE-USER
+
+        # - name: DATASOURCE_URL
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: appsecret
+        #       key: API-KEY
+
+        - name: DIALECT
+          valueFrom:
+            secretKeyRef:
+              name: appsecret
+              key: DIALECT
+
+        - name: DRIVER
+          valueFrom:
+            secretKeyRef:
+              name: appsecret
+              key: DRIVER
+
+        - name: GREENCITYUSER_SERVER_ADDRESS
+          valueFrom:
+            secretKeyRef:
+              name: appsecret
+              key: GREENCITYUSER-SERVER-ADDRESS
+
+        - name: HIBERNATE_CONFIG
+          valueFrom:
+            secretKeyRef:
+              name: appsecret
+              key: HIBERNATE-CONFIG
+
+        - name: JAWSDB_URL
+          valueFrom:
+            secretKeyRef:
+              name: appsecret
+              key: JAWSDB-URL
+
+        - name: LOG_EXCEPTION_HANDLER
+          valueFrom:
+            secretKeyRef:
+              name: appsecret
+              key: LOG-EXCEPTION-HANDLER
+
+        - name: LOG_FILE
+          valueFrom:
+            secretKeyRef:
+              name: appsecret
+              key: LOG-FILE
+
+        - name: LOG_LEVEL_ROOT
+          valueFrom:
+            secretKeyRef:
+              name: appsecret
+              key: LOG-LEVEL-ROOT
+
+        - name: LOG_PATH
+          valueFrom:
+            secretKeyRef:
+              name: appsecret
+              key: LOG-PATH
+
+        - name: LOG_PATTERN
+          valueFrom:
+            secretKeyRef:
+              name: appsecret
+              key: LOG-PATTERN
+
+        - name: SPRING_PROFILES_ACTIVE
+          valueFrom:
+            secretKeyRef:
+              name: appsecret
+              key: SPRING-PROFILES-ACTIVE
+
+        - name: TOKEN_ACCESS_TIME
+          valueFrom:
+            secretKeyRef:
+              name: appsecret
+              key: TOKEN-ACCESS-TIME
+
+        - name: TOKEN_KEY
+          valueFrom:
+            secretKeyRef:
+              name: appsecret
+              key: TOKEN-KEY
+
+        - name: TOKEN_REFRESH_TIME
+          valueFrom:
+            secretKeyRef:
+              name: appsecret
+              key: TOKEN-REFRESH-TIME
+
+        - name: VERIFY_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: appsecret
+              key: VERIFY-EMAIL
+        ports:
+        - containerPort: 8080
+          name: redis
