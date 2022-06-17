@@ -160,3 +160,4 @@ stages:
                     releaseName: 'chat'
                     overrideValues: 'image=skyere/greencitychat:$(Build.BuildId)'
                     arguments: '--debug'
+
