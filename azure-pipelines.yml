@@ -159,5 +159,5 @@ stages:
                     chartPath: '$(System.ArtifactsDirectory)/drop/greencity-chat-chart'
                     releaseName: 'chat'
                     overrideValues: 'image=skyere/greencitychat:$(Build.BuildId)'
-                    arguments: '--debug'
+                    arguments: '--debug '
 
