@@ -90,6 +90,13 @@ stages:
               SourceFolder: '$(system.defaultworkingdirectory)'
               Contents: '**/target/*.jar'
               TargetFolder: '$(build.artifactstagingdirectory)'
+          
+          - task: CopyFiles@2
+            displayName: Copy Files
+            inputs:
+              SourceFolder: '$(system.defaultworkingdirectory)/greencity-chat-chart'
+              Contents: '**'
+              TargetFolder: '$(build.artifactstagingdirectory)/greencity-chat-chart'
 
           - task: PublishBuildArtifacts@1
             displayName: Publish Artifact
@@ -137,3 +144,19 @@ stages:
                     packageForLinux: '$(System.ArtifactsDirectory)/$(artifactName)/$(userRepoName)/target/$(onbootJarName)'
 
 
+                - task: HelmInstaller@0
+                  inputs:
+                    helmVersion: '3.9.0'
+                    installKubectl: true
+                
+                - task: HelmDeploy@0
+                  inputs:
+                    connectionType: 'Kubernetes Service Connection'
+                    kubernetesServiceConnection: 'k8s-stage'
+                    namespace: 'default'
+                    command: 'upgrade'
+                    chartType: 'FilePath'
+                    chartPath: '$(System.ArtifactsDirectory)/drop/greencity-chat-chart'
+                    releaseName: 'chat'
+                    overrideValues: 'image=skyere/greencitychat:$(Build.BuildId)'
+                    arguments: '--debug'
