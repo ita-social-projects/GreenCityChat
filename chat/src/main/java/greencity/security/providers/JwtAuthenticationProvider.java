@@ -1,6 +1,6 @@
 package greencity.security.providers;
 
-import static greencity.constant.AppConstant.AUTHORITIES;
+import static greencity.constant.AppConstant.ROLE;
 import greencity.jwt.JwtTool;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.UnsupportedJwtException;
@@ -52,7 +52,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
             .setSigningKey(jwtTool.getAccessTokenKey())
             .parseClaimsJws(authentication.getName())
             .getBody()
-            .get(AUTHORITIES);
+            .get(ROLE);
         return new UsernamePasswordAuthenticationToken(
             email,
             "",

@@ -31,7 +31,7 @@ public class Participant {
     @Enumerated(value = EnumType.ORDINAL)
     private UserStatus userStatus;
 
-    @Enumerated(value = EnumType.ORDINAL)
+    @Enumerated(value = EnumType.STRING)
     @Column(nullable = false, name = "role")
     private Role role;
 
