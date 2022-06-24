@@ -1,32 +1,32 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: chat-greencity
+  name: {{ .Release.Name }}-chat-greencity
   annotations:
     reloader.stakater.com/auto: "true"
 
 spec:
-  replicas: 1
+  replicas: {{ .Values.deployment.replicas }}
   selector:
     matchLabels:
-      app: chat-greencity
+      app: {{ .Release.Name }}-chat-greencity
   template:
     metadata:
       labels:
-        app: chat-greencity
+        app: {{ .Release.Name }}-chat-greencity
     spec:
       nodeSelector:
         "kubernetes.io/os": linux
       containers:
-      - name: greencity
+      - name: {{ .Release.Name }}-greencity-chat
         image: {{ .Values.image }}
         resources:
           requests:
-            cpu: 50m
-            memory: 200Mi
+            cpu: {{ .Values.deployment.requests.cpu }}
+            memory: {{ .Values.deployment.requests.memory }}
           limits:
-            cpu: 500m
-            memory: 1024Mi
+            cpu: {{ .Values.deployment.limits.cpu }}
+            memory: {{ .Values.deployment.limits.memory }}
         env:
         - name: AZURE_CONTAINER
           valueFrom:
@@ -154,5 +154,5 @@ spec:
               name: appsecret
               key: VERIFY-EMAIL
         ports:
-        - containerPort: 8080
-          name: redis
+        - containerPort: 8070
+          name: tomcat

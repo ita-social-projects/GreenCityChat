@@ -1,26 +1,34 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: greencity-chat-ingress
+  name: {{ .Release.Name }}-greencity-chat-ingress
   annotations:
     kubernetes.io/ingress.class: nginx
     cert-manager.io/issuer: "letsencrypt-prod"
+{{- if .Values.ingress.enable_cors}}
     nginx.ingress.kubernetes.io/enable-cors: "true"
-    nginx.ingress.kubernetes.io/cors-allow-origin: "https://greencity-front.testgreencity.ga, https://greencity-front.testgreencity.ga/, https://greencity-front.testgreencity.ga/* "
+    {{- if eq .Values.ingress.cors_allow_origin "" }}  
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    {{- else }}
+    nginx.ingress.kubernetes.io/cors-allow-origin: {{ .Values.ingress.cors_allow_origin }} 
+    {{- end }}
+    {{- if eq .Values.ingress.cors_allow_credentials "true" }}
     nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    {{- end }}
+{{- end }}
 spec:
   tls:
   - hosts:
-    - greencity-chat.testgreencity.ga
+    - {{ .Values.ingress.hostname }}
     secretName: greencity-chat
   rules:
-  - host: greencity-chat.testgreencity.ga
+  - host: {{ .Values.ingress.hostname }}
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service: 
-            name: chat-greencity-service
+            name: {{ .Release.Name }}-chat-greencity-service
             port: 
               number: 80
