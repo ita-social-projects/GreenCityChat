@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-chat-greencity
+  name: {{ .Release.Name }}-greencity-chat
   annotations:
     reloader.stakater.com/auto: "true"
 
@@ -9,11 +9,11 @@ spec:
   replicas: {{ .Values.deployment.replicas }}
   selector:
     matchLabels:
-      app: {{ .Release.Name }}-chat-greencity
+      app: {{ .Release.Name }}-greencity-chat
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}-chat-greencity
+        app: {{ .Release.Name }}-greencity-chat
     spec:
       nodeSelector:
         "kubernetes.io/os": linux

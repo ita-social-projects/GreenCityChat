@@ -29,6 +29,6 @@ spec:
         pathType: Prefix
         backend:
           service: 
-            name: {{ .Release.Name }}-chat-greencity-service
+            name: {{ .Release.Name }}-greencity-chat-service
             port: 
               number: 80
