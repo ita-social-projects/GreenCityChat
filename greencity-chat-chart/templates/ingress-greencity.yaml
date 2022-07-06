@@ -22,7 +22,7 @@ spec:
   tls:
   - hosts:
     - {{ .Values.ingress.hostname }}
-    secretName: greencity-chat
+    secretName: greencity-chat-test
   rules:
   - host: {{ .Values.ingress.hostname }}
     http:
