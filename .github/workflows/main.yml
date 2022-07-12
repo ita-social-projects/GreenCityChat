@@ -4,6 +4,12 @@ on:
     branches: [ master, dev ]
   pull_request:
     branches: [ master, dev ]
+
+env:
+  userRepoName: chat
+  onbootJarName: app.jar
+  dockerRepoName: skyere/greencitychat
+
 jobs:
   build:
     name: Build
@@ -42,6 +48,33 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=ita-social-projects_GreenCityChat
+      
+      - name: Test Reporter
+        uses: dorny/test-reporter@v1.5.0
+        if: success() || failure()
+        with:
+          name: Tests Report
+          path: chat/target/surefire-reports/*.xml
+          reporter: java-junit
+
+      - name: Rename user jar to app
+        run: mv $userRepoName/target/*.jar $userRepoName/target/$onbootJarName
+
+      - name: Set outputs
+        run: echo "GITHUB_SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Docker Login
+        uses: docker/login-action@v2.0.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v3.0.0
+        with:
+          file: Dockerfile
+          push: true
+          tags: skyere/greencitychat:test-${{ env.GITHUB_SHA_SHORT }}
 
       - name: Kubernetes Set Context
         uses: Azure/k8s-set-context@v3.0
