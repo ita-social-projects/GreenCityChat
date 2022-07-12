@@ -3,7 +3,7 @@ module chat
 go 1.18
 
 require (
-	github.com/Skyere/helm-testing v1.4.2
+	github.com/Skyere/helm-testing v1.7.0
 	github.com/gruntwork-io/terratest v0.40.17
 )
 

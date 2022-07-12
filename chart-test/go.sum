@@ -52,8 +52,8 @@ github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=
 github.com/PuerkitoBio/purell v1.1.1/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=
-github.com/Skyere/helm-testing v1.4.2 h1:+dAPBusILAGJcMuF1Buwje/VfrUL0KZ4TMGpPMajoEI=
-github.com/Skyere/helm-testing v1.4.2/go.mod h1:PqFxAd1CQGCi5ZKbhnMJxM9yvUe/aPL3Tsq0kILQPVY=
+github.com/Skyere/helm-testing v1.7.0 h1:F2QqE3H+8DnSQR6uB0XMbFwTHSECzqwukmts2IBbRqk=
+github.com/Skyere/helm-testing v1.7.0/go.mod h1:PqFxAd1CQGCi5ZKbhnMJxM9yvUe/aPL3Tsq0kILQPVY=
 github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a/go.mod h1:lB+ZfQJz7igIIfQNfa7Ml4HSf2uFQQRzpGGRXenZAgY=
 github.com/aws/aws-sdk-go v1.40.56 h1:FM2yjR0UUYFzDTMx+mH9Vyw1k1EUUxsAFzk+BjkzANA=
 github.com/aws/aws-sdk-go v1.40.56/go.mod h1:585smgzpB/KqRA+K3y/NL/oYRqQvpNJYvLm+LY1U59Q=

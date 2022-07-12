@@ -118,7 +118,7 @@ stages:
   - stage: deploy
     jobs:
       - deployment: deploy
-        displayName: Deploy GreenCityChat app service
+        displayName: Deploy GreenCityChat
         pool:
           vmImage: $(agentOS)
         environment: 'prod'
