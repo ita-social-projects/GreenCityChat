@@ -19,9 +19,6 @@ var kubectlOptions *k8s.KubectlOptions = k8s.NewKubectlOptions("", "", namespace
 var options *helm.Options = &helm.Options{
 	KubectlOptions: kubectlOptions,
 	ValuesFiles:    []string{"valuesTest.yaml"},
-	SetValues:      map[string]string{
-		"ingress.hostname": "greencity-chat-test.test-greencity.ga",
-	},
 }
 
 var releaseName string = fmt.Sprintf(
@@ -46,8 +43,8 @@ func TestGreencity(t *testing.T) {
 		t.Fatalf("Deploy was failed")
 	}
 
-	t.Run("ServiceTest", service.ServiceCheck(serviceName, releaseName, kubectlOptions))
-	t.Run("IngressTest", ingress.IngressCheck(ingressName, releaseName, kubectlOptions))
+	t.Run("ServiceTest", service.ServiceCheck(serviceName, releaseName, kubectlOptions, 10))
+	t.Run("IngressTest", ingress.IngressCheck(ingressName, releaseName, kubectlOptions, 10))
 	// t.Run("SiteTest", helper.Verify(200, siteUrl, "swagger", 5))
 
 }
