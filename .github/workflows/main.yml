@@ -54,7 +54,7 @@ jobs:
         if: success() || failure()
         with:
           name: Tests Report
-          path: chat/target/surefire-reports/*.xml
+          path: ${{ env.userRepoName }}/target/surefire-reports/*.xml
           reporter: java-junit
 
       - name: Rename user jar to app
@@ -74,7 +74,7 @@ jobs:
         with:
           file: Dockerfile
           push: true
-          tags: skyere/greencitychat:test-${{ env.GITHUB_SHA_SHORT }}
+          tags: ${{ env.dockerRepoName }}:test-${{ env.GITHUB_SHA_SHORT }}
 
       - name: Kubernetes Set Context
         uses: Azure/k8s-set-context@v3.0
