@@ -2,6 +2,7 @@ package test
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
@@ -15,10 +16,14 @@ import (
 
 var namespaceName string = "test"
 var kubectlOptions *k8s.KubectlOptions = k8s.NewKubectlOptions("", "", namespaceName)
+var image string = os.Getenv("dockerRepoName") + ":test-" + os.Getenv("GITHUB_SHA_SHORT")
 
 var options *helm.Options = &helm.Options{
 	KubectlOptions: kubectlOptions,
 	ValuesFiles:    []string{"valuesTest.yaml"},
+	SetValues: map[string]string{
+		"deployment.image": image,
+	},
 }
 
 var releaseName string = fmt.Sprintf(
@@ -44,7 +49,7 @@ func TestGreencity(t *testing.T) {
 	}
 
 	t.Run("ServiceTest", service.ServiceCheck(serviceName, releaseName, kubectlOptions, 10))
-	t.Run("IngressTest", ingress.IngressCheck(ingressName, releaseName, kubectlOptions, 10))
+	t.Run("IngressTest", ingress.IngressCheck(ingressName, releaseName, kubectlOptions, 15))
 	// t.Run("SiteTest", helper.Verify(200, siteUrl, "swagger", 5))
 
 }
