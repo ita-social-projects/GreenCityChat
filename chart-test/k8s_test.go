@@ -21,7 +21,7 @@ var image string = os.Getenv("dockerRepoName") + ":test-" + os.Getenv("GITHUB_SH
 var options *helm.Options = &helm.Options{
 	KubectlOptions: kubectlOptions,
 	ValuesFiles:    []string{"valuesTest.yaml"},
-	SetValues:      map[string]string{
+	SetValues: map[string]string{
 		"deployment.image": image,
 	},
 }
@@ -33,13 +33,13 @@ var releaseName string = fmt.Sprintf(
 
 func TestGreencity(t *testing.T) {
 
-    if os.Getenv("userRepoName") == "" {
-		t.Fatalf("userRepoName is not set")
+	if os.Getenv("repository") == "" {
+		t.Fatalf("repository is not set")
 	}
 
-	chartPath := fmt.Sprintf("../greencity-%s-chart", os.Getenv("userRepoName"))
-	serviceName := fmt.Sprintf("greencity-%s-service", os.Getenv("userRepoName"))
-	ingressName := fmt.Sprintf("greencity-%s-ingress", os.Getenv("userRepoName"))
+	chartPath := fmt.Sprintf("../greencity-%s-chart", os.Getenv("repository"))
+	serviceName := fmt.Sprintf("greencity-%s-service", os.Getenv("repository"))
+	ingressName := fmt.Sprintf("greencity-%s-ingress", os.Getenv("repository"))
 	// siteUrl := "https://greencity-chat-test.test-greencity.ga/swagger-ui.html"
 
 	// Destroy release after testing
@@ -55,6 +55,5 @@ func TestGreencity(t *testing.T) {
 	t.Run("ServiceTest", service.ServiceCheck(serviceName, releaseName, kubectlOptions, 10))
 	t.Run("IngressTest", ingress.IngressCheck(ingressName, releaseName, kubectlOptions, 15))
 	// t.Run("SiteTest", helper.Verify(200, siteUrl, "swagger", 5))
-	
 
 }

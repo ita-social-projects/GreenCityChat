@@ -6,6 +6,7 @@ on:
     branches: [ master, dev ]
 
 env:
+  repository: chat
   userRepoName: chat
   onbootJarName: app.jar
   dockerRepoName: skyere/greencitychat
