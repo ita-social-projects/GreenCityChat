@@ -101,7 +101,7 @@ jobs:
         uses: akanieski/setup-postgres-cli@v0.1.2
         with:
           # Actions to take
-          commands: pg_dump -U root -h 127.0.0.1 -p 5432
+          commands: psql -U root -h localhost -p 5432 greencity
           # Password passed to postgres cli
           password: root
       
