@@ -12,6 +12,18 @@ env:
   dockerRepoName: skyere/greencitychat
 
 jobs:
+  my_image_test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: greencity       
+          POSTGRES_PASSWORD: root
+          POSTGRES_USER: root
+        ports:
+          - 5432:5432
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -83,18 +95,17 @@ jobs:
         with:
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
       
-      - name: Setup PostgreSQL with Postgis
-        # You may pin to the exact commit or the version.
-        # uses: huaxk/postgis-action@6d361800c2fa8b356176fa2c45c569d5a057bc51
-        uses: huaxk/postgis-action@v1.0.0
-        with:
-          # Version of PostgreSQL to use
-          # POSTGRES_DB - name for the default database that is created
-          postgresql db: "greencity"
-          # POSTGRES_USER - create the specified user with superuser power
-          postgresql user: "root"
-          # POSTGRES_PASSWORD - superuser password
-          postgresql password: "root"
+      # - name: Setup PostgreSQL
+      #   uses: Harmon758/postgresql-action@v1.0.0
+      #   with:
+      #     # Version of PostgreSQL to use
+      #     postgresql version: 13
+      #     # POSTGRES_DB - name for the default database that is created
+      #     postgresql db: greencity
+      #     # POSTGRES_USER - create the specified user with superuser power
+      #     postgresql user: root
+      #     # POSTGRES_PASSWORD - superuser password
+      #     postgresql password: root
       
       - name: Setup Postgres CLI
         # You may pin to the exact commit or the version.
