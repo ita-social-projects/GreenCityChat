@@ -95,6 +95,16 @@ jobs:
           # POSTGRES_PASSWORD - superuser password
           postgresql password: root
       
+      - name: Setup Postgres CLI
+        # You may pin to the exact commit or the version.
+        # uses: akanieski/setup-postgres-cli@eb287d6c98df0083ba52519eee85781563cd8828
+        uses: akanieski/setup-postgres-cli@v0.1.2
+        with:
+          # Actions to take
+          commands: pg_dump -U root -h 127.0.0.1 -p 5432
+          # Password passed to postgres cli
+          password: root
+      
       - name: Kubernetes tests
         run: |
           cd chart-test
