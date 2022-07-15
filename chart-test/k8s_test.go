@@ -55,6 +55,7 @@ func TestGreencity(t *testing.T) {
 
 	t.Run("ServiceTest", service.ServiceCheck(serviceName, releaseName, kubectlOptions, 10))
 	t.Run("IngressTest", ingress.IngressCheck(ingressName, releaseName, kubectlOptions, 15))
+	t.Run("IngressTest", ingress.IngressCheck("dsa", releaseName, kubectlOptions, 15))
 	// t.Run("SiteTest", helper.Verify(200, siteUrl, "swagger", 5))
 
 }
