@@ -93,7 +93,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: {{ .Values.externalSecret.secretName }}
-              key: JAWSDB-URL
+              key: {{ if eq .Values.environment "prod" }}JAWSDB-URL{{ else }}JAWSDB-URL-TEST{{ end }}
 
         - name: LOG_EXCEPTION_HANDLER
           valueFrom:
