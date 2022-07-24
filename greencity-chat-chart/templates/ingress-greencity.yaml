@@ -21,7 +21,7 @@ spec:
   tls:
   - hosts:
     - {{ .Values.ingress.hostname }}
-    secretName: {{ .Release.Name }}-greencity-chat
+    secretName: {{ if eq .Values.environment "prod" }} {{ .Release.Name }}-greencity-chat {{ else }} greencity-chat-test {{ end }}
   rules:
   - host: {{ .Values.ingress.hostname }}
     http:
