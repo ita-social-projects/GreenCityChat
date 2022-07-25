@@ -1,6 +1,7 @@
 package greencity.config;
 
 import static greencity.constant.AppConstant.*;
+import static greencity.constant.AppConstant.UBS_EMPLOYEE;
 
 import greencity.client.RestClient;
 import greencity.jwt.JwtTool;
@@ -94,11 +95,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 "/chat/user",
                 "/chat/user/{id}",
                 "/chat/users/**")
-            .hasAnyRole(USER, ADMIN, MODERATOR)
+            .hasAnyRole(USER, ADMIN, MODERATOR, UBS_EMPLOYEE)
             .antMatchers(HttpMethod.POST,
                 "/chat/create-chatRoom",
                 "/chat/sent-message/{userId}/{roomId}")
-            .hasAnyRole(USER, ADMIN, MODERATOR);
+            .hasAnyRole(USER, ADMIN, MODERATOR, UBS_EMPLOYEE);
     }
 
     /**
