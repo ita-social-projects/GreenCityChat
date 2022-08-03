@@ -1,4 +1,7 @@
 name: Build
+
+concurrency: Testing
+
 on:
   push:
     branches: [ master, dev ]
