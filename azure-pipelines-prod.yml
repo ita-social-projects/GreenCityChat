@@ -108,6 +108,6 @@ stages:
                     chartType: 'FilePath'
                     chartPath: '$(System.ArtifactsDirectory)/drop/greencity-chat-chart'
                     releaseName: 'chat'
-                    overrideValues: 'deployment.image=skyere/greencitychat:$(Build.BuildId)'
+                    overrideValues: 'deployment.image=skyere/greencitychat:prod-$(Build.BuildId)'
                     arguments: '--debug '
 
