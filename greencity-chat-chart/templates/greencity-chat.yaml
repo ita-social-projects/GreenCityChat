@@ -35,6 +35,13 @@ spec:
           periodSeconds: 10
           failureThreshold: 20
         env:
+
+        - name: AZURE_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.externalSecret.secretName }}
+              key: AZURE-CONNECTION-STRING
+              
         - name: AZURE_CONTAINER
           valueFrom:
             secretKeyRef:
