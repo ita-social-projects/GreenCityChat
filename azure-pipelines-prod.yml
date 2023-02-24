@@ -109,6 +109,6 @@ stages:
                     chartType: 'FilePath'
                     chartPath: '$(System.ArtifactsDirectory)/drop/greencity-chat-chart'
                     releaseName: 'chat'
-                    overrideValues: 'ingress.hostname=greencity-chat.pick-up.city,deployment.image=skyere/greencitychat:prod-$(Build.BuildId),ingress.cors_allow_origin=https://www.pick-up.city/*'
+                    overrideValues: 'ingress.hostname=greencity-chat.pick-up.city,deployment.image=skyere/greencitychat:prod-$(Build.BuildId),ingress.cors_allow_origin=https://www.pick-up.city'
                     arguments: '--debug '
 
