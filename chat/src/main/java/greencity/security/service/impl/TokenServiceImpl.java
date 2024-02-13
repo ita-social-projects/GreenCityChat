@@ -2,8 +2,8 @@ package greencity.security.service.impl;
 
 import greencity.exception.exceptions.BadRequestException;
 import greencity.security.service.TokenService;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
 
 @Service

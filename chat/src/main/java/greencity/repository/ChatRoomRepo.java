@@ -3,7 +3,6 @@ package greencity.repository;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.enums.ChatType;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,11 +10,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.servlet.http.Part;
 
 @Repository
 public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,

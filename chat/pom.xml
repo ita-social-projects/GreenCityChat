@@ -84,8 +84,8 @@
             <version>${thymeleaf-spring5}</version>
         </dependency>
         <dependency>
-            <groupId>javax.persistence</groupId>
-            <artifactId>javax.persistence-api</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         <dependency>
             <groupId>org.modelmapper</groupId>
@@ -93,14 +93,10 @@
             <version>${modelmapper}</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-jpamodelgen</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.hibernate</groupId>-->
+<!--            <artifactId>hibernate-jpamodelgen</artifactId>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
@@ -134,7 +130,7 @@
             <version>${jjwt}</version>
         </dependency>
 
-<!--        <dependency>-->
+<!--        <dependency>     swagger-->
 <!--            <groupId>io.springfox</groupId>-->
 <!--            <artifactId>springfox-bean-validators</artifactId>-->
 <!--            <version>2.9.2</version>-->

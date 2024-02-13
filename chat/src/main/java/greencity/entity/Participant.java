@@ -2,7 +2,7 @@ package greencity.entity;
 
 import greencity.enums.Role;
 import greencity.enums.UserStatus;
-import javax.persistence.*;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
