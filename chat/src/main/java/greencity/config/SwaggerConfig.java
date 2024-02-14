@@ -28,18 +28,18 @@ public class SwaggerConfig {
     public OpenAPI customizeOpenAPI() {
         final String securitySchemeName = "bearerAuth";
         return new OpenAPI()
-                .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
-                .components(new Components().addSecuritySchemes(securitySchemeName,
-                        new SecurityScheme()
-                                .name(securitySchemeName)
-                                .type(SecurityScheme.Type.HTTP)
-                                .scheme("bearer")
-                                .bearerFormat("JWT")))
-                .info(new Info().title("GreencityChat API")
-                        .summary("Api Documentation")
-                        .version("3.1.0")
-                        .license(new License().name("Apache 2.0").identifier("Apache-2.0")
-                                .url("https://www.apache.org/licenses/LICENSE-2.0.html")))
-                .openapi("3.1.0");
+            .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
+            .components(new Components().addSecuritySchemes(securitySchemeName,
+                new SecurityScheme()
+                    .name(securitySchemeName)
+                    .type(SecurityScheme.Type.HTTP)
+                    .scheme("bearer")
+                    .bearerFormat("JWT")))
+            .info(new Info().title("GreencityChat API")
+                .summary("Api Documentation")
+                .version("3.1.0")
+                .license(new License().name("Apache 2.0").identifier("Apache-2.0")
+                    .url("https://www.apache.org/licenses/LICENSE-2.0.html")))
+            .openapi("3.1.0");
     }
 }

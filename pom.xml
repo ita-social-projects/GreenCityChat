@@ -22,15 +22,15 @@
     </modules>
 
     <properties>
-        <junit-jupiter.version>5.7.0</junit-jupiter.version>
-        <mockito-junit-jupiter.version>3.3.3</mockito-junit-jupiter.version>
-        <mockito-core.version>3.3.3</mockito-core.version>
-        <modelmapper.version>2.3.5</modelmapper.version>
+        <junit-jupiter.version>5.10.1</junit-jupiter.version>
+        <mockito-junit-jupiter.version>5.7.0</mockito-junit-jupiter.version>
+        <mockito-core.version>5.2.0</mockito-core.version>
+        <modelmapper.version>3.0.0</modelmapper.version>
         <java.version>21</java.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <checkstyle-maven-plugin.version>3.1.0</checkstyle-maven-plugin.version>
-
+<!--todo checkstyle-->
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
         <sonar.exclusions>**/config/*</sonar.exclusions>

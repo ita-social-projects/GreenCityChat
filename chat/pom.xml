@@ -15,12 +15,12 @@
     <name>chat</name>
     <properties>
         <springdoc.version>2.3.0</springdoc.version>
-        <junit-jupiter.version>5.4.2</junit-jupiter.version>
-        <mockito-junit-jupiter.version>3.3.3</mockito-junit-jupiter.version>
-        <mockito-core.version>3.3.3</mockito-core.version>
-        <powermock-api-mockito2.version>2.0.7</powermock-api-mockito2.version>
+        <junit-jupiter.version>5.10.1</junit-jupiter.version>
+        <mockito-junit-jupiter.version>5.7.0</mockito-junit-jupiter.version>
+        <mockito-core.version>5.2.0</mockito-core.version>
+        <powermock-api-mockito2.version>2.0.9</powermock-api-mockito2.version>
         <postgresql.version>42.2.5</postgresql.version>
-        <thymeleaf-spring5>3.0.11.RELEASE</thymeleaf-spring5>
+        <thymeleaf-spring6>3.1.2.RELEASE</thymeleaf-spring6>
         <modelmapper>2.3.5</modelmapper>
         <sockjs-client>1.0.2</sockjs-client>
         <stomp-websocket>2.3.3</stomp-websocket>
@@ -44,7 +44,7 @@
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>${springdoc.version}</version>
         </dependency>
-<!--         junit-->
+<!--         tests-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -60,28 +60,32 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+<!--        done-->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
             <version>${mockito-junit-jupiter.version}</version>
             <scope>test</scope>
         </dependency>
+<!--       done -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>${junit-jupiter.version}</version>
             <scope>test</scope>
         </dependency>
+<!--        done-->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>${mockito-core.version}</version>
             <scope>test</scope>
         </dependency>
+<!--        done-->
         <dependency>
             <groupId>org.thymeleaf</groupId>
-            <artifactId>thymeleaf-spring5</artifactId>
-            <version>${thymeleaf-spring5}</version>
+            <artifactId>thymeleaf-spring6</artifactId>
+            <version>${thymeleaf-spring6}</version>
         </dependency>
 <!--        DataJpa-->
         <dependency>
@@ -131,21 +135,28 @@
             <artifactId>jjwt</artifactId>
             <version>${jjwt}</version>
         </dependency>
-
+<!--         done-->
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.8.0</version>
+            <version>2.15.0</version>
         </dependency>
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-storage-blob</artifactId>
             <version>12.7.0</version>
         </dependency>
+<!--        done -->
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-api-mockito2</artifactId>
             <version>${powermock-api-mockito2.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.objenesis</groupId>
+                    <artifactId>objenesis</artifactId>
+                </exclusion>
+            </exclusions>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -6,7 +6,6 @@ import greencity.dto.*;
 import greencity.enums.ChatType;
 import greencity.service.*;
 
-
 import java.security.Principal;
 import java.util.List;
 
@@ -94,7 +93,8 @@ public class ChatController {
      */
     @Operation(summary = "Get private room for current user with other user.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = HttpStatuses.OK, content = @Content(schema = @Schema(implementation = ChatRoomDto.class)))
+        @ApiResponse(responseCode = "200", description = HttpStatuses.OK,
+            content = @Content(schema = @Schema(implementation = ChatRoomDto.class)))
     })
     @GetMapping("/user/{id}")
     public ResponseEntity<ChatRoomDto> findPrivateRoomWithUser(@PathVariable Long id, Principal principal) {
@@ -110,7 +110,8 @@ public class ChatController {
      */
     @Operation(summary = "Get room by id.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = HttpStatuses.OK, content = @Content(schema = @Schema(implementation = ChatRoomDto.class))),
+        @ApiResponse(responseCode = "200", description = HttpStatuses.OK,
+            content = @Content(schema = @Schema(implementation = ChatRoomDto.class))),
         @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
     })
     @GetMapping("/room/{room_id}")
@@ -135,7 +136,8 @@ public class ChatController {
      */
     @Operation(summary = "Get current user.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = HttpStatuses.OK, content = @Content(schema = @Schema(implementation = ChatRoomDto.class))),
+        @ApiResponse(responseCode = "200", description = HttpStatuses.OK,
+            content = @Content(schema = @Schema(implementation = ChatRoomDto.class))),
         @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
     })
     @GetMapping("/user")
@@ -151,7 +153,8 @@ public class ChatController {
      */
     @Operation(summary = "Get user by name.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = HttpStatuses.OK, content = @Content(schema = @Schema(implementation = ParticipantDto.class))),
+        @ApiResponse(responseCode = "200", description = HttpStatuses.OK,
+            content = @Content(schema = @Schema(implementation = ParticipantDto.class))),
         @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
     })
     @GetMapping(value = {"/users", "/users/{query}"})
@@ -172,7 +175,8 @@ public class ChatController {
      */
     @Operation(summary = "Get all chat room by name.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = HttpStatuses.OK, content = @Content(schema = @Schema(implementation = ChatRoomDto.class))),
+        @ApiResponse(responseCode = "200", description = HttpStatuses.OK,
+            content = @Content(schema = @Schema(implementation = ChatRoomDto.class))),
         @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
     })
     @GetMapping(value = {"/rooms", "/rooms/{query}"})
@@ -257,7 +261,8 @@ public class ChatController {
      */
     @Operation(summary = "Get group chats.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = HttpStatuses.OK, content = @Content(schema = @Schema(implementation = ChatRoomDto.class)))
+        @ApiResponse(responseCode = "200", description = HttpStatuses.OK,
+            content = @Content(schema = @Schema(implementation = ChatRoomDto.class)))
     })
     @GetMapping("/groups")
     public ResponseEntity<List<ChatRoomDto>> getGroupChats(Principal principal) {
@@ -291,7 +296,8 @@ public class ChatController {
      */
     @Operation(summary = "Upload an voice file.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = HttpStatuses.OK, content = @Content(schema = @Schema(implementation = ChatMessageDto.class))),
+        @ApiResponse(responseCode = "200", description = HttpStatuses.OK,
+            content = @Content(schema = @Schema(implementation = ChatMessageDto.class))),
         @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
     })
     @PostMapping("/upload/voice")
@@ -371,7 +377,8 @@ public class ChatController {
      */
     @Operation(summary = "Sent message")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = HttpStatuses.CREATED, content = @Content(schema = @Schema(implementation = ChatMessageDto.class))),
+        @ApiResponse(responseCode = "200", description = HttpStatuses.CREATED,
+            content = @Content(schema = @Schema(implementation = ChatMessageDto.class))),
         @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
         @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
         @ApiResponse(responseCode = "403", description = HttpStatuses.FORBIDDEN),
@@ -391,7 +398,8 @@ public class ChatController {
      */
     @Operation(summary = "Create new chat room")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = HttpStatuses.CREATED, content = @Content(schema = @Schema(implementation = ChatRoomDto.class))),
+        @ApiResponse(responseCode = "201", description = HttpStatuses.CREATED,
+            content = @Content(schema = @Schema(implementation = ChatRoomDto.class))),
         @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
         @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
         @ApiResponse(responseCode = "403", description = HttpStatuses.FORBIDDEN),
