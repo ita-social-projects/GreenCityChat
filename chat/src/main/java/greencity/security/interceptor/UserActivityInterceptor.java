@@ -4,14 +4,14 @@ import greencity.client.RestClient;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+import org.springframework.web.servlet.HandlerInterceptor;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Date;
 
 @AllArgsConstructor
-public class UserActivityInterceptor extends HandlerInterceptorAdapter {
+public class UserActivityInterceptor implements HandlerInterceptor {
     private final RestClient restClient;
 
     /**
@@ -37,6 +37,6 @@ public class UserActivityInterceptor extends HandlerInterceptorAdapter {
                 // restClient.updateUserLastActivityTime(userLastActivityTime);
             }
         }
-        return super.preHandle(request, response, handler);
+        return preHandle(request, response, handler);
     }
 }
