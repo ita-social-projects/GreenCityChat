@@ -1,13 +1,7 @@
 package greencity.entity;
 
 import greencity.enums.MessageStatus;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,5 +26,8 @@ public class UnreadMessage {
     @JoinColumn(name = "user_id")
     private Participant participant;
 
+//    @Enumerated(EnumType.STRING)
+//    @Convert(disableConversion = true)
+    @Column(columnDefinition = "int4")
     private MessageStatus status;
 }
