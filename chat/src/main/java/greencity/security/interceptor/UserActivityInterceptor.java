@@ -23,20 +23,20 @@ public class UserActivityInterceptor implements HandlerInterceptor {
      * @param handler  the handler object to handle the request
      * @return a boolean value determines if the request further processed by a
      *         handler or not
-     */
-    @Override
-    public boolean preHandle(@SuppressWarnings("NullableProblems") HttpServletRequest request,
-        @SuppressWarnings("NullableProblems") HttpServletResponse response,
-        @SuppressWarnings("NullableProblems") Object handler)
-        throws Exception {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null) {
-            String email = authentication.getPrincipal().toString();
-            if (!email.equals("anonymousUser")) {
-                Date userLastActivityTime = new Date();
-                // restClient.updateUserLastActivityTime(userLastActivityTime);
-            }
-        }
-        return preHandle(request, response, handler);
-    }
+//     */
+//    @Override
+//    public boolean preHandle(@SuppressWarnings("NullableProblems") HttpServletRequest request,
+//        @SuppressWarnings("NullableProblems") HttpServletResponse response,
+//        @SuppressWarnings("NullableProblems") Object handler)
+//        throws Exception {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        if (authentication != null) {
+//            String email = authentication.getPrincipal().toString();
+//            if (!email.equals("anonymousUser")) {
+//                Date userLastActivityTime = new Date();
+//                // restClient.updateUserLastActivityTime(userLastActivityTime);
+//            }
+//        }
+//        return preHandle(request, response, handler);
+//    }
 }

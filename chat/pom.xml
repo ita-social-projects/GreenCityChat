@@ -21,7 +21,7 @@
         <powermock-api-mockito2.version>2.0.9</powermock-api-mockito2.version>
         <postgresql.version>42.2.5</postgresql.version>
         <thymeleaf-spring6>3.1.2.RELEASE</thymeleaf-spring6>
-        <modelmapper>2.3.5</modelmapper>
+        <modelmapper>3.2.0</modelmapper>
         <sockjs-client>1.0.2</sockjs-client>
         <stomp-websocket>2.3.3</stomp-websocket>
         <bootstrap>3.3.7</bootstrap>
