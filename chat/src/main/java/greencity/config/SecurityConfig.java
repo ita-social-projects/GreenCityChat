@@ -81,6 +81,8 @@ public class SecurityConfig {
                         .accessDeniedHandler((req, resp, exc) -> resp.sendError(SC_FORBIDDEN, "You don't have authorities.")))
                 .authorizeHttpRequests(req -> req
                         .requestMatchers("/css/**",
+                                "/v3/api-docs/swagger-config",
+                                "/v3/api-docs",
                                 "/img/**",
                                 "/socket",
                                 "/socket/**",
