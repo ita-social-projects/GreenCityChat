@@ -78,7 +78,7 @@ stages:
             inputs:
               mavenPomFile: 'pom.xml'
               javaHomeOption: 'JDKVersion'
-              jdkVersionOption: '11'
+              jdkVersionOption: '21'
               mavenVersionOption: 'Default'
               options: '-Dmaven.test.skip=true'
 

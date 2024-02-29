@@ -116,11 +116,15 @@ public class SecurityConfig {
     @Bean
      public WebSecurityCustomizer webSecurityCustomizer() {
          return web -> {
-             web.ignoring().requestMatchers("/v2/api-docs/**");
-             web.ignoring().requestMatchers("/swagger.json");
-             web.ignoring().requestMatchers("/swagger-ui.html");
-             web.ignoring().requestMatchers("/swagger-resources/**");
-             web.ignoring().requestMatchers("/webjars/**");
+
+             web.ignoring().requestMatchers("swagger-ui/index.html");
+             web.ignoring().requestMatchers("/swagger-ui/swagger-ui.css");
+             web.ignoring().requestMatchers("/swagger-ui/index.css");
+             web.ignoring().requestMatchers("/swagger-ui/swagger-ui-bundle.js");
+             web.ignoring().requestMatchers("/swagger-ui/swagger-ui-standalone-preset.js");
+             web.ignoring().requestMatchers("/swagger-ui/swagger-initializer.js");
+             web.ignoring().requestMatchers("/swagger-ui/favicon-32x32.png");
+             web.ignoring().requestMatchers("/swagger-ui/favicon-16x16.png");
          };
      }
 
