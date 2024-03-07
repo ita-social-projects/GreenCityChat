@@ -48,7 +48,8 @@ public class SecurityConfig {
      * Constructor.
      */
     @Autowired
-    public SecurityConfig(JwtTool jwtTool, RestClient restClient, AuthenticationConfiguration authenticationConfiguration) {
+    public SecurityConfig(JwtTool jwtTool, RestClient restClient,
+        AuthenticationConfiguration authenticationConfiguration) {
         this.jwtTool = jwtTool;
         this.restClient = restClient;
         this.authenticationConfiguration = authenticationConfiguration;
@@ -68,45 +69,44 @@ public class SecurityConfig {
      * @param http {@link HttpSecurity}
      */
     @Bean
-    public SecurityFilterChain securityFilterChain (HttpSecurity http) throws Exception {
-        http.cors(AbstractHttpConfigurer::disable).
-                csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
-                .addFilterBefore(
-                        new greencity.security.filters.AccessTokenAuthenticationFilter(jwtTool, authenticationManager(),
-                                restClient),
-                        UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint((req, resp, exc) -> resp.sendError(SC_UNAUTHORIZED, "Authorize first."))
-                        .accessDeniedHandler((req, resp, exc) -> resp.sendError(SC_FORBIDDEN, "You don't have authorities.")))
-                .authorizeHttpRequests(req -> req
-                        .requestMatchers("/css/**",
-                                "/v3/api-docs/swagger-config",
-                                "/v3/api-docs",
-                                "/img/**",
-                                "/socket",
-                                "/socket/**",
-                                "/socket/**/**",
-                                "/socket/info")
-                        .permitAll()
-                        .requestMatchers(HttpMethod.GET,
-                                "/chat",
-                                "/chat/**",
-                                "/chat/create-chatRoom",
-                                "/chat/messages/{room_id}",
-                                "/chat/room/{room_id}",
-                                "/chat/last/message",
-                                "/chat/exist/{fistUserId}/{secondUserId}",
-                                "/chat/rooms",
-                                "/chat/user",
-                                "/chat/user/{id}",
-                                "/chat/users/**")
-                        .hasAnyRole(USER, ADMIN, MODERATOR, UBS_EMPLOYEE)
-                        .requestMatchers(HttpMethod.POST,
-                                "/chat/create-chatRoom",
-                                "/chat/sent-message/{userId}/{roomId}")
-                        .hasAnyRole(USER, ADMIN, MODERATOR, UBS_EMPLOYEE)
-                        .anyRequest().hasAnyRole(ADMIN));
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.cors(AbstractHttpConfigurer::disable).csrf(AbstractHttpConfigurer::disable)
+            .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
+            .addFilterBefore(
+                new greencity.security.filters.AccessTokenAuthenticationFilter(jwtTool, authenticationManager(),
+                    restClient),
+                UsernamePasswordAuthenticationFilter.class)
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint((req, resp, exc) -> resp.sendError(SC_UNAUTHORIZED, "Authorize first."))
+                .accessDeniedHandler((req, resp, exc) -> resp.sendError(SC_FORBIDDEN, "You don't have authorities.")))
+            .authorizeHttpRequests(req -> req
+                .requestMatchers("/css/**",
+                    "/v3/api-docs/swagger-config",
+                    "/v3/api-docs",
+                    "/img/**",
+                    "/socket",
+                    "/socket/**",
+                    "/socket/**/**",
+                    "/socket/info")
+                .permitAll()
+                .requestMatchers(HttpMethod.GET,
+                    "/chat",
+                    "/chat/**",
+                    "/chat/create-chatRoom",
+                    "/chat/messages/{room_id}",
+                    "/chat/room/{room_id}",
+                    "/chat/last/message",
+                    "/chat/exist/{fistUserId}/{secondUserId}",
+                    "/chat/rooms",
+                    "/chat/user",
+                    "/chat/user/{id}",
+                    "/chat/users/**")
+                .hasAnyRole(USER, ADMIN, MODERATOR, UBS_EMPLOYEE)
+                .requestMatchers(HttpMethod.POST,
+                    "/chat/create-chatRoom",
+                    "/chat/sent-message/{userId}/{roomId}")
+                .hasAnyRole(USER, ADMIN, MODERATOR, UBS_EMPLOYEE)
+                .anyRequest().hasAnyRole(ADMIN));
         return http.build();
     }
 
@@ -116,19 +116,18 @@ public class SecurityConfig {
      * @return {@link WebSecurityCustomizer}
      */
     @Bean
-     public WebSecurityCustomizer webSecurityCustomizer() {
-         return web -> {
-
-             web.ignoring().requestMatchers("swagger-ui/index.html");
-             web.ignoring().requestMatchers("/swagger-ui/swagger-ui.css");
-             web.ignoring().requestMatchers("/swagger-ui/index.css");
-             web.ignoring().requestMatchers("/swagger-ui/swagger-ui-bundle.js");
-             web.ignoring().requestMatchers("/swagger-ui/swagger-ui-standalone-preset.js");
-             web.ignoring().requestMatchers("/swagger-ui/swagger-initializer.js");
-             web.ignoring().requestMatchers("/swagger-ui/favicon-32x32.png");
-             web.ignoring().requestMatchers("/swagger-ui/favicon-16x16.png");
-         };
-     }
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return web -> {
+            web.ignoring().requestMatchers("swagger-ui/index.html");
+            web.ignoring().requestMatchers("/swagger-ui/swagger-ui.css");
+            web.ignoring().requestMatchers("/swagger-ui/index.css");
+            web.ignoring().requestMatchers("/swagger-ui/swagger-ui-bundle.js");
+            web.ignoring().requestMatchers("/swagger-ui/swagger-ui-standalone-preset.js");
+            web.ignoring().requestMatchers("/swagger-ui/swagger-initializer.js");
+            web.ignoring().requestMatchers("/swagger-ui/favicon-32x32.png");
+            web.ignoring().requestMatchers("/swagger-ui/favicon-16x16.png");
+        };
+    }
 
     /**
      * Method for configure type of authentication provider.

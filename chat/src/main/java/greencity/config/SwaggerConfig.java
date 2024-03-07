@@ -18,7 +18,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @Slf4j
 public class SwaggerConfig {
-
     /**
      * Customizing the OpenAPI bean.
      *
