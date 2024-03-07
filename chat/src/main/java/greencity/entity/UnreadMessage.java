@@ -26,8 +26,6 @@ public class UnreadMessage {
     @JoinColumn(name = "user_id")
     private Participant participant;
 
-//    @Enumerated(EnumType.STRING)
-//    @Convert(disableConversion = true)
     @Column(columnDefinition = "int4")
     private MessageStatus status;
 }
