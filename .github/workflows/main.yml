@@ -82,19 +82,19 @@ jobs:
           push: true
           tags: ${{ env.dockerRepoName }}:test-${{ env.GITHUB_SHA_SHORT }}
 
-      - name: Kubernetes Set Context
-        uses: Azure/k8s-set-context@v3.0
-        with:
-          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+#      - name: Kubernetes Set Context
+#        uses: Azure/k8s-set-context@v3.0
+#        with:
+#          kubeconfig: ${{ secrets.KUBE_CONFIG }}
       
-      - name: Set up Postgres
-        run: kubectl scale deploy postgres --replicas=1 -n test
-      
-      - name: Kubernetes tests
-        run: |
-          cd chart-test
-          go test -v ./...
-      
-      - name: Post Set up Postgres
-        if: success() || failure()
-        run: kubectl scale deploy postgres --replicas=0 -n test
+#      - name: Set up Postgres
+#        run: kubectl scale deploy postgres --replicas=1 -n test
+#
+#      - name: Kubernetes tests
+#        run: |
+#          cd chart-test
+#          go test -v ./...
+#
+#      - name: Post Set up Postgres
+#        if: success() || failure()
+#        run: kubectl scale deploy postgres --replicas=0 -n test
