@@ -1,7 +1,6 @@
 package greencity.dto;
 
 import lombok.*;
-
 import java.time.ZonedDateTime;
 
 @NoArgsConstructor

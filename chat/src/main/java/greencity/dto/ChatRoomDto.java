@@ -1,10 +1,7 @@
 package greencity.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import greencity.enums.ChatType;
-
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Set;
 import lombok.*;
 

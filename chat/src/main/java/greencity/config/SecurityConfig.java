@@ -2,7 +2,6 @@ package greencity.config;
 
 import static greencity.constant.AppConstant.*;
 import static greencity.constant.AppConstant.UBS_EMPLOYEE;
-
 import greencity.client.RestClient;
 import greencity.jwt.JwtTool;
 import greencity.security.providers.JwtAuthenticationProvider;
@@ -11,7 +10,6 @@ import java.util.Collections;
 import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

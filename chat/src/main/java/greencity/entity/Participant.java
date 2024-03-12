@@ -4,7 +4,6 @@ import greencity.enums.Role;
 import greencity.enums.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.util.List;
 
 @Entity

@@ -5,10 +5,8 @@ import greencity.constant.HttpStatuses;
 import greencity.dto.*;
 import greencity.enums.ChatType;
 import greencity.service.*;
-
 import java.security.Principal;
 import java.util.List;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -22,7 +20,6 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.Pageable;
-
 import jakarta.validation.Valid;
 
 @RestController
@@ -432,7 +429,6 @@ public class ChatController {
      *
      * @param userId of user
      * @param chatId of chatroom
-     * @return
      */
     @DeleteMapping("/room/{userId}/{chatId}/delete")
     public ResponseEntity deleteAllMessagesFromChatRoom(@PathVariable Long userId,
