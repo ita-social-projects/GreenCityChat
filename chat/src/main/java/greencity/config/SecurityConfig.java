@@ -84,12 +84,18 @@ public class SecurityConfig {
                     "/img/**",
                     "/socket",
                     "/socket/**",
-                    "/socket/**/**",
-                    "/socket/info")
+                    "/socket/info",
+                    "swagger-ui/index.html",
+                    "/swagger-ui/swagger-ui.css",
+                    "/swagger-ui/index.css",
+                    "/swagger-ui/swagger-ui-bundle.js",
+                    "/swagger-ui/swagger-ui-standalone-preset.js",
+                    "/swagger-ui/swagger-initializer.js",
+                    "/swagger-ui/favicon-32x32.png",
+                    "/swagger-ui/favicon-16x16.png",
+                        "/chat/**")
                 .permitAll()
                 .requestMatchers(HttpMethod.GET,
-                    "/chat",
-                    "/chat/**",
                     "/chat/create-chatRoom",
                     "/chat/messages/{room_id}",
                     "/chat/room/{room_id}",
@@ -106,25 +112,6 @@ public class SecurityConfig {
                 .hasAnyRole(USER, ADMIN, MODERATOR, UBS_EMPLOYEE)
                 .anyRequest().hasAnyRole(ADMIN));
         return http.build();
-    }
-
-    /**
-     * Method for configure matchers that will be ignored in security.
-     *
-     * @return {@link WebSecurityCustomizer}
-     */
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> {
-            web.ignoring().requestMatchers("swagger-ui/index.html");
-            web.ignoring().requestMatchers("/swagger-ui/swagger-ui.css");
-            web.ignoring().requestMatchers("/swagger-ui/index.css");
-            web.ignoring().requestMatchers("/swagger-ui/swagger-ui-bundle.js");
-            web.ignoring().requestMatchers("/swagger-ui/swagger-ui-standalone-preset.js");
-            web.ignoring().requestMatchers("/swagger-ui/swagger-initializer.js");
-            web.ignoring().requestMatchers("/swagger-ui/favicon-32x32.png");
-            web.ignoring().requestMatchers("/swagger-ui/favicon-16x16.png");
-        };
     }
 
     /**

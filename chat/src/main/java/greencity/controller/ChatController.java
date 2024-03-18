@@ -37,14 +37,10 @@ public class ChatController {
      *
      * @return list of {@link ChatRoomDto}.
      */
-    @Operation(summary = "Get all rooms.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = HttpStatuses.OK)
-    })
-    @GetMapping
-    public ResponseEntity<List<ChatRoomDto>> findAllRooms(Principal principal) {
+    @GetMapping("/chat2")
+    public ResponseEntity<String> findAllRooms(String email) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(chatRoomService.findAllByParticipantName(principal.getName()));
+            .body(email);
     }
 
     /**
