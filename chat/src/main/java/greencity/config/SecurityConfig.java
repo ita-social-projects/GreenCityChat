@@ -93,7 +93,7 @@ public class SecurityConfig {
                     "/swagger-ui/swagger-initializer.js",
                     "/swagger-ui/favicon-32x32.png",
                     "/swagger-ui/favicon-16x16.png",
-                        "/chat/**")
+                    "/chat/**")
                 .permitAll()
                 .requestMatchers(HttpMethod.GET,
                     "/chat/create-chatRoom",

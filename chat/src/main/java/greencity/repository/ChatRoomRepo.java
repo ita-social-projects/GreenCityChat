@@ -23,7 +23,7 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
      * @return list of {@link ChatRoom} instances.
      */
     @Query(
-        value = "SELECT * FROM chat_rooms room "
+        value = "SELECT room.* FROM chat_rooms room "
             + "INNER JOIN chat_rooms_participants crp on room.id = crp.room_id "
             + "WHERE crp.participant_id = :id",
         nativeQuery = true)
@@ -42,7 +42,7 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
     @Query(value = "SELECT cr FROM ChatRoom cr"
         + " JOIN cr.participants p"
         + " WHERE p IN :participants"
-        + " AND UPPER(cr.type) = :chatType"
+        + " AND cr.type = :chatType"
         + " GROUP BY cr.id"
         + " HAVING COUNT(cr.id) = CAST(:participantsCount AS long)")
     List<ChatRoom> findByParticipantsAndStatus(@Param("participants") Set<Participant> participants,
