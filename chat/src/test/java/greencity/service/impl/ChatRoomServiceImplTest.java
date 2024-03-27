@@ -198,7 +198,7 @@ class ChatRoomServiceImplTest {
     void deleteParticipantsFromChatRoom() {
         when(modelMapper.map(any(ChatRoomDto.class), eq(ChatRoom.class))).thenReturn(expected);
         when(participantService.findById(any())).thenReturn(expectedParticipant);
-        when(chatRoomRepo.getPatricipantsByChatRoomId(any())).thenReturn(Collections.singleton(expectedParticipant));
+        when(chatRoomRepo.getParticipantsByChatRoomId(any())).thenReturn(Collections.singleton(expectedParticipant));
         when(chatRoomRepo.save(any())).thenReturn(expected);
 
         chatRoomService.deleteParticipantsFromChatRoom(expectedDto);
@@ -326,8 +326,8 @@ class ChatRoomServiceImplTest {
     void addNewUserToSystemChat() {
         Long id = 1L;
         when(chatRoomRepo.findSystemChatRooms()).thenReturn(Collections.singletonList(expected));
-        chatRoomService.addNewUserToSystemChat(id);
-        verify(chatRoomRepo).addUserToSystemChatRoom(expected.getId(), id);
+        chatRoomService.addNewUserToChat(id);
+        verify(chatRoomRepo).addUserToChatRoom(expected.getId(), id);
     }
 
     @Test

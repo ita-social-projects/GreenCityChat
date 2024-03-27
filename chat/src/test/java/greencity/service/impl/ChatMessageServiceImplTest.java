@@ -22,8 +22,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
-import org.powermock.api.mockito.PowerMockito;
 import org.springframework.data.domain.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
@@ -136,7 +134,7 @@ class ChatMessageServiceImplTest {
 
         when(modelMapper.map(null, ChatMessageDto.class)).thenReturn(chatMessageDto);
 
-        when(chatRoomRepo.getPatricipantsByChatRoomId(anyLong())).thenReturn(participants);
+        when(chatRoomRepo.getParticipantsByChatRoomId(anyLong())).thenReturn(participants);
 
         when(modelMapper.map(chatMessageDto, ChatMessageResponseDto.class)).thenReturn(responseDto);
 

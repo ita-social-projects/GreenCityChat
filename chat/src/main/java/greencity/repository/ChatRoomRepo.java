@@ -3,7 +3,7 @@ package greencity.repository;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.enums.ChatType;
-import java.util.HashMap;
+
 import java.util.List;
 import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,11 +11,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.servlet.http.Part;
 
 @Repository
 public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
@@ -76,7 +73,7 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
     /**
      * Method select all system chat.
      */
-    @Query("select cr from ChatRoom  cr where cr.type = 'SYSTEM'")
+    @Query("select cr from ChatRoom  cr where cr.type = 'PRIVATE'")
     List<ChatRoom> findSystemChatRooms();
 
     /**
@@ -85,14 +82,14 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
     @Modifying
     @Transactional
     @Query(nativeQuery = true, value = "insert into chat_rooms_participants(room_id,participant_id)"
-        + "values ( :chatroomid, :prticipantid )")
-    void addUserToSystemChatRoom(@Param("chatroomid") Long chatroomid, @Param("prticipantid") Long prticipantid);
+        + "values ( :chatroomid, :participantId)")
+    void addUserToChatRoom(@Param("chatroomid") Long chatroomid, @Param("participantId") Long participantId);
 
     /**
      * {@inheritDoc}
      */
     @Query("select cr.participants from ChatRoom cr where cr.id = :id")
-    Set<Participant> getPatricipantsByChatRoomId(@Param("id") Long id);
+    Set<Participant> getParticipantsByChatRoomId(@Param("id") Long id);
 
     /**
      * {@inheritDoc}

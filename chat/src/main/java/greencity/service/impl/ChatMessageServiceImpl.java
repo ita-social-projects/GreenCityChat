@@ -25,7 +25,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -76,7 +75,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         ChatMessage message = modelMapper.map(chatMessageDto, ChatMessage.class);
         chatMessageDto = modelMapper.map(chatMessageRepo.save(message), ChatMessageDto.class);
         ArrayList<Participant> participants = new ArrayList<>(
-            chatRoomRepo.getPatricipantsByChatRoomId(chatMessageDto.getRoomId()));
+            chatRoomRepo.getParticipantsByChatRoomId(chatMessageDto.getRoomId()));
 
         for (Participant current : participants) {
             if (current.getId() != message.getSender().getId()) {

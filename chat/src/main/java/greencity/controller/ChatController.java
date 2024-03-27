@@ -350,7 +350,7 @@ public class ChatController {
     })
     @PostMapping("/user")
     public ResponseEntity<Long> addUserToSystemChatRoom(@RequestBody Long userId) {
-        return ResponseEntity.status(HttpStatus.OK).body(chatRoomService.addNewUserToSystemChat(userId));
+        return ResponseEntity.status(HttpStatus.OK).body(chatRoomService.addNewUserToChat(userId));
     }
 
     /**

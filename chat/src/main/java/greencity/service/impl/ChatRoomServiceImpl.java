@@ -143,6 +143,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         Participant owner = participantService.findById(dto.getOwnerId());
         Set<Participant> participants = new HashSet<>();
         participants.add(owner);
+
         dto.getUsersId().forEach(id -> participants.add(participantService.findById(id)));
         ChatRoom room = chatRoomRepo.save(ChatRoom
             .builder()
@@ -161,7 +162,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         ChatRoom room = modelMapper.map(chatRoomDto, ChatRoom.class);
         room.setOwner(participantService.findById(chatRoomDto.getOwnerId()));
         room.setType(chatRoomDto.getChatType());
-        Set<Participant> participantToSend = chatRoomRepo.getPatricipantsByChatRoomId(chatRoomDto.getId());
+        Set<Participant> participantToSend = chatRoomRepo.getParticipantsByChatRoomId(chatRoomDto.getId());
         room = chatRoomRepo.save(room);
         Map<String, Object> headers = new HashMap<>();
         headers.put(HEADER_UPDATE_ROOM, new Object());
@@ -252,9 +253,10 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     }
 
     @Override
-    public Long addNewUserToSystemChat(Long userId) {
+    public Long addNewUserToChat(Long userId) {
+
         chatRoomRepo.findSystemChatRooms()
-            .forEach(chatRoom -> chatRoomRepo.addUserToSystemChatRoom(chatRoom.getId(), userId));
+            .forEach(chatRoom -> chatRoomRepo.addUserToChatRoom(chatRoom.getId(), userId));
         return userId;
     }
 

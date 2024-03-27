@@ -239,7 +239,7 @@ class ChatControllerTest {
     @Test
     void addUserToSystemChatRoomTest() throws Exception {
         Long userId = 1L;
-        when(chatRoomService.addNewUserToSystemChat(userId)).thenReturn(userId);
+        when(chatRoomService.addNewUserToChat(userId)).thenReturn(userId);
 
         ObjectMapper objectMapper = new ObjectMapper();
 
@@ -248,7 +248,7 @@ class ChatControllerTest {
             .content(objectMapper.writeValueAsString(userId)))
             .andExpect(status().isOk());
 
-        verify(chatRoomService).addNewUserToSystemChat(userId);
+        verify(chatRoomService).addNewUserToChat(userId);
     }
 
     @Test

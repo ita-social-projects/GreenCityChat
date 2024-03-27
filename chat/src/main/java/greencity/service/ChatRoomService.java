@@ -67,7 +67,7 @@ public interface ChatRoomService {
     /**
      * {@inheritDoc}
      */
-    Long addNewUserToSystemChat(Long userId);
+    Long addNewUserToChat(Long userId);
 
     /**
      * {@inheritDoc}
