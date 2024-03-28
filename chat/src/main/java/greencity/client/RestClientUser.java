@@ -17,7 +17,7 @@ import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
-public class RestClient {
+public class RestClientUser {
     private final RestTemplate restTemplate;
     @Value("${greencityuser.server.address}")
     private String greenCityUserServerAddress;

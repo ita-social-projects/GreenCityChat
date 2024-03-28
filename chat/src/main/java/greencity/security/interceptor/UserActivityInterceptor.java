@@ -1,6 +1,6 @@
 package greencity.security.interceptor;
 
-import greencity.client.RestClient;
+import greencity.client.RestClientUser;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,7 +12,7 @@ import java.util.Date;
 
 @AllArgsConstructor
 public class UserActivityInterceptor extends HandlerInterceptorAdapter {
-    private final RestClient restClient;
+    private final RestClientUser restClientUser;
 
     /**
      * The method finds and updates the last user activity time before handling a

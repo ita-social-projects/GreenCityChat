@@ -1,9 +1,7 @@
 package greencity.exception.handlers;
 
-import greencity.exception.exceptions.ChatRoomNotFoundException;
-import greencity.exception.exceptions.FileNotSavedException;
-import greencity.exception.exceptions.UserNotFoundException;
-import greencity.exception.exceptions.VoiceMessageNotFoundException;
+import greencity.exception.exceptions.*;
+
 import java.util.HashMap;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -85,6 +83,14 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(FileNotSavedException.class)
     public final ResponseEntity<Object> handleFileNotSavedException(FileNotSavedException ex,
         WebRequest request) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(getErrorAttributes(request));
+        log.trace(ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(UserIsNotAdmin.class)
+    public final ResponseEntity<Object> handleUserIsNotAdminException(UserIsNotAdmin ex,
+                                                                    WebRequest request) {
         ExceptionResponse exceptionResponse = new ExceptionResponse(getErrorAttributes(request));
         log.trace(ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);

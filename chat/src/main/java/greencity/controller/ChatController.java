@@ -340,17 +340,26 @@ public class ChatController {
     }
 
     /**
-     * Method add user to system chat room.
+     * Method add user to chat room.
      *
      * @param userId id of new user.
      */
-    @ApiOperation(value = "Add user to system chat.")
+    @ApiOperation(value = "Add user to chat room.")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = HttpStatuses.OK, response = Long.class)
     })
-    @PostMapping("/user")
-    public ResponseEntity<Long> addUserToSystemChatRoom(@RequestBody Long userId) {
-        return ResponseEntity.status(HttpStatus.OK).body(chatRoomService.addNewUserToChat(userId));
+    @PostMapping("/user/{userId}/{chatId}")
+    public ResponseEntity<Long> addUserToChatRoom(@PathVariable Long userId, @PathVariable Long chatId) {
+        return ResponseEntity.status(HttpStatus.OK).body(chatRoomService.addNewUserToChat(userId, chatId));
+    }
+
+    @ApiOperation(value = "Add admin to chat room.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = HttpStatuses.OK, response = Long.class)
+    })
+    @PostMapping("/admin/{userId}/{chatId}")
+    public ResponseEntity<Long> addAdminToChatRoom(@PathVariable Long userId, @PathVariable Long chatId) {
+        return ResponseEntity.status(HttpStatus.OK).body(chatRoomService.addNewAdminToChat(userId, chatId));
     }
 
     /**

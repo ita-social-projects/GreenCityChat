@@ -1,11 +1,13 @@
 package greencity.service.impl;
 
+import greencity.client.RestClientUbs;
 import greencity.constant.ErrorMessage;
 import greencity.dto.*;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.enums.ChatType;
 import greencity.exception.exceptions.ChatRoomNotFoundException;
+import greencity.exception.exceptions.UserIsNotAdmin;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
 import greencity.service.ChatRoomService;
@@ -29,6 +31,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     private final ModelMapper modelMapper;
     private final ChatMessageRepo chatMessageRepo;
     private final SimpMessagingTemplate messagingTemplate;
+    private final RestClientUbs restClientUbs;
     private static final String ROOM_LINK = "/rooms/user/";
     private static final String HEADER_UPDATE_ROOM = "updateRoom";
     private static final String HEADER_DELETE_ROOM = "deleteRoom";
@@ -253,11 +256,21 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     }
 
     @Override
-    public Long addNewUserToChat(Long userId) {
+    public Long addNewUserToChat(Long userId, Long chatRoomId) {
+        chatRoomRepo.addUserToChatRoom(chatRoomId, userId);
+        return userId; //TODO: make it in more appropriate way
+    }
 
-        chatRoomRepo.findSystemChatRooms()
-            .forEach(chatRoom -> chatRoomRepo.addUserToChatRoom(chatRoom.getId(), userId));
-        return userId;
+    @Override
+    public Long addNewAdminToChat(Long userId, Long chatRoomId) {
+        List<GetEmployeeDto> employeesByTariffId = restClientUbs.getEmployeesByTariffId(1L);
+        if (employeesByTariffId.stream().anyMatch(employee -> employee.getId().equals(userId))) {
+            chatRoomRepo.addUserToChatRoom(chatRoomId, userId);
+        } else {
+            throw new UserIsNotAdmin(ErrorMessage.USER_IS_NOT_ADMIN);
+        }
+        return userId; //TODO: make it in more appropriate way
+
     }
 
     private List<ChatRoomDto> mapListChatMessageDto(List<ChatRoom> rooms) {

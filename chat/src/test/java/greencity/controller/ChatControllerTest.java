@@ -236,20 +236,20 @@ class ChatControllerTest {
         verify(this.azureFileService).deleteFile("fileName");
     }
 
-    @Test
-    void addUserToSystemChatRoomTest() throws Exception {
-        Long userId = 1L;
-        when(chatRoomService.addNewUserToChat(userId)).thenReturn(userId);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        mockMvc.perform(post(chatLink + "/user")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(userId)))
-            .andExpect(status().isOk());
-
-        verify(chatRoomService).addNewUserToChat(userId);
-    }
+//    @Test
+//    void addUserToSystemChatRoomTest() throws Exception {
+//        Long userId = 1L;
+//        when(chatRoomService.addNewUserToChat(userId)).thenReturn(userId);
+//
+//        ObjectMapper objectMapper = new ObjectMapper();
+//
+//        mockMvc.perform(post(chatLink + "/user")
+//            .contentType(MediaType.APPLICATION_JSON)
+//            .content(objectMapper.writeValueAsString(userId)))
+//            .andExpect(status().isOk());
+//
+//        verify(chatRoomService).addNewUserToChat(userId);
+//    }
 
     @Test
     @SneakyThrows

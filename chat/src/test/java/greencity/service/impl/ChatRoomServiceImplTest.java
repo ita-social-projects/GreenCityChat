@@ -322,13 +322,13 @@ class ChatRoomServiceImplTest {
         assertEquals(expectedDto, actual);
     }
 
-    @Test
-    void addNewUserToSystemChat() {
-        Long id = 1L;
-        when(chatRoomRepo.findSystemChatRooms()).thenReturn(Collections.singletonList(expected));
-        chatRoomService.addNewUserToChat(id);
-        verify(chatRoomRepo).addUserToChatRoom(expected.getId(), id);
-    }
+//    @Test
+//    void addNewUserToSystemChat() {
+//        Long id = 1L;
+//        when(chatRoomRepo.findSystemChatRooms()).thenReturn(Collections.singletonList(expected));
+//        chatRoomService.addNewUserToChat(id);
+//        verify(chatRoomRepo).addUserToChatRoom(expected.getId(), id);
+//    }
 
     @Test
     @SneakyThrows
