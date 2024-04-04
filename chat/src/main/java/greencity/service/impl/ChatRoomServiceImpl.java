@@ -7,7 +7,7 @@ import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.enums.ChatType;
 import greencity.exception.exceptions.ChatRoomNotFoundException;
-import greencity.exception.exceptions.UserIsNotAdmin;
+import greencity.exception.exceptions.UserIsNotAdminException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
 import greencity.service.ChatRoomService;
@@ -152,6 +152,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             .builder()
             .participants(participants)
             .owner(owner)
+            .tariffId(dto.getTariffId())
             .type(ChatType.GROUP)
             .name(dto.getChatName())
             .logo(dto.getLogo())
@@ -267,7 +268,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         if (employeesByTariffId.stream().anyMatch(employee -> employee.getId().equals(userId))) {
             chatRoomRepo.addUserToChatRoom(chatRoomId, userId);
         } else {
-            throw new UserIsNotAdmin(ErrorMessage.USER_IS_NOT_ADMIN);
+            throw new UserIsNotAdminException(ErrorMessage.USER_IS_NOT_ADMIN);
         }
         return userId; //TODO: make it in more appropriate way
 
@@ -309,5 +310,13 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         } else {
             throw new UnsupportedOperationException(ErrorMessage.USER_NOT_BELONG_TO_CHAT);
         }
+    }
+
+    @Override
+    public List<ChatRoomDto> findAllChatsByTariffId(Long tariffId) {
+        var allChatsByTariffId = chatRoomRepo.findAllChatsByTariffId(tariffId);
+        return allChatsByTariffId.stream()
+            .map(chatRoom -> modelMapper.map(chatRoom, ChatRoomDto.class))
+            .collect(Collectors.toList());
     }
 }

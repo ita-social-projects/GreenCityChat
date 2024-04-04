@@ -10,6 +10,7 @@ import lombok.*;
 @Builder
 public class GroupChatRoomCreateDto {
     private List<Long> usersId;
+    private Long tariffId;
     private String chatName;
     private Long ownerId;
     private String logo;

@@ -88,9 +88,9 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);
     }
 
-    @ExceptionHandler(UserIsNotAdmin.class)
-    public final ResponseEntity<Object> handleUserIsNotAdminException(UserIsNotAdmin ex,
-                                                                    WebRequest request) {
+    @ExceptionHandler(UserIsNotAdminException.class)
+    public final ResponseEntity<Object> handleUserIsNotAdminException(UserIsNotAdminException ex,
+                                                                      WebRequest request) {
         ExceptionResponse exceptionResponse = new ExceptionResponse(getErrorAttributes(request));
         log.trace(ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);

@@ -111,4 +111,6 @@ public interface ChatRoomService {
      * @param userId {@link Long} user's id
      */
     void deleteMessagesFromChatRoom(Long roomId, Long userId);
+
+    List<ChatRoomDto> findAllChatsByTariffId(Long tariffId);
 }

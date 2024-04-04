@@ -62,6 +62,11 @@ public class ChatController {
         return ResponseEntity.status(HttpStatus.OK)
             .body(chatRoomService.findAllVisibleRooms(principal.getName()));
     }
+    @GetMapping("/tariffs/{tariffId}")
+    public ResponseEntity<List<ChatRoomDto>> findAllChatsByTariffId(@PathVariable Long tariffId) {
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(chatRoomService.findAllChatsByTariffId(tariffId));
+    }
 
     /**
      * Method return all message by room id.

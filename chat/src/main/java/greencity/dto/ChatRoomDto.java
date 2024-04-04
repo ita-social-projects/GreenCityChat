@@ -21,6 +21,7 @@ public class ChatRoomDto {
     private ChatType chatType;
     private Set<ParticipantDto> participants;
     private Long ownerId;
+    private Long tariffId;
     private Long amountUnreadMessages;
     private String logo;
     private String lastMessage;

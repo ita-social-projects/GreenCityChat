@@ -33,6 +33,9 @@ public class ChatRoom {
     @Enumerated(value = EnumType.STRING)
     private ChatType type;
 
+    @Column(name = "tariff_id")
+    private Long tariffId;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "chat_rooms_participants",

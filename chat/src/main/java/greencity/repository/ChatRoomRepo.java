@@ -4,6 +4,7 @@ import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.enums.ChatType;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -106,4 +107,7 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
         + "GROUP  BY room_id HAVING COUNT(room_id) = 2 ",
         nativeQuery = true)
     List<Long> chatExistBetweenTwo(@Param("first") Long firstUser, @Param("second") Long secondUser);
+
+    @Query("select cr from ChatRoom  cr where cr.tariffId = :tariffId")
+    List<ChatRoom> findAllChatsByTariffId(Long tariffId);
 }
