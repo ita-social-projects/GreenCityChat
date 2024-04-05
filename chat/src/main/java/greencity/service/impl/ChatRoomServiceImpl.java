@@ -152,6 +152,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             .builder()
             .participants(participants)
             .owner(owner)
+            .chatStatus(dto.getChatStatus())
             .tariffId(dto.getTariffId())
             .type(ChatType.GROUP)
             .name(dto.getChatName())

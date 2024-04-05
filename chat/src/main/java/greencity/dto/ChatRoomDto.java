@@ -1,6 +1,7 @@
 package greencity.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import greencity.enums.ChatStatus;
 import greencity.enums.ChatType;
 
 import java.time.ZonedDateTime;
@@ -22,6 +23,7 @@ public class ChatRoomDto {
     private Set<ParticipantDto> participants;
     private Long ownerId;
     private Long tariffId;
+    private ChatStatus chatStatus;
     private Long amountUnreadMessages;
     private String logo;
     private String lastMessage;
