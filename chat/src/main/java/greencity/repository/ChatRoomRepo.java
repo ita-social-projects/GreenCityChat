@@ -108,6 +108,12 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
         nativeQuery = true)
     List<Long> chatExistBetweenTwo(@Param("first") Long firstUser, @Param("second") Long secondUser);
 
+    /**
+     * Retrieves all chat rooms associated with a specific tariff.
+     *
+     * @param tariffId the ID of the tariff
+     * @return a list of chat rooms associated with the specified tariff
+     */
     @Query("select cr from ChatRoom  cr where cr.tariffId = :tariffId")
     List<ChatRoom> findAllChatsByTariffId(Long tariffId);
 }

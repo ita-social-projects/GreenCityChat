@@ -62,6 +62,14 @@ public class ChatController {
         return ResponseEntity.status(HttpStatus.OK)
             .body(chatRoomService.findAllVisibleRooms(principal.getName()));
     }
+
+    /**
+     * Retrieves a list of chat rooms associated with the specified tariff ID.
+     *
+     * @param tariffId The ID of the tariff for which to retrieve chat rooms.
+     * @return A ResponseEntity containing a list of ChatRoomDto objects and an OK
+     *         status if successful.
+     */
     @GetMapping("/tariffs/{tariffId}")
     public ResponseEntity<List<ChatRoomDto>> findAllChatsByTariffId(@PathVariable Long tariffId) {
         return ResponseEntity.status(HttpStatus.OK)
@@ -358,9 +366,18 @@ public class ChatController {
         return ResponseEntity.status(HttpStatus.OK).body(chatRoomService.addNewUserToChat(userId, chatId));
     }
 
+    /**
+     * Adds an admin to the specified chat room.
+     *
+     * @param userId The ID of the user to be added as an admin.
+     * @param chatId The ID of the chat room to which the user will be added as an
+     *               admin.
+     * @return A ResponseEntity containing the ID of the newly added admin and an OK
+     *         status if successful.
+     */
     @ApiOperation(value = "Add admin to chat room.")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = HttpStatuses.OK, response = Long.class)
+        @ApiResponse(code = 200, message = HttpStatuses.OK, response = Long.class)
     })
     @PostMapping("/admin/{userId}/{chatId}")
     public ResponseEntity<Long> addAdminToChatRoom(@PathVariable Long userId, @PathVariable Long chatId) {

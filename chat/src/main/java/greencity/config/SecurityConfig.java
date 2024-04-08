@@ -74,7 +74,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .and()
             .addFilterBefore(
                 new greencity.security.filters.AccessTokenAuthenticationFilter(jwtTool, authenticationManager(),
-                        restClientUser),
+                    restClientUser),
                 UsernamePasswordAuthenticationFilter.class)
             .exceptionHandling()
             .authenticationEntryPoint((req, resp, exc) -> resp.sendError(SC_UNAUTHORIZED, "Authorize first."))
@@ -148,7 +148,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-//        configuration.setAllowedOrigins(Collections.singletonList("*"));
         configuration.setAllowedOrigins(List.of(allowedOrigins));
         configuration.setAllowedMethods(
             Arrays.asList("GET", "POST", "OPTIONS", "DELETE", "PUT", "PATCH"));

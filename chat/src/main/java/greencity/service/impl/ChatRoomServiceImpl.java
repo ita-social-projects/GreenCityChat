@@ -7,15 +7,14 @@ import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.enums.ChatType;
 import greencity.exception.exceptions.ChatRoomNotFoundException;
+import greencity.exception.exceptions.TariffNotFoundException;
 import greencity.exception.exceptions.UserIsNotAdminException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
 import greencity.service.ChatRoomService;
 import greencity.service.ParticipantService;
-
 import java.util.*;
 import java.util.stream.Collectors;
-
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
@@ -260,7 +259,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     @Override
     public Long addNewUserToChat(Long userId, Long chatRoomId) {
         chatRoomRepo.addUserToChatRoom(chatRoomId, userId);
-        return userId; //TODO: make it in more appropriate way
+        return userId; // TODO: make it in more appropriate way
     }
 
     @Override
@@ -271,8 +270,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         } else {
             throw new UserIsNotAdminException(ErrorMessage.USER_IS_NOT_ADMIN);
         }
-        return userId; //TODO: make it in more appropriate way
-
+        return userId; // TODO: make it in more appropriate way
     }
 
     private List<ChatRoomDto> mapListChatMessageDto(List<ChatRoom> rooms) {
@@ -315,9 +313,13 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     @Override
     public List<ChatRoomDto> findAllChatsByTariffId(Long tariffId) {
-        var allChatsByTariffId = chatRoomRepo.findAllChatsByTariffId(tariffId);
-        return allChatsByTariffId.stream()
-            .map(chatRoom -> modelMapper.map(chatRoom, ChatRoomDto.class))
-            .collect(Collectors.toList());
+        if (!restClientUbs.checkIfTariffExistsById(tariffId)) {
+            throw new TariffNotFoundException("ChatService - Tariff not found with id: " + tariffId);
+        } else {
+            var allChatsByTariffId = chatRoomRepo.findAllChatsByTariffId(tariffId);
+            return allChatsByTariffId.stream()
+                .map(chatRoom -> modelMapper.map(chatRoom, ChatRoomDto.class))
+                .collect(Collectors.toList());
+        }
     }
 }

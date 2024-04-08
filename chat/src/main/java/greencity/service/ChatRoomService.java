@@ -112,5 +112,11 @@ public interface ChatRoomService {
      */
     void deleteMessagesFromChatRoom(Long roomId, Long userId);
 
+    /**
+     * Retrieves all chat rooms associated with the specified tariff ID.
+     *
+     * @param tariffId the ID of the tariff
+     * @return a list of chat room DTOs associated with the specified tariff ID
+     */
     List<ChatRoomDto> findAllChatsByTariffId(Long tariffId);
 }
