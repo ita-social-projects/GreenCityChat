@@ -4,11 +4,14 @@ import greencity.dto.ChatMessageDto;
 import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
+import greencity.enums.ChatStatus;
 import greencity.enums.ChatType;
 import greencity.enums.Role;
 import greencity.enums.UserStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -19,8 +22,7 @@ class ChatMessageDtoMapperTest {
 
     @BeforeEach
     void init() {
-        chatMessage = new ChatMessage(1L, new ChatRoom(1L, "name", null, null,
-            ChatType.GROUP, null, null),
+        chatMessage = new ChatMessage(1L, new ChatRoom(1L, "name", null, null, ChatType.GROUP, ChatStatus.NEW, 1L,  null, "logo"),
             new Participant(1L, "name", "asd@asd.asd", null,
                 null, UserStatus.ACTIVATED, Role.ROLE_USER, null),
             "content", null, null);
