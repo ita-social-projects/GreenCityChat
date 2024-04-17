@@ -3,6 +3,7 @@ package greencity.service;
 import greencity.dto.ChatRoomDto;
 import greencity.dto.GroupChatRoomCreateDto;
 import greencity.dto.LeaveChatDto;
+import greencity.dto.LocationsDto;
 import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
@@ -119,4 +120,19 @@ public interface ChatRoomService {
      * @return a list of chat room DTOs associated with the specified tariff ID
      */
     List<ChatRoomDto> findAllChatsByTariffId(Long tariffId);
+
+    /**
+     * Retrieves a list of all locations.
+     *
+     * @return A list of {@link LocationsDto} objects representing all locations.
+     */
+    List<LocationsDto> getAllLocations();
+
+    /**
+     * Retrieves the tariff ID associated with the specified location ID.
+     *
+     * @param locationId The ID of the location for which to retrieve the tariff ID.
+     * @return The tariff ID associated with the specified location ID.
+     */
+    Long getTariffIdByLocationId(Long locationId);
 }

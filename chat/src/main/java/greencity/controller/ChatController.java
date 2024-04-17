@@ -462,4 +462,42 @@ public class ChatController {
         chatRoomService.deleteMessagesFromChatRoom(chatId, userId);
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
+
+    /**
+     * Method to retrieve all locations.
+     *
+     * @return ResponseEntity containing a list of LocationDto objects and an OK
+     *         status if successful.
+     */
+    @ApiOperation(value = "Get all locations.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = HttpStatuses.OK, response = LocationsDto.class, responseContainer = "List")
+    })
+    @GetMapping("/locations")
+    public ResponseEntity<List<LocationsDto>> getAllLocations() {
+        List<LocationsDto> allLocations = chatRoomService.getAllLocations();
+        return ResponseEntity.status(HttpStatus.OK).body(allLocations);
+    }
+
+    /**
+     * Retrieves the tariff ID associated with the specified location ID.
+     *
+     * @param locationId The ID of the location for which to retrieve the tariff ID.
+     * @return ResponseEntity containing the tariff ID if found, or appropriate
+     *         error response if not found or if there are any issues during the
+     *         retrieval process
+     */
+    @ApiOperation(value = "Get Tariff ID by Location ID")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = HttpStatuses.OK),
+        @ApiResponse(code = 400, message = HttpStatuses.BAD_REQUEST),
+        @ApiResponse(code = 401, message = HttpStatuses.UNAUTHORIZED),
+        @ApiResponse(code = 403, message = HttpStatuses.FORBIDDEN),
+        @ApiResponse(code = 404, message = HttpStatuses.NOT_FOUND)
+    })
+    @GetMapping(value = "/tariffs/{locationId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Long> getTariffIdByLocationId(@PathVariable("locationId") Long locationId) {
+        Long tariffId = chatRoomService.getTariffIdByLocationId(locationId);
+        return ResponseEntity.status(HttpStatus.OK).body(tariffId);
+    }
 }

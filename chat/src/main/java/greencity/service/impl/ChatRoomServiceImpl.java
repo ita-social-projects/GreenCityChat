@@ -20,6 +20,7 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 
 @Service
 @AllArgsConstructor
@@ -321,5 +322,19 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                 .map(chatRoom -> modelMapper.map(chatRoom, ChatRoomDto.class))
                 .collect(Collectors.toList());
         }
+    }
+
+    @Override
+    public List<LocationsDto> getAllLocations() {
+        try {
+            return restClientUbs.getAllLocations();
+        } catch (Exception e) {
+            throw new RestClientException("Error occurred while retrieving locations from UBS service", e);
+        }
+    }
+
+    @Override
+    public Long getTariffIdByLocationId(Long locationId) {
+        return restClientUbs.getTariffIdByLocationId(locationId);
     }
 }
