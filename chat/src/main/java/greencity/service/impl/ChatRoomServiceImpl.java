@@ -33,9 +33,11 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     private final SimpMessagingTemplate messagingTemplate;
     private final RestClientUbs restClientUbs;
     private static final String ROOM_LINK = "/rooms/user/";
+    private static final String SUPPORT_LINK = "/rooms/support/";
     private static final String HEADER_UPDATE_ROOM = "updateRoom";
     private static final String HEADER_DELETE_ROOM = "deleteRoom";
     private static final String HEADER_LEAVE_ROOM = "leaveRoom";
+    private static final String HEADER_SUPPORT = "support";
 
     @Override
     public List<ChatRoomDto> findAllByParticipantName(String name) {
@@ -159,6 +161,16 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             .logo(dto.getLogo())
             .build());
 
+        Map<String, Object> headers = new HashMap<>();
+        headers.put(HEADER_SUPPORT, new Object());
+        List<EmployeeWithTariffsDto> employeesByTariffIdWithChat =
+                restClientUbs.getEmployeesByTariffIdWithChat(dto.getTariffId());
+
+        employeesByTariffIdWithChat.forEach(employee -> {
+            messagingTemplate.convertAndSendToUser(
+                employee.getEmployeeDto().getEmail(), SUPPORT_LINK, modelMapper.map(room, ChatRoomDto.class));
+        });
+
         return modelMapper.map(room, ChatRoomDto.class);
     }
 
@@ -265,13 +277,14 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     @Override
     public Long addNewAdminToChat(Long userId, Long chatRoomId) {
-        List<GetEmployeeDto> employeesByTariffId = restClientUbs.getEmployeesByTariffId(1L);
-        if (employeesByTariffId.stream().anyMatch(employee -> employee.getId().equals(userId))) {
-            chatRoomRepo.addUserToChatRoom(chatRoomId, userId);
-        } else {
-            throw new UserIsNotAdminException(ErrorMessage.USER_IS_NOT_ADMIN);
-        }
-        return userId; // TODO: make it in more appropriate way
+        //List<EmployeeWithTariffsDto> employeesByTariffId = restClientUbs.getEmployeesByTariffId(1L);
+//        if (employeesByTariffId.stream().anyMatch(employee -> employee.getEmployeeDto().equals(userId))) {
+//            chatRoomRepo.addUserToChatRoom(chatRoomId, userId);
+//        } else {
+//            throw new UserIsNotAdminException(ErrorMessage.USER_IS_NOT_ADMIN);
+//        }
+//        return userId; // TODO: make it in more appropriate way
+        return null;
     }
 
     private List<ChatRoomDto> mapListChatMessageDto(List<ChatRoom> rooms) {

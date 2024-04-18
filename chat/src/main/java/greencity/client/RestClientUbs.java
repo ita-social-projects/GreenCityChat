@@ -1,6 +1,6 @@
 package greencity.client;
 
-import greencity.dto.GetEmployeeDto;
+import greencity.dto.EmployeeWithTariffsDto;
 import greencity.dto.LocationsDto;
 import greencity.exception.exceptions.TariffNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -23,24 +23,24 @@ public class RestClientUbs {
     private String greenCityUbsServerAddress;
     private final HttpServletRequest httpServletRequest;
 
-    /**
-     * Retrieves a list of employees by their associated tariff ID.
-     *
-     * @param tariffId The ID of the tariff for which to retrieve employees.
-     * @return A list of {@link GetEmployeeDto} objects representing the employees
-     *         associated with the specified tariff.
-     * @throws RestClientException if an error occurs during the REST API call.
-     */
-    public List<GetEmployeeDto> getEmployeesByTariffId(Long tariffId) {
-        HttpEntity<String> entity = new HttpEntity<>(setHeader());
-        ResponseEntity<List<GetEmployeeDto>> response = restTemplate.exchange(
-            greenCityUbsServerAddress + "/admin/ubs-employee/get-employees/" + tariffId,
-            HttpMethod.GET,
-            entity,
-            new ParameterizedTypeReference<>() {
-            });
-        return response.getBody();
-    }
+//    /**
+//     * Retrieves a list of employees by their associated tariff ID.
+//     *
+//     * @param tariffId The ID of the tariff for which to retrieve employees.
+//     * @return A list of {@link GetEmployeeDto} objects representing the employees
+//     *         associated with the specified tariff.
+//     * @throws RestClientException if an error occurs during the REST API call.
+//     */
+//    public List<GetEmployeeDto> getEmployeesByTariffId(Long tariffId) {
+//        HttpEntity<String> entity = new HttpEntity<>(setHeader());
+//        ResponseEntity<List<GetEmployeeDto>> response = restTemplate.exchange(
+//            greenCityUbsServerAddress + "/admin/ubs-employee/get-employees/" + tariffId,
+//            HttpMethod.GET,
+//            entity,
+//            new ParameterizedTypeReference<>() {
+//            });
+//        return response.getBody();
+//    }
 
     /**
      * Checks if a tariff exists by its ID.
@@ -136,6 +136,17 @@ public class RestClientUbs {
         } catch (RestClientException ex) {
             throw new RuntimeException("Error occurred while retrieving tariff ID");
         }
+    }
+
+    public List<EmployeeWithTariffsDto> getEmployeesByTariffIdWithChat(Long tariffId) {
+        HttpEntity<String> entity = new HttpEntity<>(setHeader());
+        ResponseEntity<List<EmployeeWithTariffsDto>> response = restTemplate.exchange(
+            greenCityUbsServerAddress + "/admin/ubs-employee/get-employees/" + tariffId,
+            HttpMethod.GET,
+            entity,
+            new ParameterizedTypeReference<>() {
+            });
+        return response.getBody();
     }
 
     private HttpHeaders setHeader() {

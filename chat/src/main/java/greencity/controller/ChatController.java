@@ -352,6 +352,11 @@ public class ChatController {
         chatMessageService.updateMessage(chatMessageDto);
     }
 
+    @MessageMapping("/chat/update/status")
+    public void updateStatus(ChatMessageDto chatMessageDto) {
+
+    }
+
     /**
      * Method add user to chat room.
      *
