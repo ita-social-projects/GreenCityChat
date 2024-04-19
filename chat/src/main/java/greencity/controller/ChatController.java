@@ -4,25 +4,31 @@ import greencity.annotations.ApiPageable;
 import greencity.constant.HttpStatuses;
 import greencity.dto.*;
 import greencity.enums.ChatType;
-import greencity.service.*;
-import java.security.Principal;
-import java.util.List;
+import greencity.service.AzureFileService;
+import greencity.service.ChatMessageService;
+import greencity.service.ChatRoomService;
+import greencity.service.ParticipantService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
+import java.security.Principal;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.*;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.data.domain.Pageable;
-import jakarta.validation.Valid;
 
 @RestController
+@Validated
 @AllArgsConstructor
 @RequestMapping("/chat")
 public class ChatController {
@@ -323,7 +329,7 @@ public class ChatController {
      * {@inheritDoc}
      */
     @MessageMapping("/chat")
-    public void processMessage(ChatMessageDto chatMessageDto) {
+    public void processMessage(@Valid ChatMessageDto chatMessageDto) {
         chatMessageService.processMessage(chatMessageDto);
     }
 

@@ -43,7 +43,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private final ParticipantRepo participantRepo;
     private final AzureFileService azureFileService;
     private final UnreadMessageRepo unreadMessageRepo;
-    private static final String ROOM_LINK = "/room/";
+    private static final String ROOM_LINK = "/room";
     private static final String MESSAGE_LINK = "/queue/messages";
     private static final String HEADER_DELETE = "delete";
     private static final String HEADER_UPDATE = "update";
