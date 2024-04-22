@@ -16,6 +16,7 @@ import greencity.service.ParticipantService;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -24,6 +25,7 @@ import org.springframework.web.client.RestClientException;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class ChatRoomServiceImpl implements ChatRoomService {
     private final ChatMessageServiceImpl chatMessageService;
     private final ChatRoomRepo chatRoomRepo;
@@ -33,7 +35,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     private final SimpMessagingTemplate messagingTemplate;
     private final RestClientUbs restClientUbs;
     private static final String ROOM_LINK = "/rooms/user/";
-    private static final String SUPPORT_LINK = "/rooms/support/";
+    private static final String SUPPORT_LINK = "/rooms/support";
     private static final String HEADER_UPDATE_ROOM = "updateRoom";
     private static final String HEADER_DELETE_ROOM = "deleteRoom";
     private static final String HEADER_LEAVE_ROOM = "leaveRoom";
@@ -169,6 +171,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         employeesByTariffIdWithChat.forEach(employee -> {
             messagingTemplate.convertAndSendToUser(
                 employee.getEmployeeDto().getEmail(), SUPPORT_LINK, modelMapper.map(room, ChatRoomDto.class));
+                log.info("Notification sent to {}", employee.getEmployeeDto().getEmail());
         });
 
         return modelMapper.map(room, ChatRoomDto.class);

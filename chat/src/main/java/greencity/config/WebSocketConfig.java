@@ -22,15 +22,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/room");
+        config.enableSimpleBroker("/room", "/user");
         config.setApplicationDestinationPrefixes("/app");
-        config.setPreservePublishOrder(true);
+        config.setUserDestinationPrefix("/user");
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/socket")
-            .setAllowedOrigins(allowedOrigins)
+            .setAllowedOrigins("*")
             .withSockJS();
     }
 
