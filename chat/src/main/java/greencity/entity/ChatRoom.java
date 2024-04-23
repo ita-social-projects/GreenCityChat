@@ -1,12 +1,10 @@
 package greencity.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import greencity.enums.ChatType;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import javax.persistence.*;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity

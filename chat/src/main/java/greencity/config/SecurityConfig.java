@@ -2,32 +2,31 @@ package greencity.config;
 
 import static greencity.constant.AppConstant.*;
 import static greencity.constant.AppConstant.UBS_EMPLOYEE;
-
 import greencity.client.RestClient;
 import greencity.jwt.JwtTool;
 import greencity.security.providers.JwtAuthenticationProvider;
-import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Collections;
-import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
-import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+import java.util.List;
+import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.authentication.configuration.EnableGlobalAuthentication;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
  * Config for security.
@@ -35,17 +34,23 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
  */
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+@EnableGlobalAuthentication
+public class SecurityConfig {
     private final JwtTool jwtTool;
     private final RestClient restClient;
+    private final AuthenticationConfiguration authenticationConfiguration;
+    @Value("${spring.messaging.stomp.websocket.allowed-origins}")
+    private String[] allowedOrigins;
 
     /**
      * Constructor.
      */
     @Autowired
-    public SecurityConfig(JwtTool jwtTool, RestClient restClient) {
+    public SecurityConfig(JwtTool jwtTool, RestClient restClient,
+        AuthenticationConfiguration authenticationConfiguration) {
         this.jwtTool = jwtTool;
         this.restClient = restClient;
+        this.authenticationConfiguration = authenticationConfiguration;
     }
 
     /**
@@ -61,59 +66,64 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
      *
      * @param http {@link HttpSecurity}
      */
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.csrf()
-            .disable()
-            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.cors(corsCustomizer -> corsCustomizer.configurationSource(request -> {
+            CorsConfiguration config = new CorsConfiguration();
+            config.setAllowedOriginPatterns(List.of(allowedOrigins));
+            config.setAllowedMethods(
+                Arrays.asList("GET", "POST", "OPTIONS", "DELETE", "PUT", "PATCH"));
+            config.setAllowedHeaders(
+                Arrays.asList("Access-Control-Allow-Origin", "Access-Control-Allow-Headers",
+                    "X-Requested-With", "Origin", "Content-Type", "Accept", "Authorization"));
+            config.setAllowCredentials(true);
+            config.setMaxAge(3600L);
+            return config;
+        }))
+            .csrf(AbstractHttpConfigurer::disable)
+            .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
             .addFilterBefore(
                 new greencity.security.filters.AccessTokenAuthenticationFilter(jwtTool, authenticationManager(),
                     restClient),
                 UsernamePasswordAuthenticationFilter.class)
-            .exceptionHandling()
-            .authenticationEntryPoint((req, resp, exc) -> resp.sendError(SC_UNAUTHORIZED, "Authorize first."))
-            .accessDeniedHandler((req, resp, exc) -> resp.sendError(SC_FORBIDDEN, "You don't have authorities."))
-            .and()
-            .authorizeRequests()
-            .antMatchers("/css/**",
-                "/img/**",
-                "/socket",
-                "/socket/**",
-                "/socket/**/**",
-                "/socket/info")
-            .permitAll()
-            .antMatchers(HttpMethod.GET,
-                "/chat",
-                "/chat/**",
-                "/chat/create-chatRoom",
-                "/chat/messages/{room_id}",
-                "/chat/room/{room_id}",
-                "/chat/last/message",
-                "/chat/exist/{fistUserId}/{secondUserId}",
-                "/chat/rooms",
-                "/chat/user",
-                "/chat/user/{id}",
-                "/chat/users/**")
-            .hasAnyRole(USER, ADMIN, MODERATOR, UBS_EMPLOYEE)
-            .antMatchers(HttpMethod.POST,
-                "/chat/create-chatRoom",
-                "/chat/sent-message/{userId}/{roomId}")
-            .hasAnyRole(USER, ADMIN, MODERATOR, UBS_EMPLOYEE);
-    }
-
-    /**
-     * Method for configure matchers that will be ignored in security.
-     *
-     * @param web {@link WebSecurity}
-     */
-    @Override
-    public void configure(WebSecurity web) {
-        web.ignoring().antMatchers("/v2/api-docs/**");
-        web.ignoring().antMatchers("/swagger.json");
-        web.ignoring().antMatchers("/swagger-ui.html");
-        web.ignoring().antMatchers("/swagger-resources/**");
-        web.ignoring().antMatchers("/webjars/**");
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint((req, resp, exc) -> resp.sendError(SC_UNAUTHORIZED, "Authorize first."))
+                .accessDeniedHandler((req, resp, exc) -> resp.sendError(SC_FORBIDDEN, "You don't have authorities.")))
+            .authorizeHttpRequests(req -> req
+                .requestMatchers("/css/**",
+                    "/v3/api-docs/swagger-config",
+                    "/v3/api-docs",
+                    "/img/**",
+                    "/socket",
+                    "/socket/**",
+                    "/socket/info",
+                    "swagger-ui/index.html",
+                    "/swagger-ui/swagger-ui.css",
+                    "/swagger-ui/index.css",
+                    "/swagger-ui/swagger-ui-bundle.js",
+                    "/swagger-ui/swagger-ui-standalone-preset.js",
+                    "/swagger-ui/swagger-initializer.js",
+                    "/swagger-ui/favicon-32x32.png",
+                    "/swagger-ui/favicon-16x16.png",
+                    "/chat/**")
+                .permitAll()
+                .requestMatchers(HttpMethod.GET,
+                    "/chat/create-chatRoom",
+                    "/chat/messages/{room_id}",
+                    "/chat/room/{room_id}",
+                    "/chat/last/message",
+                    "/chat/exist/{fistUserId}/{secondUserId}",
+                    "/chat/rooms",
+                    "/chat/user",
+                    "/chat/user/{id}",
+                    "/chat/users/**")
+                .hasAnyRole(USER, ADMIN, MODERATOR, UBS_EMPLOYEE)
+                .requestMatchers(HttpMethod.POST,
+                    "/chat/create-chatRoom",
+                    "/chat/sent-message/{userId}/{roomId}")
+                .hasAnyRole(USER, ADMIN, MODERATOR, UBS_EMPLOYEE)
+                .anyRequest().hasAnyRole(ADMIN));
+        return http.build();
     }
 
     /**
@@ -121,8 +131,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
      *
      * @param auth {@link AuthenticationManagerBuilder}
      */
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) {
+    @Autowired
+    public void configureGlobal(AuthenticationManagerBuilder auth) {
         auth.authenticationProvider(new JwtAuthenticationProvider(jwtTool));
     }
 
@@ -132,26 +142,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
      * @return {@link AuthenticationManager}
      */
     @Bean
-    @Override
     public AuthenticationManager authenticationManager() throws Exception {
-        return super.authenticationManager();
-    }
-
-    /**
-     * Bean {@link CorsConfigurationSource} that uses for CORS setup.
-     */
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Collections.singletonList("*"));
-        configuration.setAllowedMethods(
-            Arrays.asList("GET", "POST", "OPTIONS", "DELETE", "PUT", "PATCH"));
-        configuration.setAllowedHeaders(
-            Arrays.asList(
-                "X-Requested-With", "Origin", "Content-Type", "Accept", "Authorization"));
-        configuration.setAllowCredentials(true);
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
+        return authenticationConfiguration.getAuthenticationManager();
     }
 }

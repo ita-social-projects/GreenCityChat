@@ -5,7 +5,7 @@ import greencity.dto.UserVO;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Optional;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

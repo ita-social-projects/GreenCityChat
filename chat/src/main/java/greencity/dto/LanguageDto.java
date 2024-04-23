@@ -1,9 +1,8 @@
 package greencity.dto;
 
 import lombok.*;
-
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 @EqualsAndHashCode(of = {"id", "code"})
 @Data

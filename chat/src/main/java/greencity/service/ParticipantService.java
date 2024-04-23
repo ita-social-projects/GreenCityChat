@@ -2,7 +2,6 @@ package greencity.service;
 
 import greencity.dto.ParticipantDto;
 import greencity.entity.Participant;
-
 import java.util.List;
 
 public interface ParticipantService {

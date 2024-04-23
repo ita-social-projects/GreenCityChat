@@ -2,9 +2,10 @@ package greencity.entity;
 
 import greencity.enums.Role;
 import greencity.enums.UserStatus;
-import javax.persistence.*;
+import jakarta.persistence.*;
 import lombok.*;
-
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.type.descriptor.jdbc.IntegerJdbcType;
 import java.util.List;
 
 @Entity
@@ -29,6 +30,7 @@ public class Participant {
     private String profilePicture;
 
     @Enumerated(value = EnumType.ORDINAL)
+    @JdbcType(IntegerJdbcType.class)
     private UserStatus userStatus;
 
     @Enumerated(value = EnumType.STRING)

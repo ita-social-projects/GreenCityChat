@@ -3,7 +3,6 @@ package greencity.dto;
 import greencity.enums.Role;
 import greencity.enums.UserStatus;
 import lombok.*;
-
 import java.util.List;
 
 @NoArgsConstructor

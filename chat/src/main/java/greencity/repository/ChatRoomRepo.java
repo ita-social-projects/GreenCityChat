@@ -3,7 +3,6 @@ package greencity.repository;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.enums.ChatType;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,11 +10,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.servlet.http.Part;
 
 @Repository
 public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
@@ -27,7 +23,7 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
      * @return list of {@link ChatRoom} instances.
      */
     @Query(
-        value = "SELECT * FROM chat_rooms room "
+        value = "SELECT room.* FROM chat_rooms room "
             + "INNER JOIN chat_rooms_participants crp on room.id = crp.room_id "
             + "WHERE crp.participant_id = :id",
         nativeQuery = true)
@@ -46,7 +42,7 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
     @Query(value = "SELECT cr FROM ChatRoom cr"
         + " JOIN cr.participants p"
         + " WHERE p IN :participants"
-        + " AND UPPER(cr.type) = :chatType"
+        + " AND cr.type = :chatType"
         + " GROUP BY cr.id"
         + " HAVING COUNT(cr.id) = CAST(:participantsCount AS long)")
     List<ChatRoom> findByParticipantsAndStatus(@Param("participants") Set<Participant> participants,

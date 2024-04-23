@@ -3,9 +3,8 @@ package greencity.validator;
 import greencity.annotations.ValidLanguage;
 import greencity.service.LanguageService;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import java.util.List;
 import java.util.Locale;
 

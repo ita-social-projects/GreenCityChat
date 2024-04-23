@@ -2,8 +2,7 @@ package greencity.entity;
 
 import java.time.ZonedDateTime;
 import java.util.List;
-import javax.persistence.*;
-
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
