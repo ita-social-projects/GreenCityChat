@@ -203,8 +203,9 @@ class ChatControllerTest {
     void sentMessageTest() throws Exception {
         Long userId = 1L, roomId = 1L;
         String content = "content";
-        Mockito.when(chatMessageService.sentMessage(Mockito.eq(userId), Mockito.eq(roomId), Mockito.eq(content))).thenReturn(ChatMessageDto.builder()
-            .id(1L).build());
+        Mockito.when(chatMessageService.sentMessage(Mockito.eq(userId), Mockito.eq(roomId), Mockito.eq(content)))
+            .thenReturn(ChatMessageDto.builder()
+                .id(1L).build());
         mockMvc.perform(post(chatLink + "/sent-message/{userId}/{roomId}", userId, roomId)
             .param("content", content)).andExpect(status().isCreated());
 
