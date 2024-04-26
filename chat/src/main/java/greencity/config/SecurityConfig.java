@@ -46,8 +46,8 @@ public class SecurityConfig {
      */
     @Autowired
     public SecurityConfig(JwtTool jwtTool, RestClient restClient,
-                          AuthenticationConfiguration authenticationConfiguration,
-                          @Value("${spring.messaging.stomp.websocket.allowed-origins}") String[] allowedOrigins) {
+        AuthenticationConfiguration authenticationConfiguration,
+        @Value("${spring.messaging.stomp.websocket.allowed-origins}") String[] allowedOrigins) {
         this.jwtTool = jwtTool;
         this.restClient = restClient;
         this.authenticationConfiguration = authenticationConfiguration;
