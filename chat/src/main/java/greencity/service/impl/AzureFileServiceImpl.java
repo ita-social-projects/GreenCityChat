@@ -27,7 +27,7 @@ public class AzureFileServiceImpl implements AzureFileService {
      */
     @Autowired
     public AzureFileServiceImpl(PropertyResolver propertyResolver,
-                                BlobServiceClientBuilder blobServiceClientBuilder) {
+        BlobServiceClientBuilder blobServiceClientBuilder) {
         this.connectionString = propertyResolver.getProperty("azure.connection.string");
         this.containerName = propertyResolver.getProperty("azure.container.name");
         this.blobServiceClientBuilder = blobServiceClientBuilder;

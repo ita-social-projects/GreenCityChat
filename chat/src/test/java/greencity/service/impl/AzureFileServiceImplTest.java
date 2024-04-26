@@ -52,8 +52,8 @@ public class AzureFileServiceImplTest {
         when(clientBuilder.buildClient()).thenReturn(clientService);
         when(clientService.getBlobContainerClient(eq(containerName))).thenReturn(containerClient);
         UUID uuid = UUID.randomUUID();
-        when(containerClient.getBlobClient(eq(uuid+newMultipartFile.getOriginalFilename()))).thenReturn(blobClient);
-        try (MockedStatic<UUID> mockUUID = mockStatic(UUID.class)){
+        when(containerClient.getBlobClient(eq(uuid + newMultipartFile.getOriginalFilename()))).thenReturn(blobClient);
+        try (MockedStatic<UUID> mockUUID = mockStatic(UUID.class)) {
             mockUUID.when(UUID::randomUUID).thenReturn(uuid);
             azureFileService.saveFile(multipartFile);
 
@@ -72,8 +72,8 @@ public class AzureFileServiceImplTest {
         when(clientBuilder.buildClient()).thenReturn(clientService);
         when(clientService.getBlobContainerClient(eq(containerName))).thenReturn(containerClient);
         UUID uuid = UUID.randomUUID();
-        when(containerClient.getBlobClient(eq(uuid+".wav"))).thenReturn(blobClient);
-        try (MockedStatic<UUID> mockUUID = mockStatic(UUID.class)){
+        when(containerClient.getBlobClient(eq(uuid + ".wav"))).thenReturn(blobClient);
+        try (MockedStatic<UUID> mockUUID = mockStatic(UUID.class)) {
             mockUUID.when(UUID::randomUUID).thenReturn(uuid);
             azureFileService.saveVoiceMessage(multipartFile);
 

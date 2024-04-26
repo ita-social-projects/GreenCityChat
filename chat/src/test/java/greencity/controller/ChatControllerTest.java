@@ -90,7 +90,7 @@ class ChatControllerTest {
         mockMvc.perform(get(chatLink + "/messages/{room_id}", 1))
             .andExpect(status().isOk());
 
-        verify(chatMessageService).findAllMessagesByChatRoomId(1L, PageRequest.of(0,20));
+        verify(chatMessageService).findAllMessagesByChatRoomId(1L, PageRequest.of(0, 20));
     }
 
     @Test
@@ -193,9 +193,9 @@ class ChatControllerTest {
 
     @Test
     void sentMessageTest() throws Exception {
-        Long userId = 1L,roomId = 1L;
+        Long userId = 1L, roomId = 1L;
         String content = "content";
-        when(chatMessageService.sentMessage(eq(userId),eq(roomId),eq(content))).thenReturn(ChatMessageDto.builder()
+        when(chatMessageService.sentMessage(eq(userId), eq(roomId), eq(content))).thenReturn(ChatMessageDto.builder()
             .id(1L).build());
         mockMvc.perform(post(chatLink + "/sent-message/{userId}/{roomId}", userId, roomId)
             .param("content", content)).andExpect(status().isCreated());
@@ -322,9 +322,10 @@ class ChatControllerTest {
         chatController.updateMessage(chatMessageDto);
         verify(chatMessageService).updateMessage(chatMessageDto);
     }
+
     @Test
     void likeMessageTest() {
-        MessageLike messageLike = new MessageLike(1L,1L);
+        MessageLike messageLike = new MessageLike(1L, 1L);
         chatController.likeMessage(messageLike);
         verify(chatMessageService).likeMessage(messageLike);
     }
