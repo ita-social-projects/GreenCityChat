@@ -2,12 +2,22 @@ package greencity.controller;
 
 import greencity.annotations.ApiPageable;
 import greencity.constant.HttpStatuses;
-import greencity.dto.*;
+import greencity.dto.ChatMessageDto;
+import greencity.dto.ChatRoomDto;
+import greencity.dto.CreateNewChatDto;
+import greencity.dto.FriendsChatDto;
+import greencity.dto.GroupChatRoomCreateDto;
+import greencity.dto.LeaveChatDto;
+import greencity.dto.MessageLike;
+import greencity.dto.PageableDto;
+import greencity.dto.ParticipantDto;
 import greencity.enums.ChatType;
 import greencity.service.AzureFileService;
 import greencity.service.ChatMessageService;
 import greencity.service.ChatRoomService;
 import greencity.service.ParticipantService;
+import java.security.Principal;
+import java.util.List;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,16 +25,21 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
-import java.security.Principal;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
@@ -186,7 +201,8 @@ public class ChatController {
     public ResponseEntity<List<ChatRoomDto>> getAllChatRoomsBy(
         @PathVariable(required = false, value = "query") String query, Principal principal) {
         if (StringUtils.isEmpty(query)) {
-            return this.findAllVisibleRooms(principal);
+            return ResponseEntity.status(HttpStatus.OK)
+                .body(chatRoomService.findAllVisibleRooms(principal.getName()));
         }
         return ResponseEntity.status(HttpStatus.OK)
             .body(chatRoomService.findAllChatRoomsByQuery(query, participantService.findByEmail(principal.getName())));
@@ -218,7 +234,7 @@ public class ChatController {
     }
 
     /**
-     * Method return private chat for current user..
+     * Method return private chat for current user.
      */
     @MessageMapping("/chat/user")
     public void createNewPrivateChatIfNotExist(@RequestBody CreateNewChatDto createNewChatDto) {
@@ -253,7 +269,6 @@ public class ChatController {
      */
     @MessageMapping("/chat/users/{owner_id}/delete-room")
     public void deleteChatRoom(@PathVariable long id, ChatRoomDto chatRoomDto) {
-        System.out.println("delete");
         chatRoomService.deleteChatRoom(id, chatRoomDto);
     }
 
@@ -380,7 +395,7 @@ public class ChatController {
      */
     @Operation(summary = "Sent message")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = HttpStatuses.CREATED,
+        @ApiResponse(responseCode = "201", description = HttpStatuses.CREATED,
             content = @Content(schema = @Schema(implementation = ChatMessageDto.class))),
         @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
         @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
@@ -411,8 +426,7 @@ public class ChatController {
     @PostMapping(value = "/create-chatRoom")
     public ResponseEntity<ChatRoomDto> createChatRoom(
         @Valid @RequestBody GroupChatRoomCreateDto dto) {
-        chatRoomService.createNewChatRoom(dto);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(chatRoomService.createNewChatRoom(dto));
     }
 
     /**

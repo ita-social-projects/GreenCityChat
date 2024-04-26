@@ -1,5 +1,6 @@
 package greencity;
 
+import com.azure.storage.blob.BlobServiceClientBuilder;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -22,5 +23,15 @@ public class ChatServiceApplication {
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
+    }
+
+    /**
+     * Bean to return BlobServiceClientBuilder.
+     *
+     * @return {@link BlobServiceClientBuilder}.
+     */
+    @Bean
+    public BlobServiceClientBuilder blobServiceClientBuilder() {
+        return new BlobServiceClientBuilder();
     }
 }
