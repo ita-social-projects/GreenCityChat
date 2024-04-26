@@ -180,7 +180,8 @@ public class ChatController {
     public ResponseEntity<List<ChatRoomDto>> getAllChatRoomsBy(
         @PathVariable(required = false, value = "query") String query, Principal principal) {
         if (StringUtils.isEmpty(query)) {
-            return this.findAllVisibleRooms(principal);
+            return ResponseEntity.status(HttpStatus.OK)
+                .body(chatRoomService.findAllVisibleRooms(principal.getName()));
         }
         return ResponseEntity.status(HttpStatus.OK)
             .body(chatRoomService.findAllChatRoomsByQuery(query, participantService.findByEmail(principal.getName())));
@@ -212,7 +213,7 @@ public class ChatController {
     }
 
     /**
-     * Method return private chat for current user..
+     * Method return private chat for current user.
      */
     @MessageMapping("/chat/user")
     public void createNewPrivateChatIfNotExist(@RequestBody CreateNewChatDto createNewChatDto) {
@@ -247,7 +248,6 @@ public class ChatController {
      */
     @MessageMapping("/chat/users/{owner_id}/delete-room")
     public void deleteChatRoom(@PathVariable long id, ChatRoomDto chatRoomDto) {
-        System.out.println("delete");
         chatRoomService.deleteChatRoom(id, chatRoomDto);
     }
 
@@ -374,7 +374,7 @@ public class ChatController {
      */
     @Operation(summary = "Sent message")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = HttpStatuses.CREATED,
+        @ApiResponse(responseCode = "201", description = HttpStatuses.CREATED,
             content = @Content(schema = @Schema(implementation = ChatMessageDto.class))),
         @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
         @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
@@ -405,8 +405,7 @@ public class ChatController {
     @PostMapping(value = "/create-chatRoom")
     public ResponseEntity<ChatRoomDto> createChatRoom(
         @Valid @RequestBody GroupChatRoomCreateDto dto) {
-        chatRoomService.createNewChatRoom(dto);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(chatRoomService.createNewChatRoom(dto));
     }
 
     /**

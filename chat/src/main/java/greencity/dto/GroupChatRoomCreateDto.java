@@ -8,6 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@EqualsAndHashCode
 public class GroupChatRoomCreateDto {
     private List<Long> usersId;
     private String chatName;

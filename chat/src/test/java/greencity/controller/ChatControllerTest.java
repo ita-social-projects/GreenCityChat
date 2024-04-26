@@ -1,17 +1,17 @@
 package greencity.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import greencity.dto.ChatMessageDto;
-import greencity.dto.ChatRoomDto;
-import greencity.dto.ParticipantDto;
+import greencity.dto.*;
 import greencity.entity.Participant;
 import greencity.enums.ChatType;
 import greencity.service.AzureFileService;
 import greencity.service.ChatMessageService;
 import greencity.service.ChatRoomService;
 import greencity.service.ParticipantService;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.SneakyThrows;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,22 +20,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -91,13 +85,13 @@ class ChatControllerTest {
         verify(chatRoomService).findAllVisibleRooms("test");
     }
 
-//    @Test
-//    void findAllMessagesTest() throws Exception {
-//        mockMvc.perform(get(chatLink + "/messages/{room_id}", 1))
-//            .andExpect(status().isOk());
-//
-//        verify(chatMessageService).findAllMessagesByChatRoomId(1L);
-//    }
+    @Test
+    void findAllMessagesTest() throws Exception {
+        mockMvc.perform(get(chatLink + "/messages/{room_id}", 1))
+            .andExpect(status().isOk());
+
+        verify(chatMessageService).findAllMessagesByChatRoomId(1L, PageRequest.of(0,20));
+    }
 
     @Test
     void findPrivateRoomWithUserTest() throws Exception {
@@ -137,8 +131,6 @@ class ChatControllerTest {
     void getAllParticipantsByTest() throws Exception {
         String query = "testQuery";
         when(principal.getName()).thenReturn("testmail@gmail.com");
-        List<ParticipantDto> list = new ArrayList<>();
-        when(participantService.findAllExceptCurrentUser("testmail@gmail.com")).thenReturn(list);
         List<ParticipantDto> listOfAllParticipantsByQuery = new ArrayList<>();
         when(participantService.findAllParticipantsByQuery(query, "testmail@gmail.com"))
             .thenReturn(listOfAllParticipantsByQuery);
@@ -146,15 +138,24 @@ class ChatControllerTest {
         mockMvc.perform(get(chatLink + "/users/{query}", query)
             .principal(principal)).andExpect(status().isOk());
 
-        if (StringUtils.isEmpty(query)) {
-            verify(participantService).findAllExceptCurrentUser("testmail@gmail.com");
-        }
-
         verify(participantService).findAllParticipantsByQuery(query, "testmail@gmail.com");
     }
 
     @Test
-    void getAllChatRoomsBy() throws Exception {
+    void getAllParticipantsByWithEmptyPrincipalTest() throws Exception {
+        List<ParticipantDto> list =
+            List.of(ParticipantDto.builder().id(1L).build(), ParticipantDto.builder().id(2L).build());
+        when(principal.getName()).thenReturn("testmail@gmail.com");
+        when(participantService.findAllExceptCurrentUser("testmail@gmail.com")).thenReturn(list);
+
+        mockMvc.perform(get(chatLink + "/users/{query}", "")
+            .principal(principal)).andExpect(status().isOk());
+
+        verify(participantService).findAllExceptCurrentUser("testmail@gmail.com");
+    }
+
+    @Test
+    void getAllChatRoomsByTest() throws Exception {
         String query = "testQuery";
         when(principal.getName()).thenReturn("testmail@gmail.com");
         Participant participant = new Participant();
@@ -165,15 +166,18 @@ class ChatControllerTest {
         mockMvc.perform(get(chatLink + "/rooms/{query}", query)
             .principal(principal)).andExpect(status().isOk());
 
-        if (StringUtils.isEmpty(query)) {
-            when(principal.getName()).thenReturn("test");
-            List<ChatRoomDto> list = new ArrayList<>();
-            when(chatRoomService.findAllVisibleRooms("test")).thenReturn(list);
-            mockMvc.perform(get(chatLink + "/rooms/visible").principal(principal)).andExpect(status().isOk());
-
-            verify(chatRoomService).findAllVisibleRooms("test");
-        }
         verify(chatRoomService).findAllChatRoomsByQuery(query, participant);
+    }
+
+    @Test
+    void getAllChatRoomsByWithEmptyQueryTest() throws Exception {
+        when(principal.getName()).thenReturn("test");
+        List<ChatRoomDto> list = List.of(ChatRoomDto.builder().id(1L).build());
+        when(chatRoomService.findAllVisibleRooms("test")).thenReturn(list);
+
+        mockMvc.perform(get(chatLink + "/rooms").principal(principal)).andExpect(status().isOk());
+
+        verify(chatRoomService).findAllVisibleRooms("test");
     }
 
     @Test
@@ -185,6 +189,46 @@ class ChatControllerTest {
             .andExpect(status().isOk());
 
         verify(chatMessageService).findTopByOrderByIdDesc();
+    }
+
+    @Test
+    void sentMessageTest() throws Exception {
+        Long userId = 1L,roomId = 1L;
+        String content = "content";
+        when(chatMessageService.sentMessage(eq(userId),eq(roomId),eq(content))).thenReturn(ChatMessageDto.builder()
+            .id(1L).build());
+        mockMvc.perform(post(chatLink + "/sent-message/{userId}/{roomId}", userId, roomId)
+            .param("content", content)).andExpect(status().isCreated());
+
+        verify(chatMessageService).sentMessage(userId, roomId, content);
+    }
+
+    @Test
+    void createChatRoomTest() throws Exception {
+        GroupChatRoomCreateDto chatRoomCreateDto = GroupChatRoomCreateDto.builder()
+            .chatName("testName")
+            .build();
+        ChatRoomDto chatRoomDto = ChatRoomDto.builder().name("testName").build();
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        when(chatRoomService.createNewChatRoom(eq(chatRoomCreateDto))).thenReturn(chatRoomDto);
+        mockMvc.perform(post(chatLink + "/create-chatRoom")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(chatRoomCreateDto))).andExpect(status().isCreated()).andReturn();
+
+        verify(chatRoomService).createNewChatRoom(eq(chatRoomCreateDto));
+    }
+
+    @Test
+    void chatExistTest() throws Exception {
+        Long fistUserId = 1L, secondUserId = 2L;
+        when(chatMessageService.chatExist(eq(fistUserId), eq(secondUserId))).thenReturn(
+            FriendsChatDto.builder()
+                .chatId(1L).build());
+        mockMvc.perform(get(chatLink + "/exist/{fistUserId}/{secondUserId}", fistUserId, secondUserId))
+            .andExpect(status().isOk());
+
+        verify(chatMessageService).chatExist(fistUserId, secondUserId);
     }
 
     @Test
@@ -258,4 +302,30 @@ class ChatControllerTest {
             .andExpect(status().isAccepted());
     }
 
+    @Test
+    void processMessageTest() {
+        ChatMessageDto chatMessageDto = ChatMessageDto.builder().id(1L).build();
+        chatController.processMessage(chatMessageDto);
+        verify(chatMessageService).processMessage(chatMessageDto);
+    }
+
+    @Test
+    void deleteMessageTest() {
+        ChatMessageDto chatMessageDto = ChatMessageDto.builder().id(1L).build();
+        chatController.deleteMessage(chatMessageDto);
+        verify(chatMessageService).deleteMessage(chatMessageDto);
+    }
+
+    @Test
+    void updateMessageTest() {
+        ChatMessageDto chatMessageDto = ChatMessageDto.builder().id(1L).build();
+        chatController.updateMessage(chatMessageDto);
+        verify(chatMessageService).updateMessage(chatMessageDto);
+    }
+    @Test
+    void likeMessageTest() {
+        MessageLike messageLike = new MessageLike(1L,1L);
+        chatController.likeMessage(messageLike);
+        verify(chatMessageService).likeMessage(messageLike);
+    }
 }

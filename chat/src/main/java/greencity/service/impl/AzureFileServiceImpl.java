@@ -20,13 +20,17 @@ public class AzureFileServiceImpl implements AzureFileService {
     private final String connectionString;
     private final String containerName;
     private static final String WAV = ".wav";
+    private final BlobServiceClientBuilder blobServiceClientBuilder;
 
     /**
      * constructor.
      */
-    public AzureFileServiceImpl(@Autowired PropertyResolver propertyResolver) {
+    @Autowired
+    public AzureFileServiceImpl(PropertyResolver propertyResolver,
+                                BlobServiceClientBuilder blobServiceClientBuilder) {
         this.connectionString = propertyResolver.getProperty("azure.connection.string");
         this.containerName = propertyResolver.getProperty("azure.container.name");
+        this.blobServiceClientBuilder = blobServiceClientBuilder;
     }
 
     @Override
@@ -63,7 +67,7 @@ public class AzureFileServiceImpl implements AzureFileService {
     }
 
     private BlobContainerClient containerClient() {
-        BlobServiceClient serviceClient = new BlobServiceClientBuilder()
+        BlobServiceClient serviceClient = blobServiceClientBuilder
             .connectionString(connectionString).buildClient();
         return serviceClient.getBlobContainerClient(containerName);
     }
