@@ -142,7 +142,7 @@ class ChatMessageServiceImplTest {
 
         chatMessageServiceImpl.processMessage(expectedChatMessageDto);
 
-        verify(messagingTemplate).convertAndSend("/room/" + "/message/chat-messages" + 1L,
+        verify(messagingTemplate).convertAndSend("/room" + "/message/chat-messages" + 1L,
             responseDto);
     }
 
@@ -150,8 +150,6 @@ class ChatMessageServiceImplTest {
     void deleteMessage() {
         when(modelMapper.map(chatMessageDto, ChatMessage.class)).thenReturn(expectedChatMessage);
         doNothing().when(chatMessageRepo).delete(expectedChatMessage);
-        doNothing().when(messagingTemplate).convertAndSend(eq("/room/1/queue/messages"), eq(chatMessageDto),
-            anyMap());
         chatMessageServiceImpl.deleteMessage(expectedChatMessageDto);
 
         verify(chatMessageRepo).delete(expectedChatMessage);
