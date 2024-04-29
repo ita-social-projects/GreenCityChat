@@ -93,6 +93,10 @@ public class SecurityConfig {
             .authorizeHttpRequests(req -> req
                 .requestMatchers(
                     "/css/**",
+                    "/img/**",
+                    "/socket",
+                    "/socket/**",
+                    "/socket/info",
                     "/v2/api-docs/**",
                     "/v3/api-docs/**",
                     "/swagger.json",
