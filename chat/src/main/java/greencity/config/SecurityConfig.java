@@ -6,7 +6,7 @@ import greencity.client.RestClient;
 import greencity.jwt.JwtTool;
 import greencity.security.providers.JwtAuthenticationProvider;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
 import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
@@ -70,13 +70,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.cors(corsCustomizer -> corsCustomizer.configurationSource(request -> {
             CorsConfiguration config = new CorsConfiguration();
-            config.setAllowedOriginPatterns(List.of(allowedOrigins));
+            config.setAllowedOrigins(Collections.singletonList("http://localhost:4200"));
+            config.setAllowedOrigins(Collections.singletonList("http://localhost:4205"));
             config.setAllowedMethods(
                 Arrays.asList("GET", "POST", "OPTIONS", "DELETE", "PUT", "PATCH"));
             config.setAllowedHeaders(
                 Arrays.asList("Access-Control-Allow-Origin", "Access-Control-Allow-Headers",
                     "X-Requested-With", "Origin", "Content-Type", "Accept", "Authorization"));
             config.setAllowCredentials(true);
+            config.setAllowedHeaders(Collections.singletonList("*"));
             config.setMaxAge(3600L);
             return config;
         }))
