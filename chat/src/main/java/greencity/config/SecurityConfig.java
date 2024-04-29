@@ -91,21 +91,20 @@ public class SecurityConfig {
                 .authenticationEntryPoint((req, resp, exc) -> resp.sendError(SC_UNAUTHORIZED, "Authorize first."))
                 .accessDeniedHandler((req, resp, exc) -> resp.sendError(SC_FORBIDDEN, "You don't have authorities.")))
             .authorizeHttpRequests(req -> req
-                .requestMatchers("/css/**",
-                    "/v3/api-docs/swagger-config",
-                    "/v3/api-docs",
+                .requestMatchers(
+                    "/css/**",
                     "/img/**",
                     "/socket",
                     "/socket/**",
                     "/socket/info",
-                    "swagger-ui/index.html",
-                    "/swagger-ui/swagger-ui.css",
-                    "/swagger-ui/index.css",
-                    "/swagger-ui/swagger-ui-bundle.js",
-                    "/swagger-ui/swagger-ui-standalone-preset.js",
-                    "/swagger-ui/swagger-initializer.js",
-                    "/swagger-ui/favicon-32x32.png",
-                    "/swagger-ui/favicon-16x16.png",
+                    "/v2/api-docs/**",
+                    "/v3/api-docs/**",
+                    "/swagger.json",
+                    "/swagger-ui.html",
+                    "/swagger-ui/index.html",
+                    "/swagger-ui/**",
+                    "/swagger-resources/**",
+                    "/webjars/**",
                     "/chat/**")
                 .permitAll()
                 .requestMatchers(HttpMethod.GET,
