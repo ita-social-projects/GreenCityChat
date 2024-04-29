@@ -8,6 +8,7 @@ import greencity.jwt.JwtTool;
 import greencity.security.providers.JwtAuthenticationProvider;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
@@ -148,7 +149,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(allowedOrigins));
+        //configuration.setAllowedOrigins(List.of(allowedOrigins));
+        configuration.setAllowedOrigins(Collections.singletonList("*"));
         configuration.setAllowedMethods(
             Arrays.asList("GET", "POST", "OPTIONS", "DELETE", "PUT", "PATCH"));
         configuration.setAllowedHeaders(
