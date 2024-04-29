@@ -73,7 +73,7 @@ public class SecurityConfig {
             config.setAllowedOrigins(Collections.singletonList("http://localhost:4200"));
             config.setAllowedOrigins(Collections.singletonList("http://localhost:4205"));
             config.setAllowedMethods(
-                Arrays.asList("GET", "POST", "OPTIONS", "DELETE", "PUT", "PATCH"));
+                Arrays.asList("GET", "POST", "OPTIONS", "DELETE", "PUT", "PATCH", "HEAD"));
             config.setAllowedHeaders(
                 Arrays.asList("Access-Control-Allow-Origin", "Access-Control-Allow-Headers",
                     "X-Requested-With", "Origin", "Content-Type", "Accept", "Authorization"));
