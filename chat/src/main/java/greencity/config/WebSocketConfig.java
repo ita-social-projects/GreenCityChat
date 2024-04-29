@@ -2,6 +2,7 @@ package greencity.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.converter.DefaultContentTypeResolver;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
@@ -16,6 +17,12 @@ import org.springframework.web.socket.config.annotation.WebSocketTransportRegist
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+    private final String[] allowedOrigins;
+
+    public WebSocketConfig(@Value("${spring.messaging.stomp.websocket.allowed-origins}") String[] allowedOrigins) {
+        this.allowedOrigins = allowedOrigins;
+    }
+
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         config.enableSimpleBroker("/room");
@@ -26,7 +33,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/socket")
-            .setAllowedOrigins("*")
+            .setAllowedOrigins(allowedOrigins)
             .withSockJS();
     }
 
