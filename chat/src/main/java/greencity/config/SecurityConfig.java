@@ -3,6 +3,7 @@ package greencity.config;
 import static greencity.constant.AppConstant.*;
 import static greencity.constant.AppConstant.UBS_EMPLOYEE;
 
+import com.google.common.collect.ImmutableList;
 import greencity.client.RestClientUser;
 import greencity.jwt.JwtTool;
 import greencity.security.providers.JwtAuthenticationProvider;
@@ -41,17 +42,21 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final JwtTool jwtTool;
     private final RestClientUser restClientUser;
-
-    @Value("${spring.messaging.stomp.websocket.allowed-origins}")
-    private String[] allowedOrigins;
+    private final String[] allowedOrigins;
 
     /**
      * Constructor.
      */
     @Autowired
-    public SecurityConfig(JwtTool jwtTool, RestClientUser restClientUser) {
+    public SecurityConfig(JwtTool jwtTool,
+                          RestClientUser restClientUser,
+                          @Value("${spring.messaging.stomp.websocket.allowed-origins}" )
+                              String[] allowedOrigins){
+
+
         this.jwtTool = jwtTool;
         this.restClientUser = restClientUser;
+        this.allowedOrigins = allowedOrigins;
     }
 
     /**
@@ -149,10 +154,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        //configuration.setAllowedOrigins(List.of(allowedOrigins));
-        configuration.setAllowedOrigins(Collections.singletonList("*"));
+        configuration.setAllowedOrigins(List.of(allowedOrigins));
         configuration.setAllowedMethods(
-                Arrays.asList("GET", "POST", "OPTIONS", "DELETE", "PUT", "PATCH", "HEAD"));
+                Arrays.asList("GET", "POST", "OPTIONS", "DELETE", "PUT", "PATCH"));
         configuration.setAllowedHeaders(
                 Arrays.asList("Access-Control-Allow-Origin", "Access-Control-Allow-Headers",
                         "X-Requested-With", "Origin", "Content-Type", "Accept", "Authorization"));
