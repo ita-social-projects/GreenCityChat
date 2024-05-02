@@ -8,7 +8,6 @@ import greencity.entity.Participant;
 import greencity.enums.ChatType;
 import greencity.exception.exceptions.ChatRoomNotFoundException;
 import greencity.exception.exceptions.TariffNotFoundException;
-import greencity.exception.exceptions.UserIsNotAdminException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
 import greencity.service.ChatRoomService;
@@ -341,12 +340,18 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     }
 
     @Override
-    public List<LocationsDto> getAllLocations() {
-        try {
-            return restClientUbs.getAllLocations();
-        } catch (Exception e) {
-            throw new RestClientException("Error occurred while retrieving locations from UBS service", e);
-        }
+    public List<LocationsDto> getAllLocationsWithChats(Long userId) {
+        List<LocationsDto> allLocations = restClientUbs.getAllLocations();
+
+        allLocations.forEach(location -> {
+            Long tariffId = restClientUbs.getTariffIdByLocationId(location.getId());
+            List<ChatRoom> chatRooms = chatRoomRepo.findByUserIdAndTariffId(userId, tariffId);
+            chatRooms.forEach(chatRoom -> {
+                location.setChatId(chatRoom.getId());
+            });
+        });
+
+        return allLocations;
     }
 
     @Override

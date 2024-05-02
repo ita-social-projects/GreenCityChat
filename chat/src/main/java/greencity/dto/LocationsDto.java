@@ -3,6 +3,7 @@ package greencity.dto;
 import lombok.*;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
@@ -17,4 +18,5 @@ public class LocationsDto {
     private Double longitude;
     private String nameUk;
     private String nameEn;
+    private Long chatId;
 }

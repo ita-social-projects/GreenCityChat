@@ -126,7 +126,7 @@ public interface ChatRoomService {
      *
      * @return A list of {@link LocationsDto} objects representing all locations.
      */
-    List<LocationsDto> getAllLocations();
+    List<LocationsDto> getAllLocationsWithChats(Long userId);
 
     /**
      * Retrieves the tariff ID associated with the specified location ID.

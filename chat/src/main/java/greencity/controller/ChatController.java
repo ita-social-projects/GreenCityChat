@@ -478,9 +478,9 @@ public class ChatController {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = HttpStatuses.OK, response = LocationsDto.class, responseContainer = "List")
     })
-    @GetMapping("/locations")
-    public ResponseEntity<List<LocationsDto>> getAllLocations() {
-        List<LocationsDto> allLocations = chatRoomService.getAllLocations();
+    @GetMapping("/locations/{userId}")
+    public ResponseEntity<List<LocationsDto>> getAllLocations(@PathVariable Long userId) {
+        List<LocationsDto> allLocations = chatRoomService.getAllLocationsWithChats(userId);
         return ResponseEntity.status(HttpStatus.OK).body(allLocations);
     }
 
