@@ -121,12 +121,13 @@ public class RestClientUbs {
      *                                 tariff ID.
      */
     public Long getTariffIdByLocationId(Long locationId) {
-        HttpEntity<String> entity = new HttpEntity<>(setHeader());
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<String> entity = new HttpEntity<>(headers);
         try {
             ResponseEntity<Long> response = restTemplate.exchange(
                 greenCityUbsServerAddress + "/ubs/tariffs/" + locationId,
                 HttpMethod.GET,
-                entity,
+                    entity,
                 Long.class);
             return response.getBody();
         } catch (HttpClientErrorException.NotFound ex) {
@@ -139,7 +140,8 @@ public class RestClientUbs {
     }
 
     public List<EmployeeWithTariffsDto> getEmployeesByTariffIdWithChat(Long tariffId) {
-        HttpEntity<String> entity = new HttpEntity<>(setHeader());
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<String> entity = new HttpEntity<>(headers);
         ResponseEntity<List<EmployeeWithTariffsDto>> response = restTemplate.exchange(
             greenCityUbsServerAddress + "/admin/ubs-employee/get-employees/" + tariffId,
             HttpMethod.GET,

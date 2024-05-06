@@ -433,6 +433,7 @@ public class ChatController {
         @ApiResponse(code = 404, message = HttpStatuses.NOT_FOUND)
     })
     @PostMapping(value = "/create-chatRoom")
+    @Deprecated
     public ResponseEntity<ChatRoomDto> createChatRoom(
         @Valid @RequestBody GroupChatRoomCreateDto dto) {
         chatRoomService.createNewChatRoom(dto);

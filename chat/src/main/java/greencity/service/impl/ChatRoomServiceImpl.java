@@ -88,22 +88,24 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     @Override
     public ChatRoomDto findPrivateByParticipants(Long id, String name) {
-        Set<Participant> participants = new LinkedHashSet<>();
-        Participant owner = participantService.findByEmail(name);
-        participants.add(owner);
-        participants.add(participantService.findById(id));
-        List<ChatRoom> chatRoom = chatRoomRepo.findByParticipantsAndStatus(participants, participants.size(),
-            ChatType.PRIVATE);
-        return filterPrivateRoom(chatRoom, participants, owner);
+//        Set<Participant> participants = new LinkedHashSet<>();
+//        Participant owner = participantService.findByEmail(name);
+//        participants.add(owner);
+//        participants.add(participantService.findById(id));
+//        List<ChatRoom> chatRoom = chatRoomRepo.findByParticipantsAndStatus(participants, participants.size(),
+//            ChatType.PRIVATE);
+//        return filterPrivateRoom(chatRoom, participants, owner);
+        return null;
     }
 
-    private ChatRoomDto filterPrivateRoom(List<ChatRoom> chatRooms, Set<Participant> participants, Participant owner) {
+    private ChatRoomDto filterPrivateRoom(List<ChatRoom> chatRooms, Set<Participant> participants, Participant owner, Long tariffId) {
         ChatRoom toReturn;
         if (chatRooms.isEmpty()) {
             toReturn = chatRoomRepo.save(
                 ChatRoom.builder()
                     .name(participants.stream().map(Participant::getName).collect(Collectors.joining(":")))
                     .owner(owner)
+                    .tariffId(tariffId)
                     .participants(participants)
                     .type(ChatType.PRIVATE)
                     .build());
@@ -299,20 +301,43 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     }
 
     @Override
-    public void findPrivateByParticipantsForSockets(Long participantId, Long currentUserId) {
+    public void findPrivateByParticipantsForSockets(Long locationId, Long currentUserId) {
         Set<Participant> participants = new LinkedHashSet<>();
         Participant owner = participantService.findById(currentUserId);
+        Long tariffIdByLocationId = restClientUbs.getTariffIdByLocationId(locationId);
+        ChatRoomDto room;
         participants.add(owner);
-        participants.add(participantService.findById(participantId));
-        List<ChatRoom> chatRoom = chatRoomRepo.findByParticipantsAndStatus(participants, participants.size(),
-            ChatType.PRIVATE).stream().peek(
-                chat -> chat.setName(chat.getName().replaceAll(owner.getName(), "")
-                    .replaceAll(":", "")))
-            .collect(Collectors.toList());
-        ChatRoomDto chatRoomDto = filterPrivateRoom(chatRoom, participants, owner);
+
+        if (chatRoomRepo.existsByUserIdAndTariffId(currentUserId, tariffIdByLocationId)) {
+            room = modelMapper.map(chatRoomRepo.findByUserIdAndTariffId(currentUserId, tariffIdByLocationId), ChatRoomDto.class);
+        } else {
+            ChatRoom save = chatRoomRepo.save(
+                    ChatRoom.builder()
+                            .name(participants.stream().map(Participant::getName).collect(Collectors.joining(":")))
+                            .owner(owner)
+                            .tariffId(tariffIdByLocationId)
+                            .participants(participants)
+                            .type(ChatType.PRIVATE)
+                            .build());
+            save.setName(save.getName().replaceAll(owner.getName(), "")
+                    .replaceAll(":", ""));
+
+           room =  modelMapper.map(save, ChatRoomDto.class);
+        }
+
+        Map<String, Object> headers = new HashMap<>();
+        headers.put(HEADER_SUPPORT, new Object());
+        List<EmployeeWithTariffsDto> employeesByTariffIdWithChat =
+                restClientUbs.getEmployeesByTariffIdWithChat(tariffIdByLocationId);
+
+        employeesByTariffIdWithChat.forEach(employee -> {
+            messagingTemplate.convertAndSendToUser(
+                    employee.getEmployeeDto().getEmail(), SUPPORT_LINK, room);
+            log.info("Notification sent to {}", employee.getEmployeeDto().getEmail());
+        });
 
         participants.forEach(participant -> messagingTemplate
-            .convertAndSend(ROOM_LINK + "new-chats" + participant.getId(), chatRoomDto));
+                .convertAndSend(ROOM_LINK + "new-chats" + participant.getId(), room));
     }
 
     @Override
@@ -345,10 +370,10 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
         allLocations.forEach(location -> {
             Long tariffId = restClientUbs.getTariffIdByLocationId(location.getId());
-            List<ChatRoom> chatRooms = chatRoomRepo.findByUserIdAndTariffId(userId, tariffId);
-            chatRooms.forEach(chatRoom -> {
-                location.setChatId(chatRoom.getId());
-            });
+//            //List<ChatRoom> chatRooms = chatRoomRepo.findByUserIdAndTariffId(userId, tariffId);
+//            chatRooms.forEach(chatRoom -> {
+//                location.setChatId(chatRoom.getId());
+//            });
         });
 
         return allLocations;

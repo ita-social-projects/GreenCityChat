@@ -140,5 +140,6 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
      * @return The ChatRoom entity if a chat room exists with the provided userId and tariffId, null otherwise.
      */
     @Query("SELECT c FROM ChatRoom c JOIN c.participants p WHERE p.id = :userId AND c.tariffId = :tariffId")
-    List<ChatRoom> findByUserIdAndTariffId(@Param("userId") Long userId, @Param("tariffId") Long tariffId);
+    ChatRoom findByUserIdAndTariffId(@Param("userId") Long userId, @Param("tariffId") Long tariffId);
+
 }
