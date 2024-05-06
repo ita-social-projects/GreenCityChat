@@ -22,10 +22,11 @@ class ChatMessageDtoMapperTest {
 
     @BeforeEach
     void init() {
-        chatMessage = new ChatMessage(1L, new ChatRoom(1L, "name", null, null, ChatType.GROUP, ChatStatus.NEW, 1L,  null, "logo"),
-            new Participant(1L, "name", "asd@asd.asd", null,
-                null, UserStatus.ACTIVATED, Role.ROLE_USER, null),
-            "content", null, null);
+        chatMessage =
+            new ChatMessage(1L, new ChatRoom(1L, "name", null, null, ChatType.GROUP, ChatStatus.NEW, 1L, null, "logo"),
+                new Participant(1L, "name", "asd@asd.asd", null,
+                    null, UserStatus.ACTIVATED, Role.ROLE_USER, null),
+                "content", null, null);
         expected = new ChatMessageDto(1L, 1L, 1L, "content",
             null);
     }
