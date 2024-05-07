@@ -227,7 +227,7 @@ public class ChatController {
      */
     @MessageMapping("/chat/user")
     public void createNewPrivateChatIfNotExist(@RequestBody CreateNewChatDto createNewChatDto) {
-        chatRoomService.findPrivateByParticipantsForSockets(createNewChatDto.getParticipantsIds(),
+        chatRoomService.findPrivateByParticipantsForSockets(createNewChatDto.getLocationsIds(),
             createNewChatDto.getCurrentUserId());
     }
 
