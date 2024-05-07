@@ -3,9 +3,12 @@ package greencity.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import greencity.dto.ChatMessageDto;
 import greencity.dto.ChatRoomDto;
+import greencity.dto.LocationsDto;
 import greencity.dto.ParticipantDto;
 import greencity.entity.Participant;
+import greencity.enums.ChatStatus;
 import greencity.enums.ChatType;
+import greencity.exception.exceptions.TariffNotFoundException;
 import greencity.service.AzureFileService;
 import greencity.service.ChatMessageService;
 import greencity.service.ChatRoomService;
@@ -21,21 +24,27 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import static org.assertj.core.api.Fail.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -258,4 +267,73 @@ class ChatControllerTest {
             .andExpect(status().isAccepted());
     }
 
+    @Test
+    void testGetTariffIdByLocationId_WithValidLocationId_ReturnsTariffId() {
+        Long locationId = 1L;
+        Long expectedTariffId = 1L;
+        when(chatRoomService.getTariffIdByLocationId(locationId)).thenReturn(expectedTariffId);
+
+        ResponseEntity<Long> response = chatController.getTariffIdByLocationId(locationId);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(expectedTariffId, response.getBody());
+    }
+
+    @Test
+    void testGetAllLocations_ReturnsListOfLocations() throws Exception {
+        Long userId = 1L;
+        List<LocationsDto> expectedLocations = createMockLocations();
+
+        when(chatRoomService.getAllLocationsWithChats(userId)).thenReturn(expectedLocations);
+
+        ResponseEntity<List<LocationsDto>> response = chatController.getAllLocations(userId);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(expectedLocations, response.getBody());
+    }
+
+    @Test
+    void testFindAllChatsByTariffId_WithValidTariffId_ReturnsChats() throws Exception {
+        Long tariffId = 1L;
+        List<ChatRoomDto> expectedChats = createMockChats();
+
+        when(chatRoomService.findAllChatsByTariffId(tariffId)).thenReturn(expectedChats);
+
+        ResponseEntity<List<ChatRoomDto>> response = chatController.findAllChatsByTariffId(tariffId);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(expectedChats, response.getBody());
+    }
+
+//    @Test
+//    void testFindAllChatsByTariffId_WithInvalidTariffId_ThrowsException() throws Exception {
+//        Long tariffId = 1L;
+//
+//        when(chatRoomService.findAllChatsByTariffId(tariffId)).thenThrow(new TariffNotFoundException("ChatService - Tariff not found with id: " + tariffId));
+//
+//        try {
+//            chatController.findAllChatsByTariffId(tariffId);
+//            fail("Expected TariffNotFoundException");
+//        } catch (TariffNotFoundException e) {
+//            assertEquals("ChatService - Tariff not found with id: " + tariffId, e.getMessage());
+//        }
+//    }
+
+    private List<ChatRoomDto> createMockChats() {
+        List<ChatRoomDto> chats = new ArrayList<>();
+        chats.add(new ChatRoomDto(1L, "General Chat", ChatType.GROUP, null,
+            1L, 1L, ChatStatus.NEW, 0L, null, null, null));
+        chats.add(new ChatRoomDto(2L, "Private Chat", ChatType.PRIVATE, null,
+            2L, 2L, ChatStatus.NEW, 0L, null, null, null));
+        return chats;
+    }
+
+    private List<LocationsDto> createMockLocations() {
+        List<LocationsDto> locations = new ArrayList<>();
+        locations.add(new LocationsDto(1L, "ACTIVE", "Київ", "Kyiv Oblast",
+            50.4547, 30.5238, "Київ", "Kyiv", 1L));
+        locations.add(new LocationsDto(2L, "INACTIVE", "Львівcька область", "Lviv Oblast",
+            49.842957, 24.031111, "Львів", "Lviv", 2L));
+        return locations;
+    }
 }

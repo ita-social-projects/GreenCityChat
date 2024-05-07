@@ -501,7 +501,7 @@ public class ChatController {
         @ApiResponse(code = 403, message = HttpStatuses.FORBIDDEN),
         @ApiResponse(code = 404, message = HttpStatuses.NOT_FOUND)
     })
-    @GetMapping(value = "/tariffs/{locationId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/tariffs/byLocation/{locationId}")
     public ResponseEntity<Long> getTariffIdByLocationId(@PathVariable("locationId") Long locationId) {
         Long tariffId = chatRoomService.getTariffIdByLocationId(locationId);
         return ResponseEntity.status(HttpStatus.OK).body(tariffId);
