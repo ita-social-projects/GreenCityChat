@@ -1,14 +1,9 @@
 package greencity.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import greencity.dto.ChatMessageDto;
-import greencity.dto.ChatRoomDto;
-import greencity.dto.LocationsDto;
-import greencity.dto.ParticipantDto;
+import greencity.dto.*;
 import greencity.entity.Participant;
 import greencity.enums.ChatStatus;
 import greencity.enums.ChatType;
-import greencity.exception.exceptions.TariffNotFoundException;
 import greencity.service.AzureFileService;
 import greencity.service.ChatMessageService;
 import greencity.service.ChatRoomService;
@@ -20,30 +15,26 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
 import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-
-import static org.assertj.core.api.Fail.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -305,19 +296,30 @@ class ChatControllerTest {
         assertEquals(expectedChats, response.getBody());
     }
 
-//    @Test
-//    void testFindAllChatsByTariffId_WithInvalidTariffId_ThrowsException() throws Exception {
-//        Long tariffId = 1L;
-//
-//        when(chatRoomService.findAllChatsByTariffId(tariffId)).thenThrow(new TariffNotFoundException("ChatService - Tariff not found with id: " + tariffId));
-//
-//        try {
-//            chatController.findAllChatsByTariffId(tariffId);
-//            fail("Expected TariffNotFoundException");
-//        } catch (TariffNotFoundException e) {
-//            assertEquals("ChatService - Tariff not found with id: " + tariffId, e.getMessage());
-//        }
-//    }
+    @Test
+    void testAddUserToChatRoom() throws Exception {
+        Long userId = 1L;
+        Long chatId = 1L;
+
+        Mockito.when(chatRoomService.addNewUserToChat(userId, chatId)).thenReturn(userId);
+
+        mockMvc.perform(MockMvcRequestBuilders.post(chatLink + "/user/{userId}/{chatId}", userId, chatId))
+                .andExpect(status().isOk());
+
+        verify(chatRoomService, times(1)).addNewUserToChat(userId, chatId);
+    }
+
+    @Test
+    void getAllActiveChatsForAdminTest() throws Exception {
+        PageableDto<ChatRoomDto> pageableDto = new PageableDto<>(new ArrayList<>(), 0, 0, 0);
+        when(chatRoomService.getActiveChatsForAdmin(anyString(), any(Pageable.class))).thenReturn(pageableDto);
+
+        Principal principal = Mockito.mock(Principal.class);
+        when(principal.getName()).thenReturn("testUser");
+
+        mockMvc.perform(get(chatLink + "/chats/active").principal(principal))
+                .andExpect(status().isOk());
+    }
 
     private List<ChatRoomDto> createMockChats() {
         List<ChatRoomDto> chats = new ArrayList<>();

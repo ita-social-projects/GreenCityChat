@@ -133,7 +133,6 @@ public class ChatController {
     /**
      * Method clean unread messages.
      */
-
     @DeleteMapping("/room/{user_id}/{room_id}")
     public void cleanUnreadMessages(@PathVariable("user_id") Long userId, @PathVariable("room_id") Long roomId) {
         chatMessageService.cleanUnreadMessages(userId, roomId);
@@ -507,6 +506,14 @@ public class ChatController {
         return ResponseEntity.status(HttpStatus.OK).body(tariffId);
     }
 
+    /**
+     * Retrieves all active chat rooms for the admin.
+     *
+     * @param principal the principal representing the currently authenticated user
+     * @param pageable  object specifying the page to retrieve
+     * @return a {@link ResponseEntity} containing a {@link PageableDto} of {@link ChatRoomDto} objects,
+     *         representing the active chat rooms for the admin
+     */
     @ApiOperation(value = "Get all active chats for admin")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = HttpStatuses.OK),

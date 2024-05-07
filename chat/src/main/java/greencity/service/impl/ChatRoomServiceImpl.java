@@ -1,6 +1,5 @@
 package greencity.service.impl;
 
-import greencity.annotations.ApiPageable;
 import greencity.client.RestClientUbs;
 import greencity.client.RestClientUser;
 import greencity.constant.ErrorMessage;
@@ -15,7 +14,6 @@ import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
 import greencity.service.ChatRoomService;
 import greencity.service.ParticipantService;
-
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
@@ -329,18 +327,18 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                     .replaceAll(":", ""));
 
            room =  modelMapper.map(save, ChatRoomDto.class);
+
+            Map<String, Object> headers = new HashMap<>();
+            headers.put(HEADER_SUPPORT, new Object());
+            List<EmployeeWithTariffsDto> employeesByTariffIdWithChat =
+                    restClientUbs.getEmployeesByTariffIdWithChat(tariffIdByLocationId);
+
+            employeesByTariffIdWithChat.forEach(employee -> {
+                messagingTemplate.convertAndSendToUser(
+                        employee.getEmployeeDto().getEmail(), SUPPORT_LINK, room);
+                log.info("Notification sent to {}", employee.getEmployeeDto().getEmail());
+            });
         }
-
-        Map<String, Object> headers = new HashMap<>();
-        headers.put(HEADER_SUPPORT, new Object());
-        List<EmployeeWithTariffsDto> employeesByTariffIdWithChat =
-                restClientUbs.getEmployeesByTariffIdWithChat(tariffIdByLocationId);
-
-        employeesByTariffIdWithChat.forEach(employee -> {
-            messagingTemplate.convertAndSendToUser(
-                    employee.getEmployeeDto().getEmail(), SUPPORT_LINK, room);
-            log.info("Notification sent to {}", employee.getEmployeeDto().getEmail());
-        });
 
         participants.forEach(participant -> messagingTemplate
                 .convertAndSend(ROOM_LINK + "new-chats" + participant.getId(), room));
