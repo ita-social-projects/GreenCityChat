@@ -7,6 +7,9 @@ import greencity.enums.ChatType;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -141,5 +144,8 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
      */
     @Query("SELECT c FROM ChatRoom c JOIN c.participants p WHERE p.id = :userId AND c.tariffId = :tariffId")
     ChatRoom findByUserIdAndTariffId(@Param("userId") Long userId, @Param("tariffId") Long tariffId);
+
+    @Query("SELECT c FROM ChatRoom c")
+    Page<ChatRoom> findAll(Pageable pageable);
 
 }

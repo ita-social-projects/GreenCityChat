@@ -506,4 +506,17 @@ public class ChatController {
         Long tariffId = chatRoomService.getTariffIdByLocationId(locationId);
         return ResponseEntity.status(HttpStatus.OK).body(tariffId);
     }
+
+    @ApiOperation(value = "Get all active chats for admin")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = HttpStatuses.OK),
+            @ApiResponse(code = 400, message = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(code = 401, message = HttpStatuses.UNAUTHORIZED)
+    })
+    @GetMapping(value = "/chats/active")
+    @ApiPageable
+    public ResponseEntity<PageableDto<ChatRoomDto>> getAllActiveChatsForAdmin(Principal principal, @ApiIgnore Pageable pageable) {
+        return ResponseEntity.status(HttpStatus.OK).body(chatRoomService.getActiveChatsForAdmin(principal.getName(), pageable));
+    }
 }
+

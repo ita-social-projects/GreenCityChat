@@ -1,6 +1,7 @@
 package greencity.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import greencity.enums.ChatStatus;
 import greencity.enums.ChatType;
 

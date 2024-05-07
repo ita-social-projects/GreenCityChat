@@ -1,13 +1,11 @@
 package greencity.service;
 
-import greencity.dto.ChatRoomDto;
-import greencity.dto.GroupChatRoomCreateDto;
-import greencity.dto.LeaveChatDto;
-import greencity.dto.LocationsDto;
+import greencity.dto.*;
 import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.enums.ChatType;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Set;
@@ -135,4 +133,6 @@ public interface ChatRoomService {
      * @return The tariff ID associated with the specified location ID.
      */
     Long getTariffIdByLocationId(Long locationId);
+
+    PageableDto<ChatRoomDto> getActiveChatsForAdmin(String email, Pageable pageable);
 }

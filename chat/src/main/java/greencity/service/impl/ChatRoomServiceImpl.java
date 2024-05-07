@@ -1,6 +1,8 @@
 package greencity.service.impl;
 
+import greencity.annotations.ApiPageable;
 import greencity.client.RestClientUbs;
+import greencity.client.RestClientUser;
 import greencity.constant.ErrorMessage;
 import greencity.dto.*;
 import greencity.entity.ChatRoom;
@@ -8,19 +10,22 @@ import greencity.entity.Participant;
 import greencity.enums.ChatType;
 import greencity.exception.exceptions.ChatRoomNotFoundException;
 import greencity.exception.exceptions.TariffNotFoundException;
+import greencity.exception.exceptions.UserNotFoundException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
 import greencity.service.ChatRoomService;
 import greencity.service.ParticipantService;
+
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
 
 @Service
 @AllArgsConstructor
@@ -33,6 +38,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     private final ChatMessageRepo chatMessageRepo;
     private final SimpMessagingTemplate messagingTemplate;
     private final RestClientUbs restClientUbs;
+    private final RestClientUser restClientUser;
     private static final String ROOM_LINK = "/rooms/user/";
     private static final String SUPPORT_LINK = "/rooms/support";
     private static final String HEADER_UPDATE_ROOM = "updateRoom";
@@ -383,4 +389,28 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     public Long getTariffIdByLocationId(Long locationId) {
         return restClientUbs.getTariffIdByLocationId(locationId);
     }
+
+    /**
+     * @param email
+     * @return
+     */
+    @Override
+    public PageableDto<ChatRoomDto> getActiveChatsForAdmin(String email, Pageable pageable) {
+        UserVO user = restClientUser.findNotDeactivatedByEmail(email).orElseThrow(
+                () -> new UserNotFoundException(String.format("User with this %s not found!", email))
+        );
+        Page<ChatRoom> chatRooms = chatRoomRepo.findAll(pageable);
+
+        List<ChatRoomDto> all = chatRooms.getContent().stream()
+                .map(chatRoom -> modelMapper.map(chatRoom, ChatRoomDto.class))
+                .collect(Collectors.toList());
+
+        return new PageableDto<>(
+                all,
+                chatRooms.getTotalElements(),
+                chatRooms.getPageable().getPageNumber(),
+                chatRooms.getTotalPages()
+        );
+    }
 }
+
