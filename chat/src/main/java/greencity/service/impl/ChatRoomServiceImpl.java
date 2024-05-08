@@ -316,9 +316,9 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                             .tariffId(tariffIdByLocationId)
                             .participants(participants)
                             .type(ChatType.PRIVATE)
+                            .name(owner.getEmail())
                             .build());
-            save.setName(save.getName().replaceAll(owner.getName(), "")
-                    .replaceAll(":", ""));
+
 
             room =  modelMapper.map(save, ChatRoomDto.class);
         }
