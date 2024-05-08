@@ -319,20 +319,19 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                             .name(owner.getEmail())
                             .build());
 
-
             room =  modelMapper.map(save, ChatRoomDto.class);
+
+            Map<String, Object> headers = new HashMap<>();
+            headers.put(HEADER_SUPPORT, new Object());
+            List<EmployeeWithTariffsDto> employeesByTariffIdWithChat =
+                    restClientUbs.getEmployeesByTariffIdWithChat(tariffIdByLocationId);
+
+            employeesByTariffIdWithChat.forEach(employee -> {
+                messagingTemplate.convertAndSendToUser(
+                        employee.getEmployeeDto().getEmail(), SUPPORT_LINK, room);
+                log.info("Notification sent to {}", employee.getEmployeeDto().getEmail());
+            });
         }
-
-        Map<String, Object> headers = new HashMap<>();
-        headers.put(HEADER_SUPPORT, new Object());
-        List<EmployeeWithTariffsDto> employeesByTariffIdWithChat =
-                restClientUbs.getEmployeesByTariffIdWithChat(tariffIdByLocationId);
-
-        employeesByTariffIdWithChat.forEach(employee -> {
-            messagingTemplate.convertAndSendToUser(
-                    employee.getEmployeeDto().getEmail(), SUPPORT_LINK, room);
-            log.info("Notification sent to {}", employee.getEmployeeDto().getEmail());
-        });
 
         participants.forEach(participant -> messagingTemplate
                 .convertAndSend(ROOM_LINK + "new-chats" + participant.getId(), room));
