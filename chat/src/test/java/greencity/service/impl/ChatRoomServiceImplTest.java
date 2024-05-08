@@ -1,5 +1,7 @@
 package greencity.service.impl;
 
+import greencity.client.RestClientUbs;
+import greencity.client.RestClientUser;
 import greencity.dto.*;
 import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
@@ -11,10 +13,8 @@ import greencity.exception.exceptions.ChatRoomNotFoundException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
 import greencity.service.ParticipantService;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,13 +24,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
-
 import java.util.*;
 import java.util.stream.Collectors;
-
 import org.powermock.api.mockito.PowerMockito;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -51,6 +52,10 @@ class ChatRoomServiceImplTest {
     private ChatMessageRepo chatMessageRepo;
     @Mock
     private ChatMessageServiceImpl chatMessageService;
+    @Mock
+    private RestClientUser restClientUser;
+    @Mock
+    private RestClientUbs restClientUbs;
 
     private final String email = "test.artur@mail.com";
     Participant expectedParticipant;
@@ -428,4 +433,41 @@ class ChatRoomServiceImplTest {
         assertThrows(UnsupportedOperationException.class, () -> chatRoomService.deleteMessagesFromChatRoom(1L, 378L));
     }
 
+    @Test
+    void testGetActiveChatsForAdmin() throws Exception {
+
+        String email = "admin@example.com";
+        Pageable pageable = PageRequest.of(0, 20);
+        UserVO expectedUser = UserVO.builder().id(1L).email(email).build();
+        List<ChatRoom> chatRooms = new ArrayList<>();
+        chatRooms.add(ChatRoom.builder().id(1L).name("Chat Room 1").build());
+        Page<ChatRoom> chatRoomPage = new PageImpl<>(chatRooms, pageable, 1);
+        List<ChatRoomDto> expectedDtos =
+            Collections.singletonList(ChatRoomDto.builder().id(1L).name("Chat Room 1").build());
+
+        when(restClientUser.findNotDeactivatedByEmail(email)).thenReturn(Optional.of(expectedUser));
+        when(chatRoomRepo.findAll(pageable)).thenReturn(chatRoomPage);
+        when(modelMapper.map(any(ChatRoom.class), eq(ChatRoomDto.class))).thenReturn(expectedDtos.get(0));
+
+        PageableDto<ChatRoomDto> actual = chatRoomService.getActiveChatsForAdmin(email, pageable);
+
+        assertEquals(1, actual.getTotalElements());
+        assertEquals(1, actual.getTotalPages());
+        verify(restClientUser, times(1)).findNotDeactivatedByEmail(email);
+        verify(chatRoomRepo, times(1)).findAll(pageable);
+        verify(modelMapper, times(1)).map(any(ChatRoom.class), eq(ChatRoomDto.class));
+    }
+
+    @Test
+    void testGetTariffIdByLocationId() throws Exception {
+        Long locationId = 10L;
+        Long expectedTariffId = 15L;
+
+        when(restClientUbs.getTariffIdByLocationId(locationId)).thenReturn(expectedTariffId);
+
+        Long actualTariffId = chatRoomService.getTariffIdByLocationId(locationId);
+
+        assertEquals(expectedTariffId, actualTariffId);
+        verify(restClientUbs, times(1)).getTariffIdByLocationId(locationId);
+    }
 }
