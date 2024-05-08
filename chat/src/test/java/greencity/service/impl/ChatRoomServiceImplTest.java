@@ -10,6 +10,7 @@ import greencity.enums.ChatType;
 import greencity.enums.Role;
 import greencity.enums.UserStatus;
 import greencity.exception.exceptions.ChatRoomNotFoundException;
+import greencity.exception.exceptions.UserNotFoundException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
 import greencity.service.ParticipantService;
@@ -456,6 +457,20 @@ class ChatRoomServiceImplTest {
         verify(restClientUser, times(1)).findNotDeactivatedByEmail(email);
         verify(chatRoomRepo, times(1)).findAll(pageable);
         verify(modelMapper, times(1)).map(any(ChatRoom.class), eq(ChatRoomDto.class));
+    }
+
+    @Test
+    void testGetActiveChatsForAdmin_UserNotFoundException() {
+        String email = "admin@example.com";
+        Pageable pageable = PageRequest.of(0, 20);
+
+        when(restClientUser.findNotDeactivatedByEmail(email)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> {
+            chatRoomService.getActiveChatsForAdmin(email, pageable);
+        });
+
+        verify(restClientUser, times(1)).findNotDeactivatedByEmail(email);
     }
 
     @Test
