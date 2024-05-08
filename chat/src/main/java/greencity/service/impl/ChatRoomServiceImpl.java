@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -390,24 +391,32 @@ public class ChatRoomServiceImpl implements ChatRoomService {
      *
      * @param email    The email of the admin.
      * @param pageable Pagination information.
-     * @return A PageableDto containing a list of ChatRoomDto objects representing
-     *         active chat rooms.
-     * @throws UserNotFoundException If no user is found with the specified email.
      */
     @Override
     public PageableDto<ChatRoomDto> getActiveChatsForAdmin(String email, Pageable pageable) {
-        UserVO user = restClientUser.findNotDeactivatedByEmail(email).orElseThrow(
-            () -> new UserNotFoundException(String.format("User with this %s not found!", email)));
-        Page<ChatRoom> chatRooms = chatRoomRepo.findAll(pageable);
+        EmployeeWithTariffsDto employee = restClientUbs.getEmployeeByEmail(email);
 
-        List<ChatRoomDto> all = chatRooms.getContent().stream()
-            .map(chatRoom -> modelMapper.map(chatRoom, ChatRoomDto.class))
-            .collect(Collectors.toList());
+        List<ChatRoomDto> all = new ArrayList<>();
+
+        for (GetTariffInfoForEmployeeDto tariff : employee.getTariffs()) {
+            if (tariff.getHasChat()) {
+                Long tariffId = tariff.getId();
+                Page<ChatRoom> chatRooms = chatRoomRepo.findAllChatsByTariffIdPageable(tariffId, pageable);
+                if (!chatRooms.getContent().isEmpty()) {
+                    List<ChatRoomDto> chatRoomDtos = chatRooms.getContent().stream()
+                        .map(chatRoom -> modelMapper.map(chatRoom, ChatRoomDto.class))
+                        .collect(Collectors.toList());
+                    all.addAll(chatRoomDtos);
+                }
+            }
+        }
+
+        Page<ChatRoomDto> allPage = new PageImpl<>(all, pageable, all.size());
 
         return new PageableDto<>(
-            all,
-            chatRooms.getTotalElements(),
-            chatRooms.getPageable().getPageNumber(),
-            chatRooms.getTotalPages());
+            allPage.getContent(),
+            allPage.getTotalElements(),
+            allPage.getNumber(),
+            allPage.getTotalPages());
     }
 }
