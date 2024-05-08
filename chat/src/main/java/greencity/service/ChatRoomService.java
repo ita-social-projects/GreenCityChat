@@ -6,7 +6,6 @@ import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.enums.ChatType;
 import org.springframework.data.domain.Pageable;
-
 import java.util.List;
 import java.util.Set;
 
@@ -134,5 +133,14 @@ public interface ChatRoomService {
      */
     Long getTariffIdByLocationId(Long locationId);
 
+    /**
+     * Retrieves a pageable list of active chat rooms for the admin associated with
+     * the provided email.
+     *
+     * @param email    The email of the admin.
+     * @param pageable Pagination information.
+     * @return A PageableDto containing a list of ChatRoomDto objects representing
+     *         active chat rooms.
+     */
     PageableDto<ChatRoomDto> getActiveChatsForAdmin(String email, Pageable pageable);
 }

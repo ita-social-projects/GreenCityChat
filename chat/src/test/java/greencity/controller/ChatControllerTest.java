@@ -304,7 +304,7 @@ class ChatControllerTest {
         Mockito.when(chatRoomService.addNewUserToChat(userId, chatId)).thenReturn(userId);
 
         mockMvc.perform(MockMvcRequestBuilders.post(chatLink + "/user/{userId}/{chatId}", userId, chatId))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
 
         verify(chatRoomService, times(1)).addNewUserToChat(userId, chatId);
     }
@@ -318,7 +318,7 @@ class ChatControllerTest {
         when(principal.getName()).thenReturn("testUser");
 
         mockMvc.perform(get(chatLink + "/chats/active").principal(principal))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
     }
 
     private List<ChatRoomDto> createMockChats() {

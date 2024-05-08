@@ -47,6 +47,6 @@ public enum EmployeeStatus {
      */
     public static boolean employeeStatusExist(String statusName) {
         return Arrays.stream(EmployeeStatus.values())
-                .anyMatch(status -> status.name().equals(statusName));
+            .anyMatch(status -> status.name().equals(statusName));
     }
 }
