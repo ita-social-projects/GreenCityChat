@@ -71,7 +71,7 @@ public interface ChatRoomService {
     /**
      * {@inheritDoc}
      */
-    Long addNewAdminToChat(Long userId, Long chatId);
+    void addNewAdminToChat(Long userId, Long chatId);
 
     /**
      * {@inheritDoc}
