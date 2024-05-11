@@ -10,6 +10,7 @@ import greencity.enums.ChatType;
 import greencity.enums.Role;
 import greencity.enums.UserStatus;
 import greencity.exception.exceptions.ChatRoomNotFoundException;
+import greencity.exception.exceptions.TariffNotFoundException;
 import greencity.exception.exceptions.UserNotFoundException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
@@ -484,5 +485,56 @@ class ChatRoomServiceImplTest {
 
         assertEquals(expectedTariffId, actualTariffId);
         verify(restClientUbs, times(1)).getTariffIdByLocationId(locationId);
+    }
+
+    @Test
+    void testFindAllChatsByTariffId() {
+        Long tariffId = 1L;
+        List<ChatRoom> expectedChatRooms = Arrays.asList(
+                ChatRoom.builder().id(1L).name("Chat Room 1").tariffId(tariffId).build(),
+                ChatRoom.builder().id(2L).name("Chat Room 2").tariffId(tariffId).build()
+        );
+        List<ChatRoomDto> expectedChatRoomDtos = Arrays.asList(
+                ChatRoomDto.builder().id(1L).name("Chat Room 1").tariffId(tariffId).build(),
+                ChatRoomDto.builder().id(2L).name("Chat Room 2").tariffId(tariffId).build()
+        );
+
+        when(restClientUbs.checkIfTariffExistsById(tariffId)).thenReturn(true);
+        when(chatRoomRepo.findAllChatsByTariffId(tariffId)).thenReturn(expectedChatRooms);
+        when(modelMapper.map(any(ChatRoom.class), eq(ChatRoomDto.class)))
+                .thenAnswer(invocation -> {
+                    ChatRoom room = invocation.getArgument(0);
+                    return ChatRoomDto.builder()
+                            .id(room.getId())
+                            .name(room.getName())
+                            .tariffId(room.getTariffId())
+                            .build();
+                });
+
+        List<ChatRoomDto> actualChatRoomDtos = chatRoomService.findAllChatsByTariffId(tariffId);
+
+        assertEquals(expectedChatRoomDtos.size(), actualChatRoomDtos.size());
+        for (int i = 0; i < expectedChatRoomDtos.size(); i++) {
+            ChatRoomDto expectedDto = expectedChatRoomDtos.get(i);
+            ChatRoomDto actualDto = actualChatRoomDtos.get(i);
+            assertEquals(expectedDto.getId(), actualDto.getId());
+            assertEquals(expectedDto.getName(), actualDto.getName());
+            assertEquals(expectedDto.getTariffId(), actualDto.getTariffId());
+        }
+        verify(restClientUbs, times(1)).checkIfTariffExistsById(tariffId);
+        verify(chatRoomRepo, times(1)).findAllChatsByTariffId(tariffId);
+        verify(modelMapper, times(expectedChatRooms.size())).map(any(ChatRoom.class), eq(ChatRoomDto.class));
+    }
+
+    @Test
+    void testFindAllChatsByTariffIdTariffNotFoundException() {
+        Long tariffId = 1L;
+        when(restClientUbs.checkIfTariffExistsById(tariffId)).thenReturn(false);
+
+        assertThrows(TariffNotFoundException.class, () -> chatRoomService.findAllChatsByTariffId(tariffId));
+
+        verify(restClientUbs, times(1)).checkIfTariffExistsById(tariffId);
+        verify(chatRoomRepo, never()).findAllChatsByTariffId(tariffId);
+        verify(modelMapper, never()).map(any(ChatRoom.class), eq(ChatRoomDto.class));
     }
 }
