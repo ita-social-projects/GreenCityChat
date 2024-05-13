@@ -140,7 +140,7 @@ class ChatMessageServiceImplTest {
 
         chatMessageServiceImpl.processMessage(expectedChatMessageDto);
 
-        verify(messagingTemplate).convertAndSend("/room/" + "/message/chat-messages" + 1L,
+        verify(messagingTemplate).convertAndSend("/room" + "/message/chat-messages" + 1L,
             responseDto);
     }
 

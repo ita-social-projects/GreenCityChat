@@ -11,7 +11,6 @@ import greencity.enums.Role;
 import greencity.enums.UserStatus;
 import greencity.exception.exceptions.ChatRoomNotFoundException;
 import greencity.exception.exceptions.TariffNotFoundException;
-import greencity.exception.exceptions.UserNotFoundException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
 import greencity.service.ParticipantService;
@@ -28,7 +27,6 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import java.util.*;
 import java.util.stream.Collectors;
-import org.powermock.api.mockito.PowerMockito;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -329,13 +327,25 @@ class ChatRoomServiceImplTest {
         assertEquals(expectedDto, actual);
     }
 
-//    @Test
-//    void addNewUserToSystemChat() {
-//        Long id = 1L;
-//        when(chatRoomRepo.findSystemChatRooms()).thenReturn(Collections.singletonList(expected));
-//        chatRoomService.addNewUserToChat(id);
-//        verify(chatRoomRepo).addUserToChatRoom(expected.getId(), id);
-//    }
+    @Test
+    void addNewUserToSystemChat() {
+        Long expectedChatRoomId = 1L;
+        Long expectedParticipantId = 2L;
+
+        chatRoomService.addNewUserToChat(expectedParticipantId, expectedChatRoomId);
+
+        verify(chatRoomRepo).addUserToChatRoom(expectedChatRoomId, expectedParticipantId);
+    }
+
+    @Test
+    void testAddNewAdminToChat() {
+        Long userId = 1L;
+        Long chatRoomId = 2L;
+
+        chatRoomService.addNewAdminToChat(userId, chatRoomId);
+
+        verify(chatRoomRepo, times(1)).addUserToChatRoom(chatRoomId, userId);
+    }
 
     @Test
     @SneakyThrows
@@ -351,37 +361,6 @@ class ChatRoomServiceImplTest {
         expected.add(expectedDto);
 
         assertEquals(expected, actual);
-    }
-
-    @Test
-    void findPrivateByParticipantsForSockets() throws Exception {
-        when(participantService.findById(1L)).thenReturn(expectedParticipant);
-
-        Participant participant = Participant.builder()
-            .id(2L)
-            .name("Danylo")
-            .email("danylo@mail.com")
-            .profilePicture(null)
-            .userStatus(UserStatus.ACTIVATED)
-            .build();
-        when(participantService.findById(2L)).thenReturn(participant);
-        expectedSet.add(participant);
-        expectedList.add(ChatRoom.builder()
-            .id(1L)
-            .name("test")
-            .messages(new LinkedList<>())
-            .type(ChatType.PRIVATE)
-            .participants(new HashSet<>())
-            .owner(expectedParticipant)
-            .build());
-        when(chatRoomRepo.findByParticipantsAndStatus(expectedSet, expectedSet.size(), ChatType.PRIVATE))
-            .thenReturn(expectedList);
-
-        PowerMockito.when(chatRoomService, "filterPrivateRoom", expectedList, expectedSet, expectedParticipant)
-            .thenReturn(expectedDto);
-
-        chatRoomService.findPrivateByParticipantsForSockets(1L, 2L);
-        verify(messagingTemplate, times(1)).convertAndSend("/rooms/user/new-chats" + 2L, expectedDto);
     }
 
     @Test
@@ -436,42 +415,110 @@ class ChatRoomServiceImplTest {
     }
 
     @Test
-    void testGetActiveChatsForAdmin() throws Exception {
-
+    void testGetActiveChatsForAdmin() {
         String email = "admin@example.com";
         Pageable pageable = PageRequest.of(0, 20);
-        UserVO expectedUser = UserVO.builder().id(1L).email(email).build();
-        List<ChatRoom> chatRooms = new ArrayList<>();
-        chatRooms.add(ChatRoom.builder().id(1L).name("Chat Room 1").build());
-        Page<ChatRoom> chatRoomPage = new PageImpl<>(chatRooms, pageable, 1);
-        List<ChatRoomDto> expectedDtos =
-            Collections.singletonList(ChatRoomDto.builder().id(1L).name("Chat Room 1").build());
+        EmployeeWithTariffsDto employeeWithTariffsDto = EmployeeWithTariffsDto.builder()
+            .employeeDto(EmployeeDto.builder().build())
+            .tariffs(Collections.singletonList(
+                GetTariffInfoForEmployeeDto.builder()
+                    .id(1L)
+                    .hasChat(true)
+                    .build()))
+            .build();
+        List<ChatRoom> chatRooms = Collections.singletonList(ChatRoom.builder().id(1L).name("Chat Room 1").build());
+        Page<ChatRoom> chatRoomPage = new PageImpl<>(chatRooms, pageable, chatRooms.size());
 
-        when(restClientUser.findNotDeactivatedByEmail(email)).thenReturn(Optional.of(expectedUser));
-        when(chatRoomRepo.findAll(pageable)).thenReturn(chatRoomPage);
-        when(modelMapper.map(any(ChatRoom.class), eq(ChatRoomDto.class))).thenReturn(expectedDtos.get(0));
-
+        when(restClientUbs.getEmployeeByEmail(email)).thenReturn(employeeWithTariffsDto);
+        when(chatRoomRepo.findAllChatsByTariffIdPageable(anyLong(), eq(pageable))).thenReturn(chatRoomPage);
+        when(modelMapper.map(any(ChatRoom.class), eq(ChatRoomDto.class)))
+            .thenAnswer(invocation -> {
+                ChatRoom chatRoom = invocation.getArgument(0);
+                return ChatRoomDto.builder()
+                    .id(chatRoom.getId())
+                    .name(chatRoom.getName())
+                    .build();
+            });
         PageableDto<ChatRoomDto> actual = chatRoomService.getActiveChatsForAdmin(email, pageable);
 
         assertEquals(1, actual.getTotalElements());
         assertEquals(1, actual.getTotalPages());
-        verify(restClientUser, times(1)).findNotDeactivatedByEmail(email);
-        verify(chatRoomRepo, times(1)).findAll(pageable);
+
+        verify(restClientUbs, times(1)).getEmployeeByEmail(email);
+        verify(chatRoomRepo, times(1)).findAllChatsByTariffIdPageable(anyLong(), eq(pageable));
         verify(modelMapper, times(1)).map(any(ChatRoom.class), eq(ChatRoomDto.class));
     }
 
     @Test
-    void testGetActiveChatsForAdmin_UserNotFoundException() {
-        String email = "admin@example.com";
-        Pageable pageable = PageRequest.of(0, 20);
+    void testGetActiveChatsForAdmin_NoTariffs() {
+        EmployeeWithTariffsDto employee = EmployeeWithTariffsDto.builder()
+            .employeeDto(null)
+            .tariffs(Collections.emptyList())
+            .build();
+        when(restClientUbs.getEmployeeByEmail(email)).thenReturn(employee);
 
-        when(restClientUser.findNotDeactivatedByEmail(email)).thenReturn(Optional.empty());
+        PageableDto<ChatRoomDto> result = chatRoomService.getActiveChatsForAdmin(email, Pageable.unpaged());
 
-        assertThrows(UserNotFoundException.class, () -> {
-            chatRoomService.getActiveChatsForAdmin(email, pageable);
-        });
+        assertEquals(Collections.emptyList(), result.getPage());
+        assertEquals(0L, result.getTotalElements());
+    }
 
-        verify(restClientUser, times(1)).findNotDeactivatedByEmail(email);
+    @Test
+    void testGetAllLocationsWithChats() {
+        Long userId = 1L;
+
+        List<LocationsDto> mockedLocations = Arrays.asList(LocationsDto.builder().id(1L).build());
+        when(restClientUbs.getAllLocations()).thenReturn(mockedLocations);
+
+        List<LocationsDto> locationsWithChats = chatRoomService.getAllLocationsWithChats(userId);
+
+        assertEquals(mockedLocations, locationsWithChats);
+    }
+
+    @Test
+    void testFindPrivateByParticipantsForSocketsGPT() {
+        Long locationId = 1L;
+        Long currentUserId = 1L;
+        Set<Participant> participants = new LinkedHashSet<>();
+        Participant owner = Participant.builder()
+            .id(currentUserId)
+            .name("Owner")
+            .email("owner@example.com")
+            .build();
+        participants.add(owner);
+        ChatRoomDto expectedRoomDto = ChatRoomDto.builder()
+            .id(1L)
+            .name("Owner")
+            .chatType(ChatType.PRIVATE)
+//                .participants(new HashSet<>(participants))
+            .build();
+
+        when(participantService.findById(currentUserId)).thenReturn(owner);
+
+        Long tariffId = 1L;
+        when(restClientUbs.getTariffIdByLocationId(locationId)).thenReturn(tariffId);
+
+        when(chatRoomRepo.existsByUserIdAndTariffId(currentUserId, tariffId)).thenReturn(false);
+        when(chatRoomRepo.save(any(ChatRoom.class))).thenReturn(new ChatRoom());
+
+        when(modelMapper.map(any(), eq(ChatRoomDto.class))).thenReturn(expectedRoomDto);
+
+        List<EmployeeWithTariffsDto> employeesWithTariffs = Collections.singletonList(
+            EmployeeWithTariffsDto.builder()
+                .employeeDto(EmployeeDto.builder().email("employee@example.com").build())
+                .build());
+        when(restClientUbs.getEmployeesByTariffIdWithChat(tariffId)).thenReturn(employeesWithTariffs);
+
+        chatRoomService.findPrivateByParticipantsForSockets(locationId, currentUserId);
+
+        verify(participantService, times(1)).findById(currentUserId);
+        verify(restClientUbs, times(1)).getTariffIdByLocationId(locationId);
+        verify(chatRoomRepo, times(1)).existsByUserIdAndTariffId(currentUserId, tariffId);
+        verify(chatRoomRepo, times(1)).save(any(ChatRoom.class));
+        verify(restClientUbs, times(1)).getEmployeesByTariffIdWithChat(tariffId);
+        verify(messagingTemplate, times(1)).convertAndSendToUser(
+            eq("employee@example.com"), eq("/rooms/support"), eq(expectedRoomDto));
+        verify(messagingTemplate, times(1)).convertAndSend(eq("/rooms/user/new-chats1"), eq(expectedRoomDto));
     }
 
     @Test
@@ -491,25 +538,23 @@ class ChatRoomServiceImplTest {
     void testFindAllChatsByTariffId() {
         Long tariffId = 1L;
         List<ChatRoom> expectedChatRooms = Arrays.asList(
-                ChatRoom.builder().id(1L).name("Chat Room 1").tariffId(tariffId).build(),
-                ChatRoom.builder().id(2L).name("Chat Room 2").tariffId(tariffId).build()
-        );
+            ChatRoom.builder().id(1L).name("Chat Room 1").tariffId(tariffId).build(),
+            ChatRoom.builder().id(2L).name("Chat Room 2").tariffId(tariffId).build());
         List<ChatRoomDto> expectedChatRoomDtos = Arrays.asList(
-                ChatRoomDto.builder().id(1L).name("Chat Room 1").tariffId(tariffId).build(),
-                ChatRoomDto.builder().id(2L).name("Chat Room 2").tariffId(tariffId).build()
-        );
+            ChatRoomDto.builder().id(1L).name("Chat Room 1").tariffId(tariffId).build(),
+            ChatRoomDto.builder().id(2L).name("Chat Room 2").tariffId(tariffId).build());
 
         when(restClientUbs.checkIfTariffExistsById(tariffId)).thenReturn(true);
         when(chatRoomRepo.findAllChatsByTariffId(tariffId)).thenReturn(expectedChatRooms);
         when(modelMapper.map(any(ChatRoom.class), eq(ChatRoomDto.class)))
-                .thenAnswer(invocation -> {
-                    ChatRoom room = invocation.getArgument(0);
-                    return ChatRoomDto.builder()
-                            .id(room.getId())
-                            .name(room.getName())
-                            .tariffId(room.getTariffId())
-                            .build();
-                });
+            .thenAnswer(invocation -> {
+                ChatRoom room = invocation.getArgument(0);
+                return ChatRoomDto.builder()
+                    .id(room.getId())
+                    .name(room.getName())
+                    .tariffId(room.getTariffId())
+                    .build();
+            });
 
         List<ChatRoomDto> actualChatRoomDtos = chatRoomService.findAllChatsByTariffId(tariffId);
 
