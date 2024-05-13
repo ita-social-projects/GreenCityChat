@@ -162,19 +162,6 @@ class ChatRoomServiceImplTest {
     }
 
     @Test
-    void findPrivateByParticipants() {
-        when(participantService.findByEmail(anyString())).thenReturn(expectedParticipant);
-        when(participantService.findById(any())).thenReturn(expectedParticipant);
-        when(chatRoomRepo.findByParticipantsAndStatus(any(), any(), any())).thenReturn(expectedListEmpty);
-        when(chatRoomRepo.save(any())).thenReturn(expected);
-        when(modelMapper.map(expected, ChatRoomDto.class)).thenReturn(expectedDto);
-
-        ChatRoomDto actual = chatRoomService.findPrivateByParticipants(1L, "name");
-
-        assertEquals(expectedDto, actual);
-    }
-
-    @Test
     void findGroupByParticipants() {
         when(participantService.findByEmail(anyString())).thenReturn(expectedParticipant);
         when(participantService.findById(any())).thenReturn(expectedParticipant);
@@ -186,7 +173,6 @@ class ChatRoomServiceImplTest {
             chatRoomService.findGroupByParticipants(Collections.singletonList(1L), "name", "chatName").get(0);
 
         assertEquals(actual, expectedDto);
-
     }
 
     @Test
