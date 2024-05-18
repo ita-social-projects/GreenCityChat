@@ -19,9 +19,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -395,27 +393,28 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     public PageableDto<ChatRoomDto> getActiveChatsForAdmin(String email, Pageable pageable) {
         EmployeeWithTariffsDto employee = restClientUbs.getEmployeeByEmail(email);
 
-        List<ChatRoomDto> all = new ArrayList<>();
-
-        for (GetTariffInfoForEmployeeDto tariff : employee.getTariffs()) {
-            if (tariff.getHasChat()) {
-                Long tariffId = tariff.getId();
-                Page<ChatRoom> chatRooms = chatRoomRepo.findAllChatsByTariffIdPageable(tariffId, pageable);
-                if (!chatRooms.getContent().isEmpty()) {
-                    List<ChatRoomDto> chatRoomDtos = chatRooms.getContent().stream()
-                        .map(chatRoom -> modelMapper.map(chatRoom, ChatRoomDto.class))
-                        .collect(Collectors.toList());
-                    all.addAll(chatRoomDtos);
-                }
-            }
+        if (employee == null) {
+            return new PageableDto<>(Collections.emptyList(), 0, 0, 0);
         }
 
-        Page<ChatRoomDto> allPage = new PageImpl<>(all, pageable, all.size());
+        List<Long> tariffIdsWithChat = employee.getTariffs().stream()
+            .filter(GetTariffInfoForEmployeeDto::getHasChat)
+            .map(GetTariffInfoForEmployeeDto::getId)
+            .collect(Collectors.toList());
 
-        return new PageableDto<>(
-            allPage.getContent(),
-            allPage.getTotalElements(),
-            allPage.getNumber(),
-            allPage.getTotalPages());
+        if (tariffIdsWithChat.isEmpty()) {
+            return new PageableDto<>(Collections.emptyList(), 0, 0, 0);
+        }
+
+        Page<ChatRoom> activeChatsPage = chatRoomRepo.findAllChatsByTariffIdPageable(tariffIdsWithChat, pageable);
+
+        List<ChatRoomDto> chatRoomDtos = activeChatsPage.getContent().stream()
+            .map(chatRoom -> modelMapper.map(chatRoom, ChatRoomDto.class))
+            .collect(Collectors.toList());
+
+        return new PageableDto<>(chatRoomDtos,
+            activeChatsPage.getTotalElements(),
+            activeChatsPage.getNumber(),
+            activeChatsPage.getTotalPages());
     }
 }

@@ -416,7 +416,8 @@ class ChatRoomServiceImplTest {
         Page<ChatRoom> chatRoomPage = new PageImpl<>(chatRooms, pageable, chatRooms.size());
 
         when(restClientUbs.getEmployeeByEmail(email)).thenReturn(employeeWithTariffsDto);
-        when(chatRoomRepo.findAllChatsByTariffIdPageable(anyLong(), eq(pageable))).thenReturn(chatRoomPage);
+        when(chatRoomRepo.findAllChatsByTariffIdPageable(Collections.singletonList(1L), pageable))
+            .thenReturn(chatRoomPage);
         when(modelMapper.map(any(ChatRoom.class), eq(ChatRoomDto.class)))
             .thenAnswer(invocation -> {
                 ChatRoom chatRoom = invocation.getArgument(0);
@@ -429,9 +430,11 @@ class ChatRoomServiceImplTest {
 
         assertEquals(1, actual.getTotalElements());
         assertEquals(1, actual.getTotalPages());
+        assertEquals(1, actual.getPage().size());
+        assertEquals("Chat Room 1", actual.getPage().get(0).getName());
 
         verify(restClientUbs, times(1)).getEmployeeByEmail(email);
-        verify(chatRoomRepo, times(1)).findAllChatsByTariffIdPageable(anyLong(), eq(pageable));
+        verify(chatRoomRepo, times(1)).findAllChatsByTariffIdPageable(Collections.singletonList(1L), pageable);
         verify(modelMapper, times(1)).map(any(ChatRoom.class), eq(ChatRoomDto.class));
     }
 

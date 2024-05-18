@@ -118,14 +118,14 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
     List<ChatRoom> findAllChatsByTariffId(Long tariffId);
 
     /**
-     * Retrieves a page of chat rooms associated with a specific tariff.
+     * Retrieves a page of chat rooms associated with a list of tariff IDs.
      *
-     * @param tariffId The ID of the tariff.
-     * @param pageable The Pageable object that provides the pagination information.
-     * @return A page of chat rooms associated with the specified tariff.
+     * @param tariffIds The list of tariff IDs for which to retrieve chat rooms.
+     * @param pageable  The Pageable object that provides pagination information.
+     * @return A page of chat rooms associated with the specified tariff IDs.
      */
-    @Query("select cr from ChatRoom  cr where cr.tariffId = :tariffId")
-    Page<ChatRoom> findAllChatsByTariffIdPageable(Long tariffId, Pageable pageable);
+    @Query("select cr from ChatRoom cr where cr.tariffId IN (:tariffIds)")
+    Page<ChatRoom> findAllChatsByTariffIdPageable(List<Long> tariffIds, Pageable pageable);
 
     /**
      * Checks if a chat room exists with the provided userId and tariffId. If the
