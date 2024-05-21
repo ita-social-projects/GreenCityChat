@@ -95,22 +95,6 @@ public class ChatController {
     }
 
     /**
-     * Method return private room for current user with other user.
-     *
-     * @param id - id of user
-     * @return list of {@link ChatRoomDto}.
-     */
-    @ApiOperation(value = "Get private room for current user with other user.")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = HttpStatuses.OK, response = ChatRoomDto.class)
-    })
-    @GetMapping("/user/{id}")
-    public ResponseEntity<ChatRoomDto> findPrivateRoomWithUser(@PathVariable Long id, Principal principal) {
-        return ResponseEntity.status(HttpStatus.OK)
-            .body(chatRoomService.findPrivateByParticipants(id, principal.getName()));
-    }
-
-    /**
      * Method return chat room by id.
      *
      * @param id id of room.

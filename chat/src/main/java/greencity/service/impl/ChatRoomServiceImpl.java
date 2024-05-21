@@ -88,19 +88,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         return modelMapper.map(chatRoom, ChatRoomDto.class);
     }
 
-    @Override
-    public ChatRoomDto findPrivateByParticipants(Long id, String name) {
-        // Set<Participant> participants = new LinkedHashSet<>();
-        // Participant owner = participantService.findByEmail(name);
-        // participants.add(owner);
-        // participants.add(participantService.findById(id));
-        // List<ChatRoom> chatRoom =
-        // chatRoomRepo.findByParticipantsAndStatus(participants, participants.size(),
-        // ChatType.PRIVATE);
-        // return filterPrivateRoom(chatRoom, participants, owner);
-        return null;
-    }
-
     private ChatRoomDto filterPrivateRoom(List<ChatRoom> chatRooms, Set<Participant> participants, Participant owner,
         Long tariffId) {
         ChatRoom toReturn;
@@ -280,7 +267,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     @Override
     public Long addNewUserToChat(Long userId, Long chatRoomId) {
         chatRoomRepo.addUserToChatRoom(chatRoomId, userId);
-        return userId; // TODO: make it in more appropriate way
+        return userId;
     }
 
     @Override
