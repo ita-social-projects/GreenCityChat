@@ -7,6 +7,7 @@ public final class ErrorMessage {
     public static final String FILE_NOT_SAVED = "File hasn't been saved";
     public static final String USER_NOT_BELONG_TO_CHAT = "This user doesnt belong to this chat";
     public static final String USER_NOT_THE_OWNER = "This user is not the owner of the chat";
+    public static final String USER_IS_NOT_ADMIN = "This user is not the admin";
 
     private ErrorMessage() {
     }

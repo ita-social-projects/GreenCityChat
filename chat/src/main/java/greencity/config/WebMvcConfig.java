@@ -1,6 +1,6 @@
 package greencity.config;
 
-import greencity.client.RestClient;
+import greencity.client.RestClientUser;
 import greencity.converters.UserArgumentResolver;
 import greencity.security.interceptor.UserActivityInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ import java.util.Locale;
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
     @Autowired
-    private RestClient restClient;
+    private RestClientUser restClientUser;
 
     /**
      * Method for determining which locale is going to be used.
@@ -48,12 +48,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new UserActivityInterceptor(restClient));
+        registry.addInterceptor(new UserActivityInterceptor(restClientUser));
         registry.addInterceptor(localeChangeInterceptor());
     }
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-        resolvers.add(new UserArgumentResolver(restClient));
+        resolvers.add(new UserArgumentResolver(restClientUser));
     }
 }

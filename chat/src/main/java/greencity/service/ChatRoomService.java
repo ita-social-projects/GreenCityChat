@@ -1,13 +1,11 @@
 package greencity.service;
 
-import greencity.dto.ChatRoomDto;
-import greencity.dto.GroupChatRoomCreateDto;
-import greencity.dto.LeaveChatDto;
+import greencity.dto.*;
 import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.enums.ChatType;
-
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Set;
 
@@ -42,11 +40,6 @@ public interface ChatRoomService {
     /**
      * {@inheritDoc}
      */
-    ChatRoomDto findPrivateByParticipants(Long id, String name);
-
-    /**
-     * {@inheritDoc}
-     */
     List<ChatRoomDto> findGroupByParticipants(List<Long> id, String name, String chatName);
 
     /**
@@ -67,7 +60,12 @@ public interface ChatRoomService {
     /**
      * {@inheritDoc}
      */
-    Long addNewUserToSystemChat(Long userId);
+    Long addNewUserToChat(Long userId, Long chatId);
+
+    /**
+     * {@inheritDoc}
+     */
+    void addNewAdminToChat(Long userId, Long chatId);
 
     /**
      * {@inheritDoc}
@@ -106,4 +104,38 @@ public interface ChatRoomService {
      * @param userId {@link Long} user's id
      */
     void deleteMessagesFromChatRoom(Long roomId, Long userId);
+
+    /**
+     * Retrieves all chat rooms associated with the specified tariff ID.
+     *
+     * @param tariffId the ID of the tariff
+     * @return a list of chat room DTOs associated with the specified tariff ID
+     */
+    List<ChatRoomDto> findAllChatsByTariffId(Long tariffId);
+
+    /**
+     * Retrieves a list of all locations.
+     *
+     * @return A list of {@link LocationsDto} objects representing all locations.
+     */
+    List<LocationsDto> getAllLocationsWithChats(Long userId);
+
+    /**
+     * Retrieves the tariff ID associated with the specified location ID.
+     *
+     * @param locationId The ID of the location for which to retrieve the tariff ID.
+     * @return The tariff ID associated with the specified location ID.
+     */
+    Long getTariffIdByLocationId(Long locationId);
+
+    /**
+     * Retrieves a pageable list of active chat rooms for the admin associated with
+     * the provided email.
+     *
+     * @param email    The email of the admin.
+     * @param pageable Pagination information.
+     * @return A PageableDto containing a list of ChatRoomDto objects representing
+     *         active chat rooms.
+     */
+    PageableDto<ChatRoomDto> getActiveChatsForAdmin(String email, Pageable pageable);
 }

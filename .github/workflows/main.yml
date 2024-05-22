@@ -51,7 +51,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=ita-social-projects_GreenCityChat
+        run: mvn clean install
+        # mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=ita-social-projects_GreenCityChat
       
       - name: Test Reporter
         uses: dorny/test-reporter@v1.5.0

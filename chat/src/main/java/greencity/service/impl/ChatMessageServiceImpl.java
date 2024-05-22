@@ -24,8 +24,8 @@ import java.util.*;
 
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -37,6 +37,7 @@ import org.springframework.stereotype.Service;
  * Implementation of {@link ChatMessageService}.
  */
 @Service
+@Slf4j
 @AllArgsConstructor
 public class ChatMessageServiceImpl implements ChatMessageService {
     private final ChatMessageRepo chatMessageRepo;
@@ -76,7 +77,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         ChatMessage message = modelMapper.map(chatMessageDto, ChatMessage.class);
         chatMessageDto = modelMapper.map(chatMessageRepo.save(message), ChatMessageDto.class);
         ArrayList<Participant> participants = new ArrayList<>(
-            chatRoomRepo.getPatricipantsByChatRoomId(chatMessageDto.getRoomId()));
+            chatRoomRepo.getParticipantsByChatRoomId(chatMessageDto.getRoomId()));
 
         for (Participant current : participants) {
             if (current.getId() != message.getSender().getId()) {
@@ -87,7 +88,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         ChatMessageResponseDto responseDto = modelMapper.map(chatMessageDto, ChatMessageResponseDto.class);
         responseDto.setCreateDate(chatMessageDto.getCreateDate().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
         participants.stream().forEach(participant -> {
-            messagingTemplate.convertAndSend(ROOM_LINK + "/message/chat-messages" + participant.getId(),
+            log.info("Message sent to participant {} and message text {}", participant.getEmail(),
+                responseDto.getContent());
+            messagingTemplate.convertAndSend(ROOM_LINK + "message/chat-messages" + participant.getId(),
                 responseDto);
         });
     }

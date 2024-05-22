@@ -5,13 +5,11 @@ import greencity.constant.HttpStatuses;
 import greencity.dto.*;
 import greencity.enums.ChatType;
 import greencity.service.*;
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.security.Principal;
 import java.util.List;
-
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.*;
@@ -20,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 import org.springframework.data.domain.Pageable;
-
 import javax.validation.Valid;
 
 @RestController
@@ -64,6 +61,19 @@ public class ChatController {
     }
 
     /**
+     * Retrieves a list of chat rooms associated with the specified tariff ID.
+     *
+     * @param tariffId The ID of the tariff for which to retrieve chat rooms.
+     * @return A ResponseEntity containing a list of ChatRoomDto objects and an OK
+     *         status if successful.
+     */
+    @GetMapping("/tariffs/{tariffId}")
+    public ResponseEntity<List<ChatRoomDto>> findAllChatsByTariffId(@PathVariable Long tariffId) {
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(chatRoomService.findAllChatsByTariffId(tariffId));
+    }
+
+    /**
      * Method return all message by room id.
      *
      * @param id id of room.
@@ -82,22 +92,6 @@ public class ChatController {
         @PathVariable("room_id") Long id) {
         return ResponseEntity.status(HttpStatus.OK)
             .body(chatMessageService.findAllMessagesByChatRoomId(id, pageable));
-    }
-
-    /**
-     * Method return private room for current user with other user.
-     *
-     * @param id - id of user
-     * @return list of {@link ChatRoomDto}.
-     */
-    @ApiOperation(value = "Get private room for current user with other user.")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = HttpStatuses.OK, response = ChatRoomDto.class)
-    })
-    @GetMapping("/user/{id}")
-    public ResponseEntity<ChatRoomDto> findPrivateRoomWithUser(@PathVariable Long id, Principal principal) {
-        return ResponseEntity.status(HttpStatus.OK)
-            .body(chatRoomService.findPrivateByParticipants(id, principal.getName()));
     }
 
     /**
@@ -214,7 +208,7 @@ public class ChatController {
      */
     @MessageMapping("/chat/user")
     public void createNewPrivateChatIfNotExist(@RequestBody CreateNewChatDto createNewChatDto) {
-        chatRoomService.findPrivateByParticipantsForSockets(createNewChatDto.getParticipantsIds(),
+        chatRoomService.findPrivateByParticipantsForSockets(createNewChatDto.getLocationsIds(),
             createNewChatDto.getCurrentUserId());
     }
 
@@ -340,17 +334,43 @@ public class ChatController {
     }
 
     /**
-     * Method add user to system chat room.
+     * Handles the update of chat status based on the provided message.
+     *
+     * @param chatMessageDto The ChatMessageDto containing the information for
+     *                       updating the chat status.
+     */
+    @MessageMapping("/chat/update/status")
+    public void updateStatus(ChatMessageDto chatMessageDto) {
+    }
+
+    /**
+     * Method add user to chat room.
      *
      * @param userId id of new user.
      */
-    @ApiOperation(value = "Add user to system chat.")
+    @ApiOperation(value = "Add user to chat room.")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = HttpStatuses.OK, response = Long.class)
     })
-    @PostMapping("/user")
-    public ResponseEntity<Long> addUserToSystemChatRoom(@RequestBody Long userId) {
-        return ResponseEntity.status(HttpStatus.OK).body(chatRoomService.addNewUserToSystemChat(userId));
+    @PostMapping("/user/{userId}/{chatId}")
+    public ResponseEntity<Long> addUserToChatRoom(@PathVariable Long userId, @PathVariable Long chatId) {
+        return ResponseEntity.status(HttpStatus.OK).body(chatRoomService.addNewUserToChat(userId, chatId));
+    }
+
+    /**
+     * Adds an admin to a chat room.
+     *
+     * @param userId The ID of the user who will be added as an admin to the chat
+     *               room.
+     * @param chatId The ID of the chat room to which the admin will be added.
+     */
+    @ApiOperation(value = "Add admin to chat room.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = HttpStatuses.OK, response = Long.class)
+    })
+    @PostMapping("/admin/{userId}/{chatId}")
+    public void addAdminToChatRoom(@PathVariable Long userId, @PathVariable Long chatId) {
+        chatRoomService.addNewAdminToChat(userId, chatId);
     }
 
     /**
@@ -397,6 +417,7 @@ public class ChatController {
         @ApiResponse(code = 404, message = HttpStatuses.NOT_FOUND)
     })
     @PostMapping(value = "/create-chatRoom")
+    @Deprecated
     public ResponseEntity<ChatRoomDto> createChatRoom(
         @Valid @RequestBody GroupChatRoomCreateDto dto) {
         chatRoomService.createNewChatRoom(dto);
@@ -430,5 +451,65 @@ public class ChatController {
         @PathVariable Long chatId) {
         chatRoomService.deleteMessagesFromChatRoom(chatId, userId);
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+    }
+
+    /**
+     * Method to retrieve all locations.
+     *
+     * @return ResponseEntity containing a list of LocationDto objects and an OK
+     *         status if successful.
+     */
+    @ApiOperation(value = "Get all locations.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = HttpStatuses.OK, response = LocationsDto.class, responseContainer = "List")
+    })
+    @GetMapping("/locations/{userId}")
+    public ResponseEntity<List<LocationsDto>> getAllLocations(@PathVariable Long userId) {
+        List<LocationsDto> allLocations = chatRoomService.getAllLocationsWithChats(userId);
+        return ResponseEntity.status(HttpStatus.OK).body(allLocations);
+    }
+
+    /**
+     * Retrieves the tariff ID associated with the specified location ID.
+     *
+     * @param locationId The ID of the location for which to retrieve the tariff ID.
+     * @return ResponseEntity containing the tariff ID if found, or appropriate
+     *         error response if not found or if there are any issues during the
+     *         retrieval process
+     */
+    @ApiOperation(value = "Get Tariff ID by Location ID")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = HttpStatuses.OK),
+        @ApiResponse(code = 400, message = HttpStatuses.BAD_REQUEST),
+        @ApiResponse(code = 401, message = HttpStatuses.UNAUTHORIZED),
+        @ApiResponse(code = 403, message = HttpStatuses.FORBIDDEN),
+        @ApiResponse(code = 404, message = HttpStatuses.NOT_FOUND)
+    })
+    @GetMapping(value = "/tariffs/byLocation/{locationId}")
+    public ResponseEntity<Long> getTariffIdByLocationId(@PathVariable("locationId") Long locationId) {
+        Long tariffId = chatRoomService.getTariffIdByLocationId(locationId);
+        return ResponseEntity.status(HttpStatus.OK).body(tariffId);
+    }
+
+    /**
+     * Retrieves all active chats for an admin user.
+     *
+     * @param principal The authenticated principal representing the admin user.
+     * @param pageable  The pageable object used for pagination.
+     * @return A ResponseEntity containing a PageableDto of ChatRoomDto objects
+     *         representing active chats.
+     */
+    @ApiOperation(value = "Get all active chats for admin")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = HttpStatuses.OK),
+        @ApiResponse(code = 400, message = HttpStatuses.BAD_REQUEST),
+        @ApiResponse(code = 401, message = HttpStatuses.UNAUTHORIZED)
+    })
+    @GetMapping(value = "/chats/active")
+    @ApiPageable
+    public ResponseEntity<PageableDto<ChatRoomDto>> getAllActiveChatsForAdmin(Principal principal,
+        @ApiIgnore Pageable pageable) {
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(chatRoomService.getActiveChatsForAdmin(principal.getName(), pageable));
     }
 }

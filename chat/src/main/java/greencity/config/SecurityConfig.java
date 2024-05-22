@@ -3,15 +3,19 @@ package greencity.config;
 import static greencity.constant.AppConstant.*;
 import static greencity.constant.AppConstant.UBS_EMPLOYEE;
 
-import greencity.client.RestClient;
+import com.google.common.collect.ImmutableList;
+import greencity.client.RestClientUser;
 import greencity.jwt.JwtTool;
 import greencity.security.providers.JwtAuthenticationProvider;
-import java.lang.reflect.Method;
+
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+
 import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -37,15 +41,19 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final JwtTool jwtTool;
-    private final RestClient restClient;
+    private final RestClientUser restClientUser;
+    private final String[] allowedOrigins;
 
     /**
      * Constructor.
      */
     @Autowired
-    public SecurityConfig(JwtTool jwtTool, RestClient restClient) {
+    public SecurityConfig(JwtTool jwtTool,
+        RestClientUser restClientUser,
+        @Value("${spring.messaging.stomp.websocket.allowed-origins}") String[] allowedOrigins) {
         this.jwtTool = jwtTool;
-        this.restClient = restClient;
+        this.restClientUser = restClientUser;
+        this.allowedOrigins = allowedOrigins;
     }
 
     /**
@@ -63,13 +71,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
      */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf()
+        http.headers()
+            .and()
+            .csrf()
             .disable()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
             .addFilterBefore(
                 new greencity.security.filters.AccessTokenAuthenticationFilter(jwtTool, authenticationManager(),
-                    restClient),
+                    restClientUser),
                 UsernamePasswordAuthenticationFilter.class)
             .exceptionHandling()
             .authenticationEntryPoint((req, resp, exc) -> resp.sendError(SC_UNAUTHORIZED, "Authorize first."))
@@ -143,11 +153,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Collections.singletonList("*"));
+        configuration.setAllowedOrigins(List.of(allowedOrigins));
         configuration.setAllowedMethods(
             Arrays.asList("GET", "POST", "OPTIONS", "DELETE", "PUT", "PATCH"));
         configuration.setAllowedHeaders(
-            Arrays.asList(
+            Arrays.asList("Access-Control-Allow-Origin", "Access-Control-Allow-Headers",
                 "X-Requested-With", "Origin", "Content-Type", "Accept", "Authorization"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

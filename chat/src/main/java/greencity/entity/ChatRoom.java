@@ -1,6 +1,8 @@
 package greencity.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import greencity.enums.ChatStatus;
 import greencity.enums.ChatType;
 
 import java.util.LinkedList;
@@ -32,6 +34,12 @@ public class ChatRoom {
 
     @Enumerated(value = EnumType.STRING)
     private ChatType type;
+
+    @Enumerated(value = EnumType.STRING)
+    private ChatStatus chatStatus;
+
+    @Column(name = "tariff_id")
+    private Long tariffId;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

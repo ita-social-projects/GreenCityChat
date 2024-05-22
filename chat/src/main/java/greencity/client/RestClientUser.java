@@ -1,5 +1,6 @@
 package greencity.client;
 
+import greencity.dto.EmployeeWithTariffsDto;
 import greencity.dto.UserVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,7 +18,7 @@ import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
-public class RestClient {
+public class RestClientUser {
     private final RestTemplate restTemplate;
     @Value("${greencityuser.server.address}")
     private String greenCityUserServerAddress;
@@ -51,18 +52,6 @@ public class RestClient {
     }
 
     /**
-     * Method makes headers for RestTemplate.
-     *
-     * @return {@link HttpEntity}
-     */
-    private HttpHeaders setHeader() {
-        String accessToken = httpServletRequest.getHeader("Authorization");
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", accessToken);
-        return headers;
-    }
-
-    /**
      * Method that allow you to find not 'DEACTIVATED' {@link UserVO} by email.
      *
      * @param email - {@link UserVO}'s email
@@ -77,5 +66,17 @@ public class RestClient {
             .getBody();
         assert body != null;
         return Optional.of(body);
+    }
+
+    /**
+     * Method makes headers for RestTemplate.
+     *
+     * @return {@link HttpEntity}
+     */
+    private HttpHeaders setHeader() {
+        String accessToken = httpServletRequest.getHeader("Authorization");
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", accessToken);
+        return headers;
     }
 }
