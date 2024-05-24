@@ -56,7 +56,7 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
         + " JOIN cr.participants p"
         + " WHERE p IN :participant"
         + " AND cr.messages IS NOT EMPTY"
-        + " AND UPPER(cr.type) = :chatType")
+        + " AND cr.type = :chatType")
     List<ChatRoom> findGroupChats(@Param("participant") Participant participant, @Param("chatType") ChatType chatType);
 
     /**
