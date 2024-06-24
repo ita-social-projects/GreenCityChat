@@ -199,7 +199,7 @@ class ChatMessageServiceImplTest {
     }
 
     @Test
-    public void sendVoiceMessageTest() {
+    void sendVoiceMessageTest() {
         ChatMessageDto inputDto = chatMessageDto;
         ChatMessageDto expectedDto = expectedChatMessageDto;
         ChatMessage expectedMessage = expectedChatMessage;
@@ -229,7 +229,7 @@ class ChatMessageServiceImplTest {
     }
 
     @Test
-    public void sendFileTest() {
+    void sendFileTest() {
         MultipartFile mockFile = mock(MultipartFile.class);
         ChatMessageDto inputDto = chatMessageDto;
         ChatMessageDto expectedDto = expectedChatMessageDto;
@@ -260,7 +260,7 @@ class ChatMessageServiceImplTest {
     }
 
     @Test
-    public void mergingChatMessageDtoAndChatFileDtoTest() throws Exception {
+    void mergingChatMessageDtoAndChatFileDtoTest() throws Exception {
         ChatFileDto chatFileDto = new ChatFileDto("testFile.mp3", FilesType.SOUND.toString(),
             "https://example.com/testFile.mp3");
 

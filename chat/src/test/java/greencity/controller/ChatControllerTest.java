@@ -202,7 +202,7 @@ class ChatControllerTest {
     void sentMessageTest() throws Exception {
         Long userId = 1L, roomId = 1L;
         String content = "content";
-        when(chatMessageService.sentMessage(Mockito.eq(userId), Mockito.eq(roomId), Mockito.eq(content)))
+        when(chatMessageService.sentMessage(userId, roomId, content))
             .thenReturn(ChatMessageDto.builder()
                 .id(1L).build());
         mockMvc.perform(post(chatLink + "/sent-message/{userId}/{roomId}", userId, roomId)
@@ -219,18 +219,18 @@ class ChatControllerTest {
         ChatRoomDto chatRoomDto = ChatRoomDto.builder().name("testName").build();
         ObjectMapper objectMapper = new ObjectMapper();
 
-        when(chatRoomService.createNewChatRoom(Mockito.eq(chatRoomCreateDto))).thenReturn(chatRoomDto);
+        when(chatRoomService.createNewChatRoom(chatRoomCreateDto)).thenReturn(chatRoomDto);
         mockMvc.perform(post(chatLink + "/create-chatRoom")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(chatRoomCreateDto))).andExpect(status().isCreated()).andReturn();
 
-        verify(chatRoomService).createNewChatRoom(Mockito.eq(chatRoomCreateDto));
+        verify(chatRoomService).createNewChatRoom(chatRoomCreateDto);
     }
 
     @Test
     void chatExistTest() throws Exception {
         Long fistUserId = 1L, secondUserId = 2L;
-        when(chatMessageService.chatExist(Mockito.eq(fistUserId), Mockito.eq(secondUserId))).thenReturn(
+        when(chatMessageService.chatExist(fistUserId, secondUserId)).thenReturn(
             FriendsChatDto.builder()
                 .chatId(1L).build());
         mockMvc.perform(get(chatLink + "/exist/{fistUserId}/{secondUserId}", fistUserId, secondUserId))
