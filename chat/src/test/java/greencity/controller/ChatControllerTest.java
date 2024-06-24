@@ -1,7 +1,13 @@
 package greencity.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import greencity.dto.*;
+
+import greencity.dto.ChatMessageDto;
+import greencity.dto.ChatRoomDto;
+import greencity.dto.GroupChatRoomCreateDto;
+import greencity.dto.ParticipantDto;
+import greencity.dto.FriendsChatDto;
+import greencity.dto.MessageLike;
 import greencity.entity.Participant;
 import greencity.enums.ChatType;
 import greencity.service.AzureFileService;
@@ -17,7 +23,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
