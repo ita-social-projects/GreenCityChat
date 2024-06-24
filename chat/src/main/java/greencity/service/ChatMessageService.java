@@ -7,6 +7,7 @@ import greencity.dto.PageableDto;
 import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface ChatMessageService {
     /**
@@ -63,4 +64,20 @@ public interface ChatMessageService {
      * @return {@link Boolean}.
      */
     FriendsChatDto chatExist(Long fistUserId, Long secondUserId);
+
+    /**
+     * Method for uploading voice file.
+     *
+     * @param voiceFile file to save.
+     * @return ChatMessageDto of the saved voice file.
+     */
+    ChatMessageDto sendVoiceMessage(ChatMessageDto chatMessageDto, MultipartFile voiceFile);
+
+    /**
+     * Method for uploading file.
+     *
+     * @param file file to save.
+     * @return ChatMessageDto of the saved voice file.
+     */
+    ChatMessageDto sendFile(ChatMessageDto chatMessageDto, MultipartFile file, String fileType);
 }

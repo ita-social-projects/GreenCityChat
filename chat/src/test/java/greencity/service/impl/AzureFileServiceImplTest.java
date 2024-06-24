@@ -55,7 +55,7 @@ public class AzureFileServiceImplTest {
         when(containerClient.getBlobClient(eq(uuid + newMultipartFile.getOriginalFilename()))).thenReturn(blobClient);
         try (MockedStatic<UUID> mockUUID = mockStatic(UUID.class)) {
             mockUUID.when(UUID::randomUUID).thenReturn(uuid);
-            azureFileService.saveFile(multipartFile);
+            azureFileService.saveFile(multipartFile, "FILE");
 
             verify(blobClient).upload(eq(inputStream), eq(newMultipartFile.getSize()));
         }

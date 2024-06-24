@@ -20,4 +20,7 @@ public class ChatMessageDto {
     @NotBlank
     private String content;
     private ZonedDateTime createDate;
+    private String fileName;
+    private String fileType;
+    private String fileUrl;
 }

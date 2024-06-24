@@ -29,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Implementation of {@link ChatMessageService}.
@@ -93,21 +94,14 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     public void deleteMessage(ChatMessageDto chatMessageDto) {
         ChatMessage chatMessage = modelMapper.map(chatMessageDto, ChatMessage.class);
         chatMessageRepo.delete(chatMessage);
-        Map<String, Object> headers = new HashMap<>();
-
-        headers.put(HEADER_DELETE, new Object());
-        messagingTemplate.convertAndSend(
-            ROOM_LINK + chatMessageDto.getRoomId() + MESSAGE_LINK, chatMessageDto, headers);
+        sendMessageInChatRoomWithHeader(chatMessageDto, HEADER_DELETE);
     }
 
     @Override
     public void updateMessage(ChatMessageDto chatMessageDto) {
         ChatMessage chatMessage = modelMapper.map(chatMessageDto, ChatMessage.class);
         chatMessageRepo.save(chatMessage);
-        Map<String, Object> headers = new HashMap<>();
-        headers.put(HEADER_UPDATE, new Object());
-        messagingTemplate.convertAndSend(
-            ROOM_LINK + chatMessageDto.getRoomId() + MESSAGE_LINK, chatMessageDto, headers);
+        sendMessageInChatRoomWithHeader(chatMessageDto, HEADER_UPDATE);
     }
 
     @Override
@@ -191,5 +185,35 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             friendsChatDto.setChatId(chatList.get(0));
         }
         return friendsChatDto;
+    }
+
+    @Override
+    public ChatMessageDto sendVoiceMessage(ChatMessageDto chatMessageDto, MultipartFile voiceFile) {
+        ChatFileDto chatFileDto = azureFileService.saveVoiceMessage(voiceFile);
+        mergingChatMessageDtoAndChatFileDto(chatMessageDto, chatFileDto);
+        ChatMessage chatMessage = modelMapper.map(chatMessageDto, ChatMessage.class);
+        return modelMapper.map(chatMessageRepo.save(chatMessage), ChatMessageDto.class);
+    }
+
+
+    @Override
+    public ChatMessageDto sendFile(ChatMessageDto chatMessageDto, MultipartFile file, String fileType) {
+        ChatFileDto chatFileDto = azureFileService.saveFile(file, fileType);
+        mergingChatMessageDtoAndChatFileDto(chatMessageDto, chatFileDto);
+        ChatMessage chatMessage = modelMapper.map(chatMessageDto, ChatMessage.class);
+        return modelMapper.map(chatMessageRepo.save(chatMessage), ChatMessageDto.class);
+    }
+
+    private void mergingChatMessageDtoAndChatFileDto(ChatMessageDto chatMessageDto, ChatFileDto chatFileDto){
+        chatMessageDto.setFileName(chatFileDto.getFileName());
+        chatMessageDto.setFileType(chatFileDto.getFileType());
+        chatMessageDto.setFileUrl(chatFileDto.getFileUrl());
+    }
+
+    private void sendMessageInChatRoomWithHeader(ChatMessageDto chatMessageDto, String headerString){
+        Map<String, Object> headers = new HashMap<>();
+        headers.put(headerString, new Object());
+        messagingTemplate.convertAndSend(
+            ROOM_LINK + chatMessageDto.getRoomId() + MESSAGE_LINK, chatMessageDto, headers);
     }
 }
