@@ -271,7 +271,7 @@ class ChatControllerTest {
         when(chatMessageService.sendFile(any(ChatMessageDto.class), any(MultipartFile.class), any(String.class)))
             .thenReturn(chatMessageDto);
 
-        mockMvc.perform(multipart(chatLink +"/upload/image")
+        mockMvc.perform(multipart(chatLink + "/upload/image")
             .file(image)
             .file(chatMessageDtoFile)
             .contentType(MediaType.MULTIPART_FORM_DATA))
@@ -331,7 +331,7 @@ class ChatControllerTest {
             .andExpect(status().isCreated());
 
         verify(chatMessageService).sendVoiceMessage(any(ChatMessageDto.class), any(MultipartFile.class));
-}
+    }
 
     @Test
     void deleteFileTest() throws Exception {

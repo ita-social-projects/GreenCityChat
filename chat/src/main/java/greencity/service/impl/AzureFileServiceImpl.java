@@ -71,8 +71,8 @@ public class AzureFileServiceImpl implements AzureFileService {
             throw new FileNotSavedException(ErrorMessage.FILE_NOT_SAVED);
         }
         return ChatFileDto.builder()
-                .fileName(blobClient.getBlobName())
-                .fileUrl(blobClient.getBlobUrl())
-                .build();
+            .fileName(blobClient.getBlobName())
+            .fileUrl(blobClient.getBlobUrl())
+            .build();
     }
 }

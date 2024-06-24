@@ -9,7 +9,7 @@ public interface AzureFileService {
      * 
      * @param multipartFile of{@link MultipartFile} return file ChatFileDto
      */
-    ChatFileDto saveFile(MultipartFile  multipartFile, String fileType);
+    ChatFileDto saveFile(MultipartFile multipartFile, String fileType);
 
     /**
      * Method save voice message file in azure storage.

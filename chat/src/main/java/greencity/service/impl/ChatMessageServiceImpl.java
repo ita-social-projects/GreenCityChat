@@ -195,7 +195,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         return modelMapper.map(chatMessageRepo.save(chatMessage), ChatMessageDto.class);
     }
 
-
     @Override
     public ChatMessageDto sendFile(ChatMessageDto chatMessageDto, MultipartFile file, String fileType) {
         ChatFileDto chatFileDto = azureFileService.saveFile(file, fileType);
@@ -204,13 +203,13 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         return modelMapper.map(chatMessageRepo.save(chatMessage), ChatMessageDto.class);
     }
 
-    private void mergingChatMessageDtoAndChatFileDto(ChatMessageDto chatMessageDto, ChatFileDto chatFileDto){
+    private void mergingChatMessageDtoAndChatFileDto(ChatMessageDto chatMessageDto, ChatFileDto chatFileDto) {
         chatMessageDto.setFileName(chatFileDto.getFileName());
         chatMessageDto.setFileType(chatFileDto.getFileType());
         chatMessageDto.setFileUrl(chatFileDto.getFileUrl());
     }
 
-    private void sendMessageInChatRoomWithHeader(ChatMessageDto chatMessageDto, String headerString){
+    private void sendMessageInChatRoomWithHeader(ChatMessageDto chatMessageDto, String headerString) {
         Map<String, Object> headers = new HashMap<>();
         headers.put(headerString, new Object());
         messagingTemplate.convertAndSend(

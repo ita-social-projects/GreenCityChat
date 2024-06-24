@@ -205,7 +205,7 @@ class ChatMessageServiceImplTest {
         ChatMessage expectedMessage = expectedChatMessage;
         MultipartFile mockVoiceFile = mock(MultipartFile.class);
         ChatFileDto mockedFileDto = new ChatFileDto("testFile.mp3", FilesType.SOUND.toString(),
-             "https://example.com/testFile.mp3");
+            "https://example.com/testFile.mp3");
         expectedDto.setFileUrl(mockedFileDto.getFileUrl());
         expectedDto.setFileName(mockedFileDto.getFileName());
         expectedDto.setFileType(mockedFileDto.getFileType());
@@ -244,7 +244,6 @@ class ChatMessageServiceImplTest {
         expectedMessage.setFileName(mockedFileDto.getFileName());
         expectedMessage.setFileType(mockedFileDto.getFileType());
 
-
         when(azureFileService.saveFile(any(MultipartFile.class), any())).thenReturn(mockedFileDto);
         when(modelMapper.map(expectedDto, ChatMessage.class))
             .thenReturn(expectedMessage);
@@ -261,7 +260,7 @@ class ChatMessageServiceImplTest {
     }
 
     @Test
-    public void mergingChatMessageDtoAndChatFileDtoTest() throws Exception{
+    public void mergingChatMessageDtoAndChatFileDtoTest() throws Exception {
         ChatFileDto chatFileDto = new ChatFileDto("testFile.mp3", FilesType.SOUND.toString(),
             "https://example.com/testFile.mp3");
 
