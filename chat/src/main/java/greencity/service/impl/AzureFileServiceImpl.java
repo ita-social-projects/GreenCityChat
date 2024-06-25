@@ -37,15 +37,15 @@ public class AzureFileServiceImpl implements AzureFileService {
 
     @Override
     public ChatFileDto saveFile(MultipartFile multipartFile, String fileType) {
-        ChatFileDto chatFileDto = downloadFile(multipartFile, multipartFile.getOriginalFilename());
+        ChatFileDto chatFileDto = uploadFile(multipartFile, multipartFile.getOriginalFilename());
         chatFileDto.setFileType(fileType);
         return chatFileDto;
     }
 
     @Override
     public ChatFileDto saveVoiceMessage(MultipartFile multipartFile) {
-        ChatFileDto chatFileDto = downloadFile(multipartFile, WAV);
-        chatFileDto.setFileType(FilesType.SOUND.toString());
+        ChatFileDto chatFileDto = uploadFile(multipartFile, WAV);
+        chatFileDto.setFileType(FilesType.AUDIO.toString());
         return chatFileDto;
     }
 
@@ -61,7 +61,7 @@ public class AzureFileServiceImpl implements AzureFileService {
         return serviceClient.getBlobContainerClient(containerName);
     }
 
-    private ChatFileDto downloadFile(MultipartFile multipartFile, String filename) {
+    private ChatFileDto uploadFile(MultipartFile multipartFile, String filename) {
         final String blob = UUID.randomUUID().toString();
         String blobName = blob + filename;
         BlobClient blobClient = containerClient().getBlobClient(blobName);

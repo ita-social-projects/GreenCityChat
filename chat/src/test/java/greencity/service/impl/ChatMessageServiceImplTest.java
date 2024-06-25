@@ -204,7 +204,7 @@ class ChatMessageServiceImplTest {
         ChatMessageDto expectedDto = expectedChatMessageDto;
         ChatMessage expectedMessage = expectedChatMessage;
         MultipartFile mockVoiceFile = mock(MultipartFile.class);
-        ChatFileDto mockedFileDto = new ChatFileDto("testFile.mp3", FilesType.SOUND.toString(),
+        ChatFileDto mockedFileDto = new ChatFileDto("testFile.mp3", FilesType.AUDIO.toString(),
             "https://example.com/testFile.mp3");
         expectedDto.setFileUrl(mockedFileDto.getFileUrl());
         expectedDto.setFileName(mockedFileDto.getFileName());
@@ -261,7 +261,7 @@ class ChatMessageServiceImplTest {
 
     @Test
     void mergingChatMessageDtoAndChatFileDtoTest() throws Exception {
-        ChatFileDto chatFileDto = new ChatFileDto("testFile.mp3", FilesType.SOUND.toString(),
+        ChatFileDto chatFileDto = new ChatFileDto("testFile.mp3", FilesType.AUDIO.toString(),
             "https://example.com/testFile.mp3");
 
         Method method =
