@@ -301,7 +301,7 @@ class ChatMessageServiceImplTest {
         method.setAccessible(true);
 
         ChatMessageWithFileDto result = (ChatMessageWithFileDto) method.invoke(chatMessageServiceImpl,
-                dto, chatFileDto);
+            dto, chatFileDto);
 
         assertEquals(dto.getId(), result.getId());
         assertEquals(dto.getRoomId(), result.getRoomId());
