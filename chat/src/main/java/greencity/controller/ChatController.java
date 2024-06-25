@@ -11,6 +11,7 @@ import greencity.dto.LeaveChatDto;
 import greencity.dto.MessageLike;
 import greencity.dto.PageableDto;
 import greencity.dto.ParticipantDto;
+import greencity.dto.ChatMessageWithFileDto;
 import greencity.enums.ChatType;
 import greencity.enums.FilesType;
 import greencity.service.AzureFileService;
@@ -32,9 +33,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
@@ -300,9 +309,9 @@ public class ChatController {
     }
 
     /**
-     * Method for uploading an images.
+     * Method for uploading an image.
      *
-     * @param image - image to save.
+     * @param file - image to save.
      */
     @Operation(summary = "Upload an image.")
     @ApiResponses(value = {
@@ -311,11 +320,11 @@ public class ChatController {
         @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
     })
     @PostMapping(value = "/upload/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ChatMessageDto> uploadImage(
+    public ResponseEntity<ChatMessageWithFileDto> uploadImage(
         @RequestPart("chatMessageDto") @Valid ChatMessageDto chatMessageDto,
-        @RequestPart("image") MultipartFile image) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(chatMessageService.sendFile(chatMessageDto, image,
-            FilesType.IMAGE.toString()));
+        @RequestPart("file") MultipartFile file) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(chatMessageService.sendFile(chatMessageDto, file,
+            FilesType.IMAGE));
     }
 
     /**
@@ -330,11 +339,11 @@ public class ChatController {
         @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
     })
     @PostMapping(value = "/upload/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ChatMessageDto> uploadFile(
+    public ResponseEntity<ChatMessageWithFileDto> uploadFile(
         @RequestPart("chatMessageDto") @Valid ChatMessageDto chatMessageDto,
         @RequestPart("file") MultipartFile file) {
         return ResponseEntity.status(HttpStatus.CREATED).body(chatMessageService.sendFile(chatMessageDto, file,
-            FilesType.FILE.toString()));
+            FilesType.FILE));
     }
 
     /**
@@ -350,7 +359,7 @@ public class ChatController {
         @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
     })
     @PostMapping(value = "/upload/voice", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ChatMessageDto> uploadVoice(
+    public ResponseEntity<ChatMessageWithFileDto> uploadVoice(
         @RequestPart("chatMessageDto") @Valid ChatMessageDto chatMessageDto,
         @RequestPart("file") MultipartFile file) {
         return ResponseEntity.status(HttpStatus.CREATED)

@@ -6,6 +6,7 @@ import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.entity.UnreadMessage;
+import greencity.enums.FilesType;
 import greencity.enums.MessageStatus;
 import greencity.enums.SortOrder;
 import greencity.exception.exceptions.ChatRoomNotFoundException;
@@ -188,25 +189,32 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     }
 
     @Override
-    public ChatMessageDto sendVoiceMessage(ChatMessageDto chatMessageDto, MultipartFile voiceFile) {
+    public ChatMessageWithFileDto sendVoiceMessage(ChatMessageDto chatMessageDto, MultipartFile voiceFile) {
         ChatFileDto chatFileDto = azureFileService.saveVoiceMessage(voiceFile);
-        mergingChatMessageDtoAndChatFileDto(chatMessageDto, chatFileDto);
-        ChatMessage chatMessage = modelMapper.map(chatMessageDto, ChatMessage.class);
-        return modelMapper.map(chatMessageRepo.save(chatMessage), ChatMessageDto.class);
+        ChatMessageWithFileDto chatMessageWithFileDto = mergeChatMessageAndFile(chatMessageDto, chatFileDto);
+        ChatMessage chatMessage = modelMapper.map(chatMessageWithFileDto, ChatMessage.class);
+        return modelMapper.map(chatMessageRepo.save(chatMessage), ChatMessageWithFileDto.class);
     }
 
     @Override
-    public ChatMessageDto sendFile(ChatMessageDto chatMessageDto, MultipartFile file, String fileType) {
+    public ChatMessageWithFileDto sendFile(ChatMessageDto chatMessageDto, MultipartFile file, FilesType fileType) {
         ChatFileDto chatFileDto = azureFileService.saveFile(file, fileType);
-        mergingChatMessageDtoAndChatFileDto(chatMessageDto, chatFileDto);
-        ChatMessage chatMessage = modelMapper.map(chatMessageDto, ChatMessage.class);
-        return modelMapper.map(chatMessageRepo.save(chatMessage), ChatMessageDto.class);
+        ChatMessageWithFileDto chatMessageWithFileDto = mergeChatMessageAndFile(chatMessageDto, chatFileDto);
+        ChatMessage chatMessage = modelMapper.map(chatMessageWithFileDto, ChatMessage.class);
+        return modelMapper.map(chatMessageRepo.save(chatMessage), ChatMessageWithFileDto.class);
     }
 
-    private void mergingChatMessageDtoAndChatFileDto(ChatMessageDto chatMessageDto, ChatFileDto chatFileDto) {
-        chatMessageDto.setFileName(chatFileDto.getFileName());
-        chatMessageDto.setFileType(chatFileDto.getFileType());
-        chatMessageDto.setFileUrl(chatFileDto.getFileUrl());
+    private ChatMessageWithFileDto mergeChatMessageAndFile(ChatMessageDto chatMessageDto, ChatFileDto chatFileDto) {
+        return ChatMessageWithFileDto.builder()
+            .id(chatMessageDto.getId())
+            .roomId(chatMessageDto.getRoomId())
+            .senderId(chatMessageDto.getSenderId())
+            .content(chatMessageDto.getContent())
+            .createDate(chatMessageDto.getCreateDate())
+            .fileUrl(chatFileDto.getFileUrl())
+            .fileType(chatFileDto.getFileType().toString())
+            .fileName(chatFileDto.getFileName())
+            .build();
     }
 
     private void sendMessageInChatRoomWithHeader(ChatMessageDto chatMessageDto, String headerString) {

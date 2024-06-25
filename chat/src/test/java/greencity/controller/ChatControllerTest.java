@@ -3,6 +3,7 @@ package greencity.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import greencity.dto.ChatMessageDto;
+import greencity.dto.ChatMessageWithFileDto;
 import greencity.dto.ChatRoomDto;
 import greencity.dto.GroupChatRoomCreateDto;
 import greencity.dto.ParticipantDto;
@@ -10,6 +11,7 @@ import greencity.dto.FriendsChatDto;
 import greencity.dto.MessageLike;
 import greencity.entity.Participant;
 import greencity.enums.ChatType;
+import greencity.enums.FilesType;
 import greencity.service.AzureFileService;
 import greencity.service.ChatMessageService;
 import greencity.service.ChatRoomService;
@@ -260,48 +262,48 @@ class ChatControllerTest {
 
     @Test
     void uploadImageTest() throws Exception {
-        MockMultipartFile image = new MockMultipartFile("image", "testImage.png",
+        MockMultipartFile file = new MockMultipartFile("file", "testImage.png",
             "image/png", new byte[1]);
-        ChatMessageDto chatMessageDto = ChatMessageDto.builder()
+        ChatMessageWithFileDto chatMessageWithFileDto = ChatMessageWithFileDto.builder()
             .senderId(1L)
             .roomId(1L)
             .content("content")
             .build();
 
         ObjectMapper objectMapper = new ObjectMapper();
-        String chatMessageDtoJson = objectMapper.writeValueAsString(chatMessageDto);
+        String chatMessageDtoJson = objectMapper.writeValueAsString(chatMessageWithFileDto);
         MockMultipartFile chatMessageDtoFile = new MockMultipartFile("chatMessageDto", "",
             "application/json", chatMessageDtoJson.getBytes());
 
-        when(chatMessageService.sendFile(any(ChatMessageDto.class), any(MultipartFile.class), any(String.class)))
-            .thenReturn(chatMessageDto);
+        when(chatMessageService.sendFile(any(ChatMessageDto.class), any(MultipartFile.class), any(FilesType.class)))
+            .thenReturn(chatMessageWithFileDto);
 
         mockMvc.perform(multipart(chatLink + "/upload/image")
-            .file(image)
+            .file(file)
             .file(chatMessageDtoFile)
             .contentType(MediaType.MULTIPART_FORM_DATA))
             .andExpect(status().isCreated());
 
-        verify(chatMessageService).sendFile(any(ChatMessageDto.class), any(MultipartFile.class), any(String.class));
+        verify(chatMessageService).sendFile(any(ChatMessageDto.class), any(MultipartFile.class), any(FilesType.class));
     }
 
     @Test
     void uploadFileTest() throws Exception {
         MockMultipartFile file = new MockMultipartFile("file", "testFile.pdf",
             "application/pdf", new byte[1]);
-        ChatMessageDto chatMessageDto = ChatMessageDto.builder()
+        ChatMessageWithFileDto chatMessageWithFileDto = ChatMessageWithFileDto.builder()
             .senderId(1L)
             .roomId(1L)
             .content("content")
             .build();
 
         ObjectMapper objectMapper = new ObjectMapper();
-        String chatMessageDtoJson = objectMapper.writeValueAsString(chatMessageDto);
+        String chatMessageDtoJson = objectMapper.writeValueAsString(chatMessageWithFileDto);
         MockMultipartFile chatMessageDtoFile = new MockMultipartFile("chatMessageDto", "",
             "application/json", chatMessageDtoJson.getBytes());
 
-        when(chatMessageService.sendFile(any(ChatMessageDto.class), any(MultipartFile.class), any(String.class)))
-            .thenReturn(chatMessageDto);
+        when(chatMessageService.sendFile(any(ChatMessageDto.class), any(MultipartFile.class), any(FilesType.class)))
+            .thenReturn(chatMessageWithFileDto);
 
         mockMvc.perform(multipart(chatLink + "/upload/file")
             .file(file)
@@ -309,25 +311,25 @@ class ChatControllerTest {
             .contentType(MediaType.MULTIPART_FORM_DATA))
             .andExpect(status().isCreated());
 
-        verify(chatMessageService).sendFile(any(ChatMessageDto.class), any(MultipartFile.class), any(String.class));
+        verify(chatMessageService).sendFile(any(ChatMessageDto.class), any(MultipartFile.class), any(FilesType.class));
     }
 
     @Test
     void uploadVoiceTest() throws Exception {
         MockMultipartFile file = new MockMultipartFile("file", "testFile.mp3",
             "audio/mp3", new byte[1]);
-        ChatMessageDto chatMessageDto = ChatMessageDto.builder()
+        ChatMessageWithFileDto chatMessageWithFileDto = ChatMessageWithFileDto.builder()
             .senderId(1L)
             .roomId(1L)
             .content("content")
             .build();
         ObjectMapper objectMapper = new ObjectMapper();
-        String chatMessageDtoJson = objectMapper.writeValueAsString(chatMessageDto);
+        String chatMessageDtoJson = objectMapper.writeValueAsString(chatMessageWithFileDto);
         MockMultipartFile chatMessageDtoFile = new MockMultipartFile("chatMessageDto", "",
             "application/json", chatMessageDtoJson.getBytes());
 
         when(chatMessageService.sendVoiceMessage(any(ChatMessageDto.class), any(MultipartFile.class)))
-            .thenReturn(chatMessageDto);
+            .thenReturn(chatMessageWithFileDto);
 
         mockMvc.perform(multipart(chatLink + "/upload/voice")
             .file(file)

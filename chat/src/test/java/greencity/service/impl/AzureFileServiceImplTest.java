@@ -7,6 +7,7 @@ import com.azure.storage.blob.BlobServiceClientBuilder;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+import greencity.enums.FilesType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -55,7 +56,7 @@ public class AzureFileServiceImplTest {
         when(containerClient.getBlobClient(eq(uuid + newMultipartFile.getOriginalFilename()))).thenReturn(blobClient);
         try (MockedStatic<UUID> mockUUID = mockStatic(UUID.class)) {
             mockUUID.when(UUID::randomUUID).thenReturn(uuid);
-            azureFileService.saveFile(multipartFile, "FILE");
+            azureFileService.saveFile(multipartFile, FilesType.FILE);
 
             verify(blobClient).upload(eq(inputStream), eq(newMultipartFile.getSize()));
         }

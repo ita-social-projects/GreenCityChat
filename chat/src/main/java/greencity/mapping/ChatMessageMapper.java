@@ -32,9 +32,6 @@ public class ChatMessageMapper extends AbstractConverter<ChatMessageDto, ChatMes
             .createDate(ZonedDateTime.now())
             .room(ChatRoom.builder()
                 .id(chatMessageDto.getRoomId()).build())
-            .fileName(chatMessageDto.getFileName())
-            .fileType(chatMessageDto.getFileType())
-            .fileUrl(chatMessageDto.getFileUrl())
             .build();
     }
 }

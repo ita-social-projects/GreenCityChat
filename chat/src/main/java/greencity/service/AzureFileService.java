@@ -1,6 +1,7 @@
 package greencity.service;
 
 import greencity.dto.ChatFileDto;
+import greencity.enums.FilesType;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface AzureFileService {
@@ -9,7 +10,7 @@ public interface AzureFileService {
      * 
      * @param multipartFile of{@link MultipartFile} return file ChatFileDto
      */
-    ChatFileDto saveFile(MultipartFile multipartFile, String fileType);
+    ChatFileDto saveFile(MultipartFile multipartFile, FilesType fileType);
 
     /**
      * Method save voice message file in azure storage.

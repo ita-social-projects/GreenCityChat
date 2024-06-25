@@ -1,6 +1,6 @@
 package greencity.mapping;
 
-import greencity.dto.ChatMessageDto;
+import greencity.dto.ChatMessageWithFileDto;
 import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
@@ -12,10 +12,10 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class ChatMessageDtoMapperTest {
-    private ChatMessageDto expected;
+class ChatMessageWithFileDtoMapperTest {
+    private ChatMessageWithFileDto expected;
     private ChatMessage chatMessage;
-    private final ChatMessageDtoMapper chatMessageDtoMapper = new ChatMessageDtoMapper();
+    private final ChatMessageWithFileDtoMapper chatMessageWithFileDtoMapper = new ChatMessageWithFileDtoMapper();
 
     @BeforeEach
     void init() {
@@ -23,13 +23,14 @@ class ChatMessageDtoMapperTest {
             ChatType.GROUP, null, null),
             new Participant(1L, "name", "asd@asd.asd", null,
                 null, UserStatus.ACTIVATED, Role.ROLE_USER, null),
-            "content", null, null, "fileName", "FILE", "fileUrl");
-        expected = new ChatMessageDto(1L, 1L, 1L, "content",
-            null);
+            "content", null, null, "fileName", "AUDIO",
+            "https://example.wav");
+        expected = new ChatMessageWithFileDto(1L, 1L, 1L, "content",
+            null, "fileName", "AUDIO", "https://example.wav");
     }
 
     @Test
     void convert() {
-        assertEquals(expected, chatMessageDtoMapper.convert(chatMessage));
+        assertEquals(expected, chatMessageWithFileDtoMapper.convert(chatMessage));
     }
 }

@@ -4,8 +4,10 @@ import greencity.dto.ChatMessageDto;
 import greencity.dto.FriendsChatDto;
 import greencity.dto.MessageLike;
 import greencity.dto.PageableDto;
+import greencity.dto.ChatMessageWithFileDto;
 import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
+import greencity.enums.FilesType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -71,7 +73,7 @@ public interface ChatMessageService {
      * @param voiceFile file to save.
      * @return ChatMessageDto of the saved voice file.
      */
-    ChatMessageDto sendVoiceMessage(ChatMessageDto chatMessageDto, MultipartFile voiceFile);
+    ChatMessageWithFileDto sendVoiceMessage(ChatMessageDto chatMessageDto, MultipartFile voiceFile);
 
     /**
      * Method for uploading file.
@@ -79,5 +81,5 @@ public interface ChatMessageService {
      * @param file file to save.
      * @return ChatMessageDto of the saved voice file.
      */
-    ChatMessageDto sendFile(ChatMessageDto chatMessageDto, MultipartFile file, String fileType);
+    ChatMessageWithFileDto sendFile(ChatMessageDto chatMessageDto, MultipartFile file, FilesType fileType);
 }

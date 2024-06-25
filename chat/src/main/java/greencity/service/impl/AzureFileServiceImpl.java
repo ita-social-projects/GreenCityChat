@@ -36,7 +36,7 @@ public class AzureFileServiceImpl implements AzureFileService {
     }
 
     @Override
-    public ChatFileDto saveFile(MultipartFile multipartFile, String fileType) {
+    public ChatFileDto saveFile(MultipartFile multipartFile, FilesType fileType) {
         ChatFileDto chatFileDto = uploadFile(multipartFile, multipartFile.getOriginalFilename());
         chatFileDto.setFileType(fileType);
         return chatFileDto;
@@ -45,7 +45,7 @@ public class AzureFileServiceImpl implements AzureFileService {
     @Override
     public ChatFileDto saveVoiceMessage(MultipartFile multipartFile) {
         ChatFileDto chatFileDto = uploadFile(multipartFile, WAV);
-        chatFileDto.setFileType(FilesType.AUDIO.toString());
+        chatFileDto.setFileType(FilesType.AUDIO);
         return chatFileDto;
     }
 
