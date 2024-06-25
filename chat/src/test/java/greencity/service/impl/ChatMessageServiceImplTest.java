@@ -288,7 +288,7 @@ class ChatMessageServiceImplTest {
     void mergeChatMessageAndFileTest() throws Exception {
         ChatFileDto chatFileDto = new ChatFileDto("testFile.mp3", FilesType.AUDIO,
             "https://example.com/testFile.mp3");
-        ChatMessageDto chatMessageDto = ChatMessageDto.builder()
+        ChatMessageDto dto = ChatMessageDto.builder()
             .id(1L)
             .roomId(2L)
             .senderId(3L)
@@ -301,13 +301,13 @@ class ChatMessageServiceImplTest {
         method.setAccessible(true);
 
         ChatMessageWithFileDto result = (ChatMessageWithFileDto) method.invoke(chatMessageServiceImpl,
-            chatMessageDto, chatFileDto);
+                dto, chatFileDto);
 
-        assertEquals(chatMessageDto.getId(), result.getId());
-        assertEquals(chatMessageDto.getRoomId(), result.getRoomId());
-        assertEquals(chatMessageDto.getSenderId(), result.getSenderId());
-        assertEquals(chatMessageDto.getContent(), result.getContent());
-        assertEquals(chatMessageDto.getCreateDate(), result.getCreateDate());
+        assertEquals(dto.getId(), result.getId());
+        assertEquals(dto.getRoomId(), result.getRoomId());
+        assertEquals(dto.getSenderId(), result.getSenderId());
+        assertEquals(dto.getContent(), result.getContent());
+        assertEquals(dto.getCreateDate(), result.getCreateDate());
         assertEquals(chatFileDto.getFileName(), result.getFileName());
         assertEquals(chatFileDto.getFileType().toString(), result.getFileType());
         assertEquals(chatFileDto.getFileUrl(), result.getFileUrl());
