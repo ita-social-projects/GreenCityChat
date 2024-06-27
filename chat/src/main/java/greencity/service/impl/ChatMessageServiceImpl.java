@@ -12,6 +12,7 @@ import greencity.enums.SortOrder;
 import greencity.exception.exceptions.ChatRoomNotFoundException;
 import greencity.exception.exceptions.UserNotBelongToThisChat;
 import greencity.exception.exceptions.UserNotFoundException;
+import greencity.exception.exceptions.ChangesNotSavedException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
 import greencity.repository.ParticipantRepo;
@@ -31,6 +32,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.webjars.NotFoundException;
 
 /**
  * Implementation of {@link ChatMessageService}.
@@ -93,16 +95,27 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
     @Override
     public void deleteMessage(ChatMessageDto chatMessageDto) {
-        ChatMessage chatMessage = modelMapper.map(chatMessageDto, ChatMessage.class);
+        ChatMessage chatMessage = chatMessageRepo.findById(chatMessageDto.getId())
+            .orElseThrow(() -> new NotFoundException(ErrorMessage.CHAT_MESSAGE_NOT_FOUND_BY_ID
+                + chatMessageDto.getId()));
+        if (chatMessage.getFileName() != null) {
+            azureFileService.deleteFile(chatMessage.getFileName());
+        }
         chatMessageRepo.delete(chatMessage);
-        sendMessageInChatRoomWithHeader(chatMessageDto, HEADER_DELETE);
+        sendMessageInChatRoomWithHeader(modelMapper.map(chatMessage, ChatMessageWithFileDto.class), HEADER_DELETE);
     }
 
     @Override
     public void updateMessage(ChatMessageDto chatMessageDto) {
-        ChatMessage chatMessage = modelMapper.map(chatMessageDto, ChatMessage.class);
+        ChatMessage chatMessage = chatMessageRepo.findById(chatMessageDto.getId())
+            .orElseThrow(() -> new NotFoundException(ErrorMessage.CHAT_MESSAGE_NOT_FOUND_BY_ID
+                + chatMessageDto.getId()));
+        if (chatMessageDto.getContent().isEmpty()) {
+            throw new ChangesNotSavedException(ErrorMessage.CHAT_MESSAGE_CANNOT_BE_EMPTY);
+        }
+        chatMessage.setContent(chatMessageDto.getContent());
         chatMessageRepo.save(chatMessage);
-        sendMessageInChatRoomWithHeader(chatMessageDto, HEADER_UPDATE);
+        sendMessageInChatRoomWithHeader(modelMapper.map(chatMessage, ChatMessageWithFileDto.class), HEADER_UPDATE);
     }
 
     @Override
@@ -217,10 +230,11 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             .build();
     }
 
-    private void sendMessageInChatRoomWithHeader(ChatMessageDto chatMessageDto, String headerString) {
+    private void sendMessageInChatRoomWithHeader(ChatMessageWithFileDto chatMessageWithFileDto, String headerString) {
+        System.out.println(chatMessageWithFileDto);
         Map<String, Object> headers = new HashMap<>();
         headers.put(headerString, new Object());
         messagingTemplate.convertAndSend(
-            ROOM_LINK + chatMessageDto.getRoomId() + MESSAGE_LINK, chatMessageDto, headers);
+            ROOM_LINK + chatMessageWithFileDto.getRoomId() + MESSAGE_LINK, chatMessageWithFileDto, headers);
     }
 }

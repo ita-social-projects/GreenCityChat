@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.List;
 import java.util.Collections;
+import java.util.Map;
 
 import greencity.service.AzureFileService;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +40,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -164,11 +166,34 @@ class ChatMessageServiceImplTest {
 
     @Test
     void deleteMessage() {
-        when(modelMapper.map(chatMessageDto, ChatMessage.class)).thenReturn(expectedChatMessage);
-        doNothing().when(chatMessageRepo).delete(expectedChatMessage);
-        chatMessageServiceImpl.deleteMessage(expectedChatMessageDto);
+        ChatMessageWithFileDto chatMessageWithFileDto = ChatMessageWithFileDto.builder()
+            .id(1L)
+            .roomId(1L)
+            .senderId(1L)
+            .content("Content")
+            .build();
+        ChatMessageDto messageDto = ChatMessageDto.builder()
+            .id(1L)
+            .roomId(1L)
+            .senderId(1L)
+            .content("Content")
+            .build();
+        ChatMessage chatMessage = ChatMessage.builder()
+            .id(1L)
+            .room(ChatRoom.builder().id(1L).name("TestName").build())
+            .sender(Participant.builder().id(1L).name("User").build())
+            .content("Content")
+            .build();
 
-        verify(chatMessageRepo).delete(expectedChatMessage);
+        when(chatMessageRepo.findById(anyLong())).thenReturn(Optional.of(chatMessage));
+        doNothing().when(chatMessageRepo).delete(chatMessage);
+        when(modelMapper.map(chatMessage, ChatMessageWithFileDto.class)).thenReturn(chatMessageWithFileDto);
+        doNothing().when(messagingTemplate).convertAndSend(anyString(), any(ChatMessageWithFileDto.class),
+            (Map<String, Object>) any());
+
+        chatMessageServiceImpl.deleteMessage(messageDto);
+
+        verify(chatMessageRepo).delete(chatMessage);
     }
 
     @Test
