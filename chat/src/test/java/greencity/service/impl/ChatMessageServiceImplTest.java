@@ -2,19 +2,27 @@ package greencity.service.impl;
 
 import greencity.dto.ChatMessageDto;
 import greencity.dto.ChatMessageResponseDto;
-import greencity.dto.MessageLike;
 import greencity.dto.PageableDto;
+import greencity.dto.MessageLike;
+import greencity.dto.ChatFileDto;
+import greencity.dto.ChatMessageWithFileDto;
 import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
+import greencity.enums.FilesType;
 import greencity.enums.SortOrder;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
 
+import java.lang.reflect.Method;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Optional;
+import java.util.Set;
+import java.util.List;
+import java.util.Collections;
 
+import greencity.service.AzureFileService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,15 +30,21 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
-import org.powermock.api.mockito.PowerMockito;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.eq;
 
 @ExtendWith(MockitoExtension.class)
 class ChatMessageServiceImplTest {
@@ -44,6 +58,8 @@ class ChatMessageServiceImplTest {
     private ModelMapper modelMapper;
     @Mock
     private ChatRoomRepo chatRoomRepo;
+    @Mock
+    private AzureFileService azureFileService;
     ChatMessageDto expectedChatMessageDto;
 
     ChatMessageDto chatMessageDto;
@@ -197,4 +213,103 @@ class ChatMessageServiceImplTest {
         verify(chatMessageRepo).addLikeToMessage(1L, 1L);
     }
 
+    @Test
+    void sendVoiceMessageTest() {
+        ChatMessageDto inputDto = chatMessageDto;
+        ChatMessage expectedMessage = expectedChatMessage;
+        MultipartFile mockVoiceFile = mock(MultipartFile.class);
+        ChatFileDto mockedFileDto = new ChatFileDto("testFile.mp3", FilesType.AUDIO,
+            "https://example.com/testFile.mp3");
+        ChatMessageWithFileDto expectedDto = ChatMessageWithFileDto.builder()
+            .roomId(1L)
+            .senderId(1L)
+            .createDate(ZonedDateTime.of(2022, 12, 12, 12, 12, 12, 12, ZoneId.systemDefault()))
+            .content("test").senderId(1L)
+            .fileName(mockedFileDto.getFileName())
+            .fileType(mockedFileDto.getFileType().toString())
+            .fileUrl(mockedFileDto.getFileUrl())
+            .build();
+        expectedMessage.setFileUrl(mockedFileDto.getFileUrl());
+        expectedMessage.setFileName(mockedFileDto.getFileName());
+        expectedMessage.setFileType(mockedFileDto.getFileType().toString());
+
+        when(azureFileService.saveVoiceMessage(any(MultipartFile.class))).thenReturn(mockedFileDto);
+        when(modelMapper.map(expectedDto, ChatMessage.class))
+            .thenReturn(expectedMessage);
+        when(chatMessageRepo.save(any(ChatMessage.class))).thenReturn(expectedMessage);
+        when(modelMapper.map(expectedMessage, ChatMessageWithFileDto.class))
+            .thenReturn(expectedDto);
+
+        ChatMessageWithFileDto resultDto = chatMessageServiceImpl.sendVoiceMessage(inputDto, mockVoiceFile);
+
+        verify(azureFileService).saveVoiceMessage(any(MultipartFile.class));
+        verify(chatMessageRepo).save(any(ChatMessage.class));
+
+        assertEquals(resultDto, expectedDto);
+    }
+
+    @Test
+    void sendFileTest() {
+        MultipartFile mockFile = mock(MultipartFile.class);
+        ChatMessageDto inputDto = chatMessageDto;
+        ChatMessage expectedMessage = expectedChatMessage;
+        FilesType fileType = FilesType.FILE;
+        ChatFileDto mockedFileDto = new ChatFileDto("testFile.pdf", fileType,
+            "https://example.com/testFile.pdf");
+        ChatMessageWithFileDto expectedDto = ChatMessageWithFileDto.builder()
+            .roomId(1L)
+            .senderId(1L)
+            .createDate(ZonedDateTime.of(2022, 12, 12, 12, 12, 12, 12, ZoneId.systemDefault()))
+            .content("test").senderId(1L)
+            .fileName(mockedFileDto.getFileName())
+            .fileType(mockedFileDto.getFileType().toString())
+            .fileUrl(mockedFileDto.getFileUrl())
+            .build();
+        expectedMessage.setFileUrl(mockedFileDto.getFileUrl());
+        expectedMessage.setFileName(mockedFileDto.getFileName());
+        expectedMessage.setFileType(mockedFileDto.getFileType().toString());
+
+        when(azureFileService.saveFile(any(MultipartFile.class), any())).thenReturn(mockedFileDto);
+        when(modelMapper.map(expectedDto, ChatMessage.class))
+            .thenReturn(expectedMessage);
+        when(chatMessageRepo.save(any(ChatMessage.class))).thenReturn(expectedMessage);
+        when(modelMapper.map(expectedMessage, ChatMessageWithFileDto.class))
+            .thenReturn(expectedDto);
+
+        ChatMessageWithFileDto resultDto = chatMessageServiceImpl.sendFile(inputDto, mockFile, fileType);
+
+        verify(azureFileService).saveFile(any(MultipartFile.class), eq(fileType));
+        verify(chatMessageRepo).save(any(ChatMessage.class));
+
+        assertEquals(resultDto, expectedDto);
+    }
+
+    @Test
+    void mergeChatMessageAndFileTest() throws Exception {
+        ChatFileDto chatFileDto = new ChatFileDto("testFile.mp3", FilesType.AUDIO,
+            "https://example.com/testFile.mp3");
+        ChatMessageDto dto = ChatMessageDto.builder()
+            .id(1L)
+            .roomId(2L)
+            .senderId(3L)
+            .content("Test content")
+            .createDate(ZonedDateTime.now())
+            .build();
+
+        Method method = ChatMessageServiceImpl.class.getDeclaredMethod("mergeChatMessageAndFile",
+            ChatMessageDto.class, ChatFileDto.class);
+        method.setAccessible(true);
+
+        ChatMessageWithFileDto result = (ChatMessageWithFileDto) method.invoke(chatMessageServiceImpl,
+            dto, chatFileDto);
+
+        assertEquals(dto.getId(), result.getId());
+        assertEquals(dto.getRoomId(), result.getRoomId());
+        assertEquals(dto.getSenderId(), result.getSenderId());
+        assertEquals(dto.getContent(), result.getContent());
+        assertEquals(dto.getCreateDate(), result.getCreateDate());
+        assertEquals(chatFileDto.getFileName(), result.getFileName());
+        assertEquals(chatFileDto.getFileType().toString(), result.getFileType());
+        assertEquals(chatFileDto.getFileUrl(), result.getFileUrl());
+    }
 }

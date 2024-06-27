@@ -6,6 +6,7 @@ import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.entity.UnreadMessage;
+import greencity.enums.FilesType;
 import greencity.enums.MessageStatus;
 import greencity.enums.SortOrder;
 import greencity.exception.exceptions.ChatRoomNotFoundException;
@@ -29,6 +30,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Implementation of {@link ChatMessageService}.
@@ -93,21 +95,14 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     public void deleteMessage(ChatMessageDto chatMessageDto) {
         ChatMessage chatMessage = modelMapper.map(chatMessageDto, ChatMessage.class);
         chatMessageRepo.delete(chatMessage);
-        Map<String, Object> headers = new HashMap<>();
-
-        headers.put(HEADER_DELETE, new Object());
-        messagingTemplate.convertAndSend(
-            ROOM_LINK + chatMessageDto.getRoomId() + MESSAGE_LINK, chatMessageDto, headers);
+        sendMessageInChatRoomWithHeader(chatMessageDto, HEADER_DELETE);
     }
 
     @Override
     public void updateMessage(ChatMessageDto chatMessageDto) {
         ChatMessage chatMessage = modelMapper.map(chatMessageDto, ChatMessage.class);
         chatMessageRepo.save(chatMessage);
-        Map<String, Object> headers = new HashMap<>();
-        headers.put(HEADER_UPDATE, new Object());
-        messagingTemplate.convertAndSend(
-            ROOM_LINK + chatMessageDto.getRoomId() + MESSAGE_LINK, chatMessageDto, headers);
+        sendMessageInChatRoomWithHeader(chatMessageDto, HEADER_UPDATE);
     }
 
     @Override
@@ -191,5 +186,41 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             friendsChatDto.setChatId(chatList.get(0));
         }
         return friendsChatDto;
+    }
+
+    @Override
+    public ChatMessageWithFileDto sendVoiceMessage(ChatMessageDto chatMessageDto, MultipartFile voiceFile) {
+        ChatFileDto chatFileDto = azureFileService.saveVoiceMessage(voiceFile);
+        ChatMessageWithFileDto chatMessageWithFileDto = mergeChatMessageAndFile(chatMessageDto, chatFileDto);
+        ChatMessage chatMessage = modelMapper.map(chatMessageWithFileDto, ChatMessage.class);
+        return modelMapper.map(chatMessageRepo.save(chatMessage), ChatMessageWithFileDto.class);
+    }
+
+    @Override
+    public ChatMessageWithFileDto sendFile(ChatMessageDto chatMessageDto, MultipartFile file, FilesType fileType) {
+        ChatFileDto chatFileDto = azureFileService.saveFile(file, fileType);
+        ChatMessageWithFileDto chatMessageWithFileDto = mergeChatMessageAndFile(chatMessageDto, chatFileDto);
+        ChatMessage chatMessage = modelMapper.map(chatMessageWithFileDto, ChatMessage.class);
+        return modelMapper.map(chatMessageRepo.save(chatMessage), ChatMessageWithFileDto.class);
+    }
+
+    private ChatMessageWithFileDto mergeChatMessageAndFile(ChatMessageDto chatMessageDto, ChatFileDto chatFileDto) {
+        return ChatMessageWithFileDto.builder()
+            .id(chatMessageDto.getId())
+            .roomId(chatMessageDto.getRoomId())
+            .senderId(chatMessageDto.getSenderId())
+            .content(chatMessageDto.getContent())
+            .createDate(chatMessageDto.getCreateDate())
+            .fileUrl(chatFileDto.getFileUrl())
+            .fileType(chatFileDto.getFileType().toString())
+            .fileName(chatFileDto.getFileName())
+            .build();
+    }
+
+    private void sendMessageInChatRoomWithHeader(ChatMessageDto chatMessageDto, String headerString) {
+        Map<String, Object> headers = new HashMap<>();
+        headers.put(headerString, new Object());
+        messagingTemplate.convertAndSend(
+            ROOM_LINK + chatMessageDto.getRoomId() + MESSAGE_LINK, chatMessageDto, headers);
     }
 }

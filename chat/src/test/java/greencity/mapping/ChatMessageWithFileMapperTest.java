@@ -1,32 +1,34 @@
 package greencity.mapping;
 
-import greencity.dto.ChatMessageDto;
+import greencity.dto.ChatMessageWithFileDto;
 import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
-import java.time.ZonedDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.ZonedDateTime;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class ChatMessageMapperTest {
+class ChatMessageWithFileMapperTest {
     private ChatMessage expected;
-    private ChatMessageDto chatMessageDto;
-    private ChatMessageMapper chatMessageMapper = new ChatMessageMapper();
+    private ChatMessageWithFileDto chatMessageWithFileDto;
+    private ChatMessageWithFileMapper chatMessageWithFileMapper = new ChatMessageWithFileMapper();
 
     @BeforeEach
     void init() {
         expected = new ChatMessage(1L, ChatRoom.builder().id(1L).build(),
             Participant.builder().id(1L).build(),
-            "content", ZonedDateTime.now(), null, null, null, null);
-        chatMessageDto = new ChatMessageDto(1L, 1L, 1L, "content",
-            null);
+            "content", ZonedDateTime.now(), null, "fileName", "AUDIO",
+            "https://example.wav");
+        chatMessageWithFileDto = new ChatMessageWithFileDto(1L, 1L, 1L, "content",
+            null, "fileName", "AUDIO", "https://example.wav");
     }
 
     @Test
     void convert() {
-        ChatMessage actual = chatMessageMapper.convert(chatMessageDto);
+        ChatMessage actual = chatMessageWithFileMapper.convert(chatMessageWithFileDto);
         assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getContent(), actual.getContent());
         assertEquals(expected.getSender(), actual.getSender());

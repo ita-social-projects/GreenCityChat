@@ -27,8 +27,19 @@ public class ChatMessage {
 
     @Column
     private String content;
+
+    @Column
     private ZonedDateTime createDate;
 
     @OneToMany(mappedBy = "message", cascade = CascadeType.ALL)
     private List<UnreadMessage> unreadMessages;
+
+    @Column(name = "file_name")
+    private String fileName;
+
+    @Column(name = "file_type")
+    private String fileType;
+
+    @Column(name = "file_url")
+    private String fileUrl;
 }

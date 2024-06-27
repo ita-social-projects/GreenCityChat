@@ -10,10 +10,13 @@ import java.time.ZonedDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ChatMessageDto {
+public class ChatMessageWithFileDto {
     private Long id;
     private Long roomId;
     private Long senderId;
     private String content;
     private ZonedDateTime createDate;
+    private String fileName;
+    private String fileType;
+    private String fileUrl;
 }

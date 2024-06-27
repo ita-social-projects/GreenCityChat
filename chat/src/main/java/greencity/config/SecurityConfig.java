@@ -120,6 +120,9 @@ public class SecurityConfig {
                 .hasAnyRole(USER, ADMIN, MODERATOR, UBS_EMPLOYEE)
                 .requestMatchers(HttpMethod.POST,
                     "/chat/create-chatRoom",
+                    "/chat/upload/file",
+                    "/chat/upload/image",
+                    "/chat/upload/voice",
                     "/chat/sent-message/{userId}/{roomId}")
                 .hasAnyRole(USER, ADMIN, MODERATOR, UBS_EMPLOYEE)
                 .anyRequest().hasAnyRole(ADMIN));

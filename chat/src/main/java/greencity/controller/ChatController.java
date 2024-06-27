@@ -11,7 +11,9 @@ import greencity.dto.LeaveChatDto;
 import greencity.dto.MessageLike;
 import greencity.dto.PageableDto;
 import greencity.dto.ParticipantDto;
+import greencity.dto.ChatMessageWithFileDto;
 import greencity.enums.ChatType;
+import greencity.enums.FilesType;
 import greencity.service.AzureFileService;
 import greencity.service.ChatMessageService;
 import greencity.service.ChatRoomService;
@@ -28,18 +30,20 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
@@ -307,36 +311,59 @@ public class ChatController {
     /**
      * Method for uploading an image.
      *
-     * @param file image to save.
-     * @return url of the saved image.
+     * @param file - image to save.
      */
     @Operation(summary = "Upload an image.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = HttpStatuses.CREATED),
-        @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
-    })
-    @PostMapping("/upload/file")
-    public ResponseEntity<ChatMessageDto> uploadFile(@RequestBody MultipartFile file) {
-        ChatMessageDto chatMessageDto = azureFileService.saveFile(file);
-        return ResponseEntity.status(HttpStatus.OK).body(chatMessageDto);
-    }
-
-    /**
-     * Method for uploading an voice file.
-     *
-     * @param file voice file to save.
-     * @return url of the saved image.
-     */
-    @Operation(summary = "Upload an voice file.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = HttpStatuses.OK,
+        @ApiResponse(responseCode = "201", description = HttpStatuses.CREATED,
             content = @Content(schema = @Schema(implementation = ChatMessageDto.class))),
         @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
     })
-    @PostMapping("/upload/voice")
-    public ResponseEntity<ChatMessageDto> uploadVoice(@RequestBody MultipartFile file) {
-        ChatMessageDto chatMessageDto = this.azureFileService.saveVoiceMessage(file);
-        return ResponseEntity.status(HttpStatus.OK).body(chatMessageDto);
+    @PostMapping(value = "/upload/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ChatMessageWithFileDto> uploadImage(
+        @RequestPart("chatMessageDto") @Valid ChatMessageDto chatMessageDto,
+        @RequestPart("file") MultipartFile file) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(chatMessageService.sendFile(chatMessageDto, file,
+            FilesType.IMAGE));
+    }
+
+    /**
+     * Method for uploading file.
+     *
+     * @param file file to save.
+     */
+    @Operation(summary = "Upload file.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = HttpStatuses.CREATED,
+            content = @Content(schema = @Schema(implementation = ChatMessageDto.class))),
+        @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+    })
+    @PostMapping(value = "/upload/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ChatMessageWithFileDto> uploadFile(
+        @RequestPart("chatMessageDto") @Valid ChatMessageDto chatMessageDto,
+        @RequestPart("file") MultipartFile file) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(chatMessageService.sendFile(chatMessageDto, file,
+            FilesType.FILE));
+    }
+
+    /**
+     * Method for uploading voice file.
+     *
+     * @param file voice file to save.
+     * @return ChatMessageDto of the saved voice file.
+     */
+    @Operation(summary = "Upload voice file.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = HttpStatuses.CREATED,
+            content = @Content(schema = @Schema(implementation = ChatMessageDto.class))),
+        @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+    })
+    @PostMapping(value = "/upload/voice", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ChatMessageWithFileDto> uploadVoice(
+        @RequestPart("chatMessageDto") @Valid ChatMessageDto chatMessageDto,
+        @RequestPart("file") MultipartFile file) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(chatMessageService.sendVoiceMessage(chatMessageDto, file));
     }
 
     /**
