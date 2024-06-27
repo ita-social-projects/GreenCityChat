@@ -231,7 +231,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     }
 
     private void sendMessageInChatRoomWithHeader(ChatMessageWithFileDto chatMessageWithFileDto, String headerString) {
-        System.out.println(chatMessageWithFileDto);
         Map<String, Object> headers = new HashMap<>();
         headers.put(headerString, new Object());
         messagingTemplate.convertAndSend(
