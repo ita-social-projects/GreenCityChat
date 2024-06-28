@@ -18,9 +18,12 @@ import org.springframework.web.socket.config.annotation.WebSocketTransportRegist
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final String[] allowedOrigins;
+    private final ObjectMapper objectMapper;
 
-    public WebSocketConfig(@Value("${spring.messaging.stomp.websocket.allowed-origins}") String[] allowedOrigins) {
+    public WebSocketConfig(@Value("${spring.messaging.stomp.websocket.allowed-origins}") String[] allowedOrigins,
+        ObjectMapper objectMapper) {
         this.allowedOrigins = allowedOrigins;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -42,7 +45,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         DefaultContentTypeResolver resolver = new DefaultContentTypeResolver();
         resolver.setDefaultMimeType(MimeTypeUtils.APPLICATION_JSON);
         MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
-        converter.setObjectMapper(new ObjectMapper());
+        converter.setObjectMapper(objectMapper);
         converter.setContentTypeResolver(resolver);
         messageConverters.add(converter);
         return false;
