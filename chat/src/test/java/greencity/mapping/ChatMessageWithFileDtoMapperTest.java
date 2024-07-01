@@ -43,7 +43,7 @@ class ChatMessageWithFileDtoMapperTest {
     void convertWithLikes() {
         Set<Participant> likes = new HashSet<>();
         likes.add(new Participant(2L, "user2", "user2@example.com", null,
-                null, UserStatus.ACTIVATED, Role.ROLE_USER, null));
+            null, UserStatus.ACTIVATED, Role.ROLE_USER, null));
         chatMessage.setLikes(likes);
 
         Set<UserDto> expectedLikes = new HashSet<>();
