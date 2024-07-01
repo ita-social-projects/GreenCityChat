@@ -19,7 +19,7 @@ class ChatMessageMapperTest {
     void init() {
         expected = new ChatMessage(1L, ChatRoom.builder().id(1L).build(),
             Participant.builder().id(1L).build(),
-            "content", ZonedDateTime.now(), null, null, null, null);
+            "content", ZonedDateTime.now(), null, null, null, null, null);
         chatMessageDto = new ChatMessageDto(1L, 1L, 1L, "content",
             null);
     }

@@ -24,9 +24,9 @@ class ChatMessageWithFileDtoMapperTest {
             new Participant(1L, "name", "asd@asd.asd", null,
                 null, UserStatus.ACTIVATED, Role.ROLE_USER, null),
             "content", null, null, "fileName", "AUDIO",
-            "https://example.wav");
+            "https://example.wav", null);
         expected = new ChatMessageWithFileDto(1L, 1L, 1L, "content",
-            null, "fileName", "AUDIO", "https://example.wav");
+            null, "fileName", "AUDIO", "https://example.wav", null);
     }
 
     @Test

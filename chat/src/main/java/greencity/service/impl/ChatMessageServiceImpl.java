@@ -130,13 +130,10 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         } else {
             chatMessageRepo.addLikeToMessage(messageLike.getMessageId(), messageLike.getParticipantId());
         }
-        Map<String, Object> headers = new HashMap<>();
-        headers.put(HEADER_UPDATE, new Object());
-        ChatMessage chatMessage = chatMessageRepo.findById(messageLike.getMessageId()).get();
-        ChatMessageDto chatMessageDto = modelMapper.map(chatMessage,
-            ChatMessageDto.class);
-        messagingTemplate.convertAndSend(
-            ROOM_LINK + chatMessage.getRoom().getId() + MESSAGE_LINK, chatMessageDto, headers);
+        ChatMessage chatMessage = chatMessageRepo.findById(messageLike.getMessageId())
+            .orElseThrow(() -> new NotFoundException(ErrorMessage.CHAT_MESSAGE_NOT_FOUND_BY_ID
+                + messageLike.getMessageId()));
+        sendMessageInChatRoomWithHeader(modelMapper.map(chatMessage, ChatMessageWithFileDto.class), HEADER_UPDATE);
     }
 
     @Override

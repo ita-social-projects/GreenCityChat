@@ -183,8 +183,8 @@ class ChatMessageServiceImplTest {
             .build();
         when(chatMessageRepo.findById(1L))
             .thenReturn(Optional.of(chatMessage));
-        when(modelMapper.map(chatMessage, ChatMessageDto.class))
-            .thenReturn(expectedChatMessageDto);
+        when(modelMapper.map(chatMessage, ChatMessageWithFileDto.class))
+            .thenReturn(new ChatMessageWithFileDto());
         chatMessageServiceImpl.likeMessage(messageLike);
         verify(chatMessageRepo).deleteLikeFromMessage(1L, 1L);
     }
@@ -204,8 +204,8 @@ class ChatMessageServiceImplTest {
             .build();
         when(chatMessageRepo.findById(1L))
             .thenReturn(Optional.of(chatMessage));
-        when(modelMapper.map(chatMessage, ChatMessageDto.class))
-            .thenReturn(expectedChatMessageDto);
+        when(modelMapper.map(chatMessage, ChatMessageWithFileDto.class))
+            .thenReturn(new ChatMessageWithFileDto());
         chatMessageServiceImpl.likeMessage(messageLike);
         verify(chatMessageRepo).addLikeToMessage(1L, 1L);
     }

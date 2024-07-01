@@ -3,8 +3,10 @@ package greencity.repository;
 import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -103,4 +105,8 @@ public interface ChatMessageRepo extends PagingAndSortingRepository<ChatMessage,
      * @return list of {@link ChatMessage}s from room
      */
     List<ChatMessage> getAllByRoomId(Long roomId);
+
+    @Override
+    @EntityGraph(attributePaths = {"likes", "room"})
+    Optional<ChatMessage> findById(Long id);
 }
