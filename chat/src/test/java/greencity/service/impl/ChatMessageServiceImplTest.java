@@ -209,7 +209,17 @@ class ChatMessageServiceImplTest {
         chatMessageServiceImpl.likeMessage(messageLike);
         verify(chatMessageRepo).addLikeToMessage(1L, 1L);
     }
+    @Test
+    void likeMessageNotFound() {
+        MessageLike messageLike = new MessageLike(1L, 1L);
 
+        when(chatMessageRepo.getParticipantIdIfLiked(1L, 1L)).thenReturn(null);
+        doNothing().when(chatMessageRepo).addLikeToMessage(1L, 1L);
+        when(chatMessageRepo.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> chatMessageServiceImpl.likeMessage(messageLike));
+        verify(chatMessageRepo, never()).deleteLikeFromMessage(anyLong(), anyLong());
+    }
     @Test
     void sendVoiceMessageTest() {
         ChatMessageDto inputDto = chatMessageDto;
