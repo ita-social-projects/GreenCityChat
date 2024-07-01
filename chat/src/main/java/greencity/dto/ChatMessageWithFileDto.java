@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.Data;
 import java.time.ZonedDateTime;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -19,4 +20,5 @@ public class ChatMessageWithFileDto {
     private String fileName;
     private String fileType;
     private String fileUrl;
+    private Set<UserDto> likes;
 }

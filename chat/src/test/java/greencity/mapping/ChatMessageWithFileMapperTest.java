@@ -21,9 +21,9 @@ class ChatMessageWithFileMapperTest {
         expected = new ChatMessage(1L, ChatRoom.builder().id(1L).build(),
             Participant.builder().id(1L).build(),
             "content", ZonedDateTime.now(), null, "fileName", "AUDIO",
-            "https://example.wav");
+            "https://example.wav", null);
         chatMessageWithFileDto = new ChatMessageWithFileDto(1L, 1L, 1L, "content",
-            null, "fileName", "AUDIO", "https://example.wav");
+            null, "fileName", "AUDIO", "https://example.wav", null);
     }
 
     @Test

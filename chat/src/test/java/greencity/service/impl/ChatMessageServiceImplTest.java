@@ -183,8 +183,8 @@ class ChatMessageServiceImplTest {
             .build();
         when(chatMessageRepo.findById(1L))
             .thenReturn(Optional.of(chatMessage));
-        when(modelMapper.map(chatMessage, ChatMessageDto.class))
-            .thenReturn(expectedChatMessageDto);
+        when(modelMapper.map(chatMessage, ChatMessageWithFileDto.class))
+            .thenReturn(new ChatMessageWithFileDto());
         chatMessageServiceImpl.likeMessage(messageLike);
         verify(chatMessageRepo).deleteLikeFromMessage(1L, 1L);
     }
@@ -204,10 +204,22 @@ class ChatMessageServiceImplTest {
             .build();
         when(chatMessageRepo.findById(1L))
             .thenReturn(Optional.of(chatMessage));
-        when(modelMapper.map(chatMessage, ChatMessageDto.class))
-            .thenReturn(expectedChatMessageDto);
+        when(modelMapper.map(chatMessage, ChatMessageWithFileDto.class))
+            .thenReturn(new ChatMessageWithFileDto());
         chatMessageServiceImpl.likeMessage(messageLike);
         verify(chatMessageRepo).addLikeToMessage(1L, 1L);
+    }
+
+    @Test
+    void likeMessageNotFound() {
+        MessageLike messageLike = new MessageLike(1L, 1L);
+
+        when(chatMessageRepo.getParticipantIdIfLiked(1L, 1L)).thenReturn(null);
+        doNothing().when(chatMessageRepo).addLikeToMessage(1L, 1L);
+        when(chatMessageRepo.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> chatMessageServiceImpl.likeMessage(messageLike));
+        verify(chatMessageRepo, never()).deleteLikeFromMessage(anyLong(), anyLong());
     }
 
     @Test
