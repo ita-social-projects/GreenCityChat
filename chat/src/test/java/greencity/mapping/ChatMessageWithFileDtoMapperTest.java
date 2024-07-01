@@ -63,14 +63,15 @@ class ChatMessageWithFileDtoMapperTest {
 
     @Test
     void convertWithNullFields() {
-        chatMessage.setFileName(null);
-        chatMessage.setFileType(null);
-        chatMessage.setFileUrl(null);
+        ChatMessage message = new ChatMessage(1L, new ChatRoom(1L, "name", null, null,
+            ChatType.GROUP, null, null),
+            new Participant(1L, "name", "asd@asd.asd", null,
+                null, UserStatus.ACTIVATED, Role.ROLE_USER, null),
+            "content", null, null, null, null,
+            null, null);
+        ChatMessageWithFileDto expectedDto = new ChatMessageWithFileDto(1L, 1L, 1L, "content",
+            null, null, null, null, null);
 
-        expected.setFileName(null);
-        expected.setFileType(null);
-        expected.setFileUrl(null);
-
-        assertEquals(expected, chatMessageWithFileDtoMapper.convert(chatMessage));
+        assertEquals(expectedDto, chatMessageWithFileDtoMapper.convert(message));
     }
 }
