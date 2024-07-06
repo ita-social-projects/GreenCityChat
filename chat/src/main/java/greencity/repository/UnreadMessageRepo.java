@@ -21,4 +21,12 @@ public interface UnreadMessageRepo extends JpaRepository<UnreadMessage, Long>,
     @Query(nativeQuery = true,
         value = "delete from unread_messages where user_id = :userId and message_id in(:messageIds)")
     void cleanUnreadMessage(Long userId, List<Long> messageIds);
+
+    /**
+     * Method to delete unread message by message id.
+     *
+     * @param messageId {@link Long} id of message.
+     */
+    @Transactional
+    void deleteByMessageId(Long messageId);
 }

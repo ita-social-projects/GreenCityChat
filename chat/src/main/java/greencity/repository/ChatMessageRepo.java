@@ -3,9 +3,11 @@ package greencity.repository;
 import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -23,6 +25,7 @@ public interface ChatMessageRepo extends PagingAndSortingRepository<ChatMessage,
      * @param chatRoom {@link ChatRoom} instance.
      * @return list of {@link ChatMessage} instances.
      */
+    @EntityGraph(attributePaths = {"likes", "room", "sender"})
     List<ChatMessage> findAllByRoom(ChatRoom chatRoom);
 
     /**
@@ -31,11 +34,13 @@ public interface ChatMessageRepo extends PagingAndSortingRepository<ChatMessage,
      * @param chatRoom {@link ChatRoom} instance.
      * @return list of {@link ChatMessage} instances.
      */
+    @EntityGraph(attributePaths = {"likes", "room", "sender"})
     Page<ChatMessage> findAllByRoom(@Param(value = "chatRoom") ChatRoom chatRoom, Pageable pageable);
 
     /**
      * {@inheritDoc}
      */
+    @EntityGraph(attributePaths = {"likes", "room", "sender"})
     ChatMessage findTopByOrderByIdDesc();
 
     /**
@@ -68,6 +73,7 @@ public interface ChatMessageRepo extends PagingAndSortingRepository<ChatMessage,
      * @param roomId {@link Long} id of chat room.
      * @return {@link ChatMessage} instance.
      */
+    @EntityGraph(attributePaths = {"likes", "room", "sender"})
     @Query(nativeQuery = true, value = "SELECT *  from chat_messages "
         + "where room_id = :roomId "
         + "ORDER BY chat_messages.create_date DESC limit 1")
@@ -102,5 +108,21 @@ public interface ChatMessageRepo extends PagingAndSortingRepository<ChatMessage,
      * @param roomId of chat room
      * @return list of {@link ChatMessage}s from room
      */
+    @EntityGraph(attributePaths = {"likes", "room", "sender"})
     List<ChatMessage> getAllByRoomId(Long roomId);
+
+    @Override
+    @EntityGraph(attributePaths = {"likes", "room", "sender"})
+    Optional<ChatMessage> findById(Long id);
+
+    /**
+     * Method to delete like from message by message id.
+     *
+     * @param messageId {@link Long} id of message.
+     */
+    @Modifying
+    @Transactional
+    @Query(nativeQuery = true,
+        value = "delete from message_like where message_id = :messageId")
+    void deleteLikeFromMessageByMessageId(@Param("messageId") Long messageId);
 }

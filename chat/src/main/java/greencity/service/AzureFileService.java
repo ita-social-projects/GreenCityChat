@@ -1,22 +1,23 @@
 package greencity.service;
 
-import greencity.dto.ChatMessageDto;
+import greencity.dto.ChatFileDto;
+import greencity.enums.FilesType;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface AzureFileService {
     /**
      * Method save file in azure storage.
-     * 
-     * @param multipartFile of{@link MultipartFile} return file url
+     *
+     * @param multipartFile of{@link MultipartFile} return file ChatFileDto
      */
-    ChatMessageDto saveFile(MultipartFile multipartFile);
+    ChatFileDto saveFile(MultipartFile multipartFile, FilesType fileType);
 
     /**
      * Method save voice message file in azure storage.
-     * 
-     * @param multipartFile of{@link MultipartFile} return file url
+     *
+     * @param multipartFile of{@link MultipartFile} return file ChatFileDto
      */
-    ChatMessageDto saveVoiceMessage(MultipartFile multipartFile);
+    ChatFileDto saveVoiceMessage(MultipartFile multipartFile);
 
     /**
      * Method delete file from azure storage.

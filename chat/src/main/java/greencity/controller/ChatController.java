@@ -4,6 +4,7 @@ import greencity.annotations.ApiPageable;
 import greencity.constant.HttpStatuses;
 import greencity.dto.*;
 import greencity.enums.ChatType;
+import greencity.enums.FilesType;
 import greencity.service.*;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -87,7 +88,7 @@ public class ChatController {
     })
     @ApiPageable
     @GetMapping("/messages/{room_id}")
-    public ResponseEntity<PageableDto<ChatMessageDto>> findAllMessages(
+    public ResponseEntity<PageableDto<ChatMessageWithFileDto>> findAllMessages(
         @ApiIgnore Pageable pageable,
         @PathVariable("room_id") Long id) {
         return ResponseEntity.status(HttpStatus.OK)
@@ -262,35 +263,56 @@ public class ChatController {
     /**
      * Method for uploading an image.
      *
-     * @param file image to save.
-     * @return url of the saved image.
+     * @param file - image to save.
      */
     @ApiOperation(value = "Upload an image.")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = HttpStatuses.CREATED, response = String.class),
+        @ApiResponse(code = 201, message = HttpStatuses.CREATED, response = ChatMessageWithFileDto.class),
         @ApiResponse(code = 400, message = HttpStatuses.BAD_REQUEST),
     })
-    @PostMapping("/upload/file")
-    public ResponseEntity<ChatMessageDto> uploadFile(@RequestBody MultipartFile file) {
-        ChatMessageDto chatMessageDto = azureFileService.saveFile(file);
-        return ResponseEntity.status(HttpStatus.OK).body(chatMessageDto);
+    @PostMapping(value = "/upload/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ChatMessageWithFileDto> uploadImage(
+        @RequestPart("chatMessageDto") @Valid ChatMessageDto chatMessageDto,
+        @RequestPart("file") MultipartFile file) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(chatMessageService.sendFile(chatMessageDto, file,
+            FilesType.IMAGE));
     }
 
     /**
-     * Method for uploading an voice file.
+     * Method for uploading file.
      *
-     * @param file voice file to save.
-     * @return url of the saved image.
+     * @param file file to save.
      */
-    @ApiOperation(value = "Upload an voice file.")
+    @ApiOperation(value = "Upload file.")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = HttpStatuses.OK, response = ChatMessageDto.class),
+        @ApiResponse(code = 201, message = HttpStatuses.CREATED, response = ChatMessageWithFileDto.class),
         @ApiResponse(code = 400, message = HttpStatuses.BAD_REQUEST),
     })
-    @PostMapping("/upload/voice")
-    public ResponseEntity<ChatMessageDto> uploadVoice(@RequestBody MultipartFile file) {
-        ChatMessageDto chatMessageDto = this.azureFileService.saveVoiceMessage(file);
-        return ResponseEntity.status(HttpStatus.OK).body(chatMessageDto);
+    @PostMapping(value = "/upload/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ChatMessageWithFileDto> uploadFile(
+        @RequestPart("chatMessageDto") @Valid ChatMessageDto chatMessageDto,
+        @RequestPart("file") MultipartFile file) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(chatMessageService.sendFile(chatMessageDto, file,
+            FilesType.FILE));
+    }
+
+    /**
+     * Method for uploading voice file.
+     *
+     * @param file voice file to save.
+     * @return ChatMessageDto of the saved voice file.
+     */
+    @ApiOperation(value = "Upload voice file.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = HttpStatuses.CREATED, response = ChatMessageWithFileDto.class),
+        @ApiResponse(code = 400, message = HttpStatuses.BAD_REQUEST),
+    })
+    @PostMapping(value = "/upload/voice", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ChatMessageWithFileDto> uploadVoice(
+        @RequestPart("chatMessageDto") @Valid ChatMessageDto chatMessageDto,
+        @RequestPart("file") MultipartFile file) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(chatMessageService.sendVoiceMessage(chatMessageDto, file));
     }
 
     /**

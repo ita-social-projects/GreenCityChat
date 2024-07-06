@@ -6,11 +6,14 @@ import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
 import greencity.entity.UnreadMessage;
+import greencity.enums.FilesType;
 import greencity.enums.MessageStatus;
 import greencity.enums.SortOrder;
 import greencity.exception.exceptions.ChatRoomNotFoundException;
 import greencity.exception.exceptions.UserNotBelongToThisChat;
 import greencity.exception.exceptions.UserNotFoundException;
+import greencity.exception.exceptions.ChangesNotSavedException;
+import greencity.exception.exceptions.FileNotFoundException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
 import greencity.repository.ParticipantRepo;
@@ -32,6 +35,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Implementation of {@link ChatMessageService}.
@@ -53,7 +57,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private static final String HEADER_UPDATE = "update";
 
     @Override
-    public PageableDto<ChatMessageDto> findAllMessagesByChatRoomId(Long chatRoomId, Pageable pageable) {
+    public PageableDto<ChatMessageWithFileDto> findAllMessagesByChatRoomId(Long chatRoomId, Pageable pageable) {
         ChatRoom chatRoom = chatRoomRepo.findById(chatRoomId)
             .orElseThrow(() -> new ChatRoomNotFoundException(ErrorMessage.CHAT_ROOM_NOT_FOUND_BY_ID));
 
@@ -61,8 +65,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
 
         Page<ChatMessage> messages = chatMessageRepo.findAllByRoom(chatRoom, pageable);
-        List<ChatMessageDto> messageDtos = messages.getContent().stream()
-            .map(message -> modelMapper.map(message, ChatMessageDto.class)).collect(Collectors.toList());
+        List<ChatMessageWithFileDto> messageDtos = messages.getContent().stream()
+            .map(message -> modelMapper.map(message, ChatMessageWithFileDto.class)).collect(Collectors.toList());
 
         Collections.reverse(messageDtos);
         return new PageableDto<>(
@@ -97,23 +101,30 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
     @Override
     public void deleteMessage(ChatMessageDto chatMessageDto) {
-        ChatMessage chatMessage = modelMapper.map(chatMessageDto, ChatMessage.class);
-        chatMessageRepo.delete(chatMessage);
-        Map<String, Object> headers = new HashMap<>();
-
-        headers.put(HEADER_DELETE, new Object());
-        messagingTemplate.convertAndSend(
-            ROOM_LINK + chatMessageDto.getRoomId() + MESSAGE_LINK, chatMessageDto, headers);
+        Long chatMessageId = chatMessageDto.getId();
+        ChatMessage chatMessage = chatMessageRepo.findById(chatMessageId)
+            .orElseThrow(() -> new FileNotFoundException(ErrorMessage.CHAT_MESSAGE_NOT_FOUND_BY_ID
+                + chatMessageId));
+        if (chatMessage.getFileName() != null) {
+            azureFileService.deleteFile(chatMessage.getFileName());
+        }
+        unreadMessageRepo.deleteByMessageId(chatMessageId);
+        chatMessageRepo.deleteLikeFromMessageByMessageId(chatMessageId);
+        chatMessageRepo.deleteById(chatMessageId);
+        sendMessageInChatRoomWithHeader(modelMapper.map(chatMessage, ChatMessageWithFileDto.class), HEADER_DELETE);
     }
 
     @Override
     public void updateMessage(ChatMessageDto chatMessageDto) {
-        ChatMessage chatMessage = modelMapper.map(chatMessageDto, ChatMessage.class);
+        ChatMessage chatMessage = chatMessageRepo.findById(chatMessageDto.getId())
+            .orElseThrow(() -> new FileNotFoundException(ErrorMessage.CHAT_MESSAGE_NOT_FOUND_BY_ID
+                + chatMessageDto.getId()));
+        if (chatMessageDto.getContent().isEmpty()) {
+            throw new ChangesNotSavedException(ErrorMessage.CHAT_MESSAGE_CANNOT_BE_EMPTY);
+        }
+        chatMessage.setContent(chatMessageDto.getContent());
         chatMessageRepo.save(chatMessage);
-        Map<String, Object> headers = new HashMap<>();
-        headers.put(HEADER_UPDATE, new Object());
-        messagingTemplate.convertAndSend(
-            ROOM_LINK + chatMessageDto.getRoomId() + MESSAGE_LINK, chatMessageDto, headers);
+        sendMessageInChatRoomWithHeader(modelMapper.map(chatMessage, ChatMessageWithFileDto.class), HEADER_UPDATE);
     }
 
     @Override
@@ -128,13 +139,10 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         } else {
             chatMessageRepo.addLikeToMessage(messageLike.getMessageId(), messageLike.getParticipantId());
         }
-        Map<String, Object> headers = new HashMap<>();
-        headers.put(HEADER_UPDATE, new Object());
-        ChatMessage chatMessage = chatMessageRepo.findById(messageLike.getMessageId()).get();
-        ChatMessageDto chatMessageDto = modelMapper.map(chatMessage,
-            ChatMessageDto.class);
-        messagingTemplate.convertAndSend(
-            ROOM_LINK + chatMessage.getRoom().getId() + MESSAGE_LINK, chatMessageDto, headers);
+        ChatMessage chatMessage = chatMessageRepo.findById(messageLike.getMessageId())
+            .orElseThrow(() -> new FileNotFoundException(ErrorMessage.CHAT_MESSAGE_NOT_FOUND_BY_ID
+                + messageLike.getMessageId()));
+        sendMessageInChatRoomWithHeader(modelMapper.map(chatMessage, ChatMessageWithFileDto.class), HEADER_UPDATE);
     }
 
     @Override
@@ -197,5 +205,41 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             friendsChatDto.setChatId(chatList.get(0));
         }
         return friendsChatDto;
+    }
+
+    @Override
+    public ChatMessageWithFileDto sendVoiceMessage(ChatMessageDto chatMessageDto, MultipartFile voiceFile) {
+        ChatFileDto chatFileDto = azureFileService.saveVoiceMessage(voiceFile);
+        ChatMessageWithFileDto chatMessageWithFileDto = mergeChatMessageAndFile(chatMessageDto, chatFileDto);
+        ChatMessage chatMessage = modelMapper.map(chatMessageWithFileDto, ChatMessage.class);
+        return modelMapper.map(chatMessageRepo.save(chatMessage), ChatMessageWithFileDto.class);
+    }
+
+    @Override
+    public ChatMessageWithFileDto sendFile(ChatMessageDto chatMessageDto, MultipartFile file, FilesType fileType) {
+        ChatFileDto chatFileDto = azureFileService.saveFile(file, fileType);
+        ChatMessageWithFileDto chatMessageWithFileDto = mergeChatMessageAndFile(chatMessageDto, chatFileDto);
+        ChatMessage chatMessage = modelMapper.map(chatMessageWithFileDto, ChatMessage.class);
+        return modelMapper.map(chatMessageRepo.save(chatMessage), ChatMessageWithFileDto.class);
+    }
+
+    private ChatMessageWithFileDto mergeChatMessageAndFile(ChatMessageDto chatMessageDto, ChatFileDto chatFileDto) {
+        return ChatMessageWithFileDto.builder()
+            .id(chatMessageDto.getId())
+            .roomId(chatMessageDto.getRoomId())
+            .senderId(chatMessageDto.getSenderId())
+            .content(chatMessageDto.getContent())
+            .createDate(chatMessageDto.getCreateDate())
+            .fileUrl(chatFileDto.getFileUrl())
+            .fileType(chatFileDto.getFileType().toString())
+            .fileName(chatFileDto.getFileName())
+            .build();
+    }
+
+    private void sendMessageInChatRoomWithHeader(ChatMessageWithFileDto chatMessageWithFileDto, String headerString) {
+        Map<String, Object> headers = new HashMap<>();
+        headers.put(headerString, new Object());
+        messagingTemplate.convertAndSend(
+            ROOM_LINK + chatMessageWithFileDto.getRoomId() + MESSAGE_LINK, chatMessageWithFileDto, headers);
     }
 }
