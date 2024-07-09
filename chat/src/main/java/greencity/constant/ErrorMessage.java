@@ -8,6 +8,8 @@ public final class ErrorMessage {
     public static final String USER_NOT_BELONG_TO_CHAT = "This user doesnt belong to this chat";
     public static final String USER_NOT_THE_OWNER = "This user is not the owner of the chat";
     public static final String USER_IS_NOT_ADMIN = "This user is not the admin";
+    public static final String CHAT_MESSAGE_NOT_FOUND_BY_ID = "Chat message not found by id: ";
+    public static final String CHAT_MESSAGE_CANNOT_BE_EMPTY = "Message content cannot be empty!";
 
     private ErrorMessage() {
     }

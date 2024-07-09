@@ -1,10 +1,11 @@
 package greencity.entity;
 
 import java.time.ZonedDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.persistence.*;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.*;
 
 @Entity
@@ -12,9 +13,6 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Setter
-@Getter
-@ToString
 @Table(name = "chat_messages")
 public class ChatMessage {
     @Id
@@ -33,4 +31,20 @@ public class ChatMessage {
 
     @OneToMany(mappedBy = "message", cascade = CascadeType.ALL)
     private List<UnreadMessage> unreadMessages;
+
+    @Column(name = "file_name")
+    private String fileName;
+
+    @Column(name = "file_type")
+    private String fileType;
+
+    @Column(name = "file_url")
+    private String fileUrl;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+        name = "message_like",
+        joinColumns = @JoinColumn(name = "message_id"),
+        inverseJoinColumns = @JoinColumn(name = "participant_id"))
+    private Set<Participant> likes = new HashSet<>();
 }

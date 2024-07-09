@@ -1,20 +1,23 @@
 package greencity.service.impl;
 
-import greencity.dto.ChatMessageDto;
-import greencity.dto.ChatMessageResponseDto;
-import greencity.dto.MessageLike;
-import greencity.dto.PageableDto;
+import greencity.dto.*;
 import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
+import greencity.enums.FilesType;
 import greencity.enums.SortOrder;
+import greencity.exception.exceptions.ChangesNotSavedException;
+import greencity.exception.exceptions.FileNotFoundException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
 
+import java.lang.reflect.Method;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 
+import greencity.repository.UnreadMessageRepo;
+import greencity.service.AzureFileService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,8 +27,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
@@ -42,6 +47,10 @@ class ChatMessageServiceImplTest {
     private ModelMapper modelMapper;
     @Mock
     private ChatRoomRepo chatRoomRepo;
+    @Mock
+    private AzureFileService azureFileService;
+    @Mock
+    private UnreadMessageRepo unreadMessageRepo;
     ChatMessageDto expectedChatMessageDto;
 
     ChatMessageDto chatMessageDto;
@@ -103,13 +112,13 @@ class ChatMessageServiceImplTest {
         PageRequest pageRequest =
             PageRequest.of(0, 1, Sort.by(Sort.Direction.valueOf(SortOrder.DESC.toString()), "createDate"));
         Page<ChatMessage> messages = new PageImpl<>(Collections.singletonList(chatMessage), pageRequest, 1);
-        ChatMessageDto chatMessageDto = ChatMessageDto.builder()
+        ChatMessageWithFileDto chatMessageWithFileDto = ChatMessageWithFileDto.builder()
             .id(1L)
             .content("test")
             .roomId(1L)
             .senderId(1L)
             .build();
-        List<ChatMessageDto> chatMessageDtos = Collections.singletonList(chatMessageDto);
+        List<ChatMessageWithFileDto> chatMessageDtos = Collections.singletonList(chatMessageWithFileDto);
         PageableDto pageableDto = new PageableDto<>(
             chatMessageDtos,
             messages.getTotalElements(),
@@ -120,9 +129,11 @@ class ChatMessageServiceImplTest {
 
         when(chatMessageRepo.findAllByRoom(chatRoom, pageRequest)).thenReturn(messages);
 
-        when(modelMapper.map(messages.getContent().get(0), ChatMessageDto.class)).thenReturn(chatMessageDto);
+        when(modelMapper.map(messages.getContent().get(0), ChatMessageWithFileDto.class))
+            .thenReturn(chatMessageWithFileDto);
 
-        PageableDto<ChatMessageDto> actual = chatMessageServiceImpl.findAllMessagesByChatRoomId(1L, pageRequest);
+        PageableDto<ChatMessageWithFileDto> actual =
+            chatMessageServiceImpl.findAllMessagesByChatRoomId(1L, pageRequest);
         assertEquals(pageableDto, actual);
     }
 
@@ -145,17 +156,6 @@ class ChatMessageServiceImplTest {
     }
 
     @Test
-    void deleteMessage() {
-        when(modelMapper.map(chatMessageDto, ChatMessage.class)).thenReturn(expectedChatMessage);
-        doNothing().when(chatMessageRepo).delete(expectedChatMessage);
-        doNothing().when(messagingTemplate).convertAndSend(eq("/room/1/queue/messages"), eq(chatMessageDto),
-            anyMap());
-        chatMessageServiceImpl.deleteMessage(expectedChatMessageDto);
-
-        verify(chatMessageRepo).delete(expectedChatMessage);
-    }
-
-    @Test
     void deleteLikeFromMessage() {
         MessageLike messageLike = new MessageLike(1L, 1L);
         when(chatMessageRepo.getParticipantIdIfLiked(1L, 1L)).thenReturn(1L);
@@ -170,8 +170,8 @@ class ChatMessageServiceImplTest {
             .build();
         when(chatMessageRepo.findById(1L))
             .thenReturn(Optional.of(chatMessage));
-        when(modelMapper.map(chatMessage, ChatMessageDto.class))
-            .thenReturn(expectedChatMessageDto);
+        when(modelMapper.map(chatMessage, ChatMessageWithFileDto.class))
+            .thenReturn(new ChatMessageWithFileDto());
         chatMessageServiceImpl.likeMessage(messageLike);
         verify(chatMessageRepo).deleteLikeFromMessage(1L, 1L);
     }
@@ -191,10 +191,294 @@ class ChatMessageServiceImplTest {
             .build();
         when(chatMessageRepo.findById(1L))
             .thenReturn(Optional.of(chatMessage));
-        when(modelMapper.map(chatMessage, ChatMessageDto.class))
-            .thenReturn(expectedChatMessageDto);
+        when(modelMapper.map(chatMessage, ChatMessageWithFileDto.class))
+            .thenReturn(new ChatMessageWithFileDto());
         chatMessageServiceImpl.likeMessage(messageLike);
         verify(chatMessageRepo).addLikeToMessage(1L, 1L);
     }
 
+    @Test
+    void likeMessageNotFound() {
+        MessageLike messageLike = new MessageLike(1L, 1L);
+
+        when(chatMessageRepo.getParticipantIdIfLiked(1L, 1L)).thenReturn(null);
+        doNothing().when(chatMessageRepo).addLikeToMessage(1L, 1L);
+        when(chatMessageRepo.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(FileNotFoundException.class, () -> chatMessageServiceImpl.likeMessage(messageLike));
+        verify(chatMessageRepo, never()).deleteLikeFromMessage(anyLong(), anyLong());
+    }
+
+    @Test
+    void sendVoiceMessageTest() {
+        ChatMessageDto inputDto = chatMessageDto;
+        ChatMessage expectedMessage = expectedChatMessage;
+        MultipartFile mockVoiceFile = mock(MultipartFile.class);
+        ChatFileDto mockedFileDto = new ChatFileDto("testFile.mp3", FilesType.AUDIO,
+            "https://example.com/testFile.mp3");
+        ChatMessageWithFileDto expectedDto = ChatMessageWithFileDto.builder()
+            .roomId(1L)
+            .senderId(1L)
+            .createDate(ZonedDateTime.of(2022, 12, 12, 12, 12, 12, 12, ZoneId.systemDefault()))
+            .content("test").senderId(1L)
+            .fileName(mockedFileDto.getFileName())
+            .fileType(mockedFileDto.getFileType().toString())
+            .fileUrl(mockedFileDto.getFileUrl())
+            .build();
+        expectedMessage.setFileUrl(mockedFileDto.getFileUrl());
+        expectedMessage.setFileName(mockedFileDto.getFileName());
+        expectedMessage.setFileType(mockedFileDto.getFileType().toString());
+
+        when(azureFileService.saveVoiceMessage(any(MultipartFile.class))).thenReturn(mockedFileDto);
+        when(modelMapper.map(expectedDto, ChatMessage.class))
+            .thenReturn(expectedMessage);
+        when(chatMessageRepo.save(any(ChatMessage.class))).thenReturn(expectedMessage);
+        when(modelMapper.map(expectedMessage, ChatMessageWithFileDto.class))
+            .thenReturn(expectedDto);
+
+        ChatMessageWithFileDto resultDto = chatMessageServiceImpl.sendVoiceMessage(inputDto, mockVoiceFile);
+
+        verify(azureFileService).saveVoiceMessage(any(MultipartFile.class));
+        verify(chatMessageRepo).save(any(ChatMessage.class));
+
+        assertEquals(resultDto, expectedDto);
+    }
+
+    @Test
+    void sendFileTest() {
+        MultipartFile mockFile = mock(MultipartFile.class);
+        ChatMessageDto inputDto = chatMessageDto;
+        ChatMessage expectedMessage = expectedChatMessage;
+        FilesType fileType = FilesType.FILE;
+        ChatFileDto mockedFileDto = new ChatFileDto("testFile.pdf", fileType,
+            "https://example.com/testFile.pdf");
+        ChatMessageWithFileDto expectedDto = ChatMessageWithFileDto.builder()
+            .roomId(1L)
+            .senderId(1L)
+            .createDate(ZonedDateTime.of(2022, 12, 12, 12, 12, 12, 12, ZoneId.systemDefault()))
+            .content("test").senderId(1L)
+            .fileName(mockedFileDto.getFileName())
+            .fileType(mockedFileDto.getFileType().toString())
+            .fileUrl(mockedFileDto.getFileUrl())
+            .build();
+        expectedMessage.setFileUrl(mockedFileDto.getFileUrl());
+        expectedMessage.setFileName(mockedFileDto.getFileName());
+        expectedMessage.setFileType(mockedFileDto.getFileType().toString());
+
+        when(azureFileService.saveFile(any(MultipartFile.class), any())).thenReturn(mockedFileDto);
+        when(modelMapper.map(expectedDto, ChatMessage.class))
+            .thenReturn(expectedMessage);
+        when(chatMessageRepo.save(any(ChatMessage.class))).thenReturn(expectedMessage);
+        when(modelMapper.map(expectedMessage, ChatMessageWithFileDto.class))
+            .thenReturn(expectedDto);
+
+        ChatMessageWithFileDto resultDto = chatMessageServiceImpl.sendFile(inputDto, mockFile, fileType);
+
+        verify(azureFileService).saveFile(any(MultipartFile.class), eq(fileType));
+        verify(chatMessageRepo).save(any(ChatMessage.class));
+
+        assertEquals(resultDto, expectedDto);
+    }
+
+    @Test
+    void mergeChatMessageAndFileTest() throws Exception {
+        ChatFileDto chatFileDto = new ChatFileDto("testFile.mp3", FilesType.AUDIO,
+            "https://example.com/testFile.mp3");
+        ChatMessageDto dto = ChatMessageDto.builder()
+            .id(1L)
+            .roomId(2L)
+            .senderId(3L)
+            .content("Test content")
+            .createDate(ZonedDateTime.now())
+            .build();
+
+        Method method = ChatMessageServiceImpl.class.getDeclaredMethod("mergeChatMessageAndFile",
+            ChatMessageDto.class, ChatFileDto.class);
+        method.setAccessible(true);
+
+        ChatMessageWithFileDto result = (ChatMessageWithFileDto) method.invoke(chatMessageServiceImpl,
+            dto, chatFileDto);
+
+        assertEquals(dto.getId(), result.getId());
+        assertEquals(dto.getRoomId(), result.getRoomId());
+        assertEquals(dto.getSenderId(), result.getSenderId());
+        assertEquals(dto.getContent(), result.getContent());
+        assertEquals(dto.getCreateDate(), result.getCreateDate());
+        assertEquals(chatFileDto.getFileName(), result.getFileName());
+        assertEquals(chatFileDto.getFileType().toString(), result.getFileType());
+        assertEquals(chatFileDto.getFileUrl(), result.getFileUrl());
+    }
+
+    @Test
+    void deleteMessageTest_successfulWithoutFile() {
+        Long id = 1L;
+        ChatMessageWithFileDto chatMessageWithFileDto = ChatMessageWithFileDto.builder()
+            .id(1L)
+            .roomId(1L)
+            .senderId(1L)
+            .content("Content")
+            .build();
+        ChatMessageDto messageDto = ChatMessageDto.builder()
+            .id(1L)
+            .roomId(1L)
+            .senderId(1L)
+            .content("Content")
+            .build();
+        ChatMessage chatMessage = ChatMessage.builder()
+            .id(1L)
+            .room(ChatRoom.builder().id(1L).name("TestName").build())
+            .sender(Participant.builder().id(1L).name("User").build())
+            .content("Content")
+            .build();
+
+        when(chatMessageRepo.findById(anyLong())).thenReturn(Optional.of(chatMessage));
+        doNothing().when(unreadMessageRepo).deleteByMessageId(id);
+        doNothing().when(chatMessageRepo).deleteLikeFromMessageByMessageId(id);
+        doNothing().when(chatMessageRepo).deleteById(id);
+        when(modelMapper.map(chatMessage, ChatMessageWithFileDto.class)).thenReturn(chatMessageWithFileDto);
+        doNothing().when(messagingTemplate).convertAndSend(anyString(), any(ChatMessageWithFileDto.class),
+            (Map<String, Object>) any());
+
+        chatMessageServiceImpl.deleteMessage(messageDto);
+
+        verify(chatMessageRepo).deleteById(id);
+        verify(azureFileService, never()).deleteFile(anyString());
+        verify(messagingTemplate).convertAndSend(anyString(), any(ChatMessageWithFileDto.class),
+            (Map<String, Object>) any());
+    }
+
+    @Test
+    void deleteMessageTest_successfulWithFile() {
+        Long id = 1L;
+        ChatMessageWithFileDto chatMessageWithFileDto = ChatMessageWithFileDto.builder()
+            .id(id)
+            .roomId(id)
+            .senderId(id)
+            .content("Content")
+            .build();
+        ChatMessageDto messageDto = ChatMessageDto.builder()
+            .id(id)
+            .roomId(id)
+            .senderId(id)
+            .content("Content")
+            .build();
+        ChatMessage chatMessage = ChatMessage.builder()
+            .id(id)
+            .room(ChatRoom.builder().id(id).name("TestName").build())
+            .sender(Participant.builder().id(id).name("User").build())
+            .content("Content")
+            .fileName("testfile.txt")
+            .build();
+
+        when(chatMessageRepo.findById(anyLong())).thenReturn(Optional.of(chatMessage));
+        doNothing().when(chatMessageRepo).deleteById(id);
+        when(modelMapper.map(chatMessage, ChatMessageWithFileDto.class)).thenReturn(chatMessageWithFileDto);
+        doNothing().when(messagingTemplate).convertAndSend(anyString(), any(ChatMessageWithFileDto.class),
+            (Map<String, Object>) any());
+        doNothing().when(azureFileService).deleteFile("testfile.txt");
+        doNothing().when(unreadMessageRepo).deleteByMessageId(id);
+        doNothing().when(chatMessageRepo).deleteLikeFromMessageByMessageId(id);
+
+        chatMessageServiceImpl.deleteMessage(messageDto);
+
+        verify(chatMessageRepo).deleteById(id);
+        verify(azureFileService).deleteFile("testfile.txt");
+        verify(messagingTemplate).convertAndSend(anyString(), any(ChatMessageWithFileDto.class),
+            (Map<String, Object>) any());
+    }
+
+    @Test
+    void deleteMessageTest_messageNotFound() {
+        ChatMessageDto messageDto = ChatMessageDto.builder()
+            .id(1L)
+            .roomId(1L)
+            .senderId(1L)
+            .content("Content")
+            .build();
+
+        when(chatMessageRepo.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(FileNotFoundException.class, () -> chatMessageServiceImpl.deleteMessage(messageDto));
+
+        verify(chatMessageRepo, never()).deleteById(anyLong());
+        verify(azureFileService, never()).deleteFile(anyString());
+        verify(messagingTemplate, never()).convertAndSend(anyString(), any(ChatMessageWithFileDto.class),
+            (Map<String, Object>) any());
+    }
+
+    @Test
+    void updateMessageTest_successful() {
+        ChatMessageWithFileDto chatMessageWithFileDto = ChatMessageWithFileDto.builder()
+            .id(1L)
+            .roomId(1L)
+            .senderId(1L)
+            .content("Updated Content")
+            .build();
+        ChatMessageDto messageDto = ChatMessageDto.builder()
+            .id(1L)
+            .roomId(1L)
+            .senderId(1L)
+            .content("Updated Content")
+            .build();
+        ChatMessage chatMessage = ChatMessage.builder()
+            .id(1L)
+            .room(ChatRoom.builder().id(1L).name("TestName").build())
+            .sender(Participant.builder().id(1L).name("User").build())
+            .content("Content")
+            .build();
+
+        when(chatMessageRepo.findById(anyLong())).thenReturn(Optional.of(chatMessage));
+        when(chatMessageRepo.save(chatMessage)).thenReturn(chatMessage);
+        when(modelMapper.map(chatMessage, ChatMessageWithFileDto.class)).thenReturn(chatMessageWithFileDto);
+        doNothing().when(messagingTemplate).convertAndSend(anyString(), any(ChatMessageWithFileDto.class),
+            (Map<String, Object>) any());
+
+        chatMessageServiceImpl.updateMessage(messageDto);
+
+        verify(chatMessageRepo).save(chatMessage);
+        verify(messagingTemplate).convertAndSend(anyString(), any(ChatMessageWithFileDto.class),
+            (Map<String, Object>) any());
+    }
+
+    @Test
+    void updateMessageTest_messageNotFound() {
+        ChatMessageDto messageDto = ChatMessageDto.builder()
+            .id(1L)
+            .roomId(1L)
+            .senderId(1L)
+            .content("Updated Content")
+            .build();
+
+        when(chatMessageRepo.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(FileNotFoundException.class, () -> chatMessageServiceImpl.updateMessage(messageDto));
+
+        verify(chatMessageRepo, never()).save(any(ChatMessage.class));
+        verify(messagingTemplate, never()).convertAndSend(anyString(), any(ChatMessageWithFileDto.class),
+            (Map<String, Object>) any());
+    }
+
+    @Test
+    void updateMessageTest_emptyContent() {
+        ChatMessageDto messageDto = ChatMessageDto.builder()
+            .id(1L)
+            .roomId(1L)
+            .senderId(1L)
+            .content("")
+            .build();
+        ChatMessage chatMessage = ChatMessage.builder()
+            .id(1L)
+            .room(ChatRoom.builder().id(1L).name("TestName").build())
+            .sender(Participant.builder().id(1L).name("User").build())
+            .content("Content")
+            .build();
+
+        when(chatMessageRepo.findById(anyLong())).thenReturn(Optional.of(chatMessage));
+
+        assertThrows(ChangesNotSavedException.class, () -> chatMessageServiceImpl.updateMessage(messageDto));
+
+        verify(chatMessageRepo, never()).save(any(ChatMessage.class));
+        verify(messagingTemplate, never()).convertAndSend(anyString(), any(ChatMessageWithFileDto.class),
+            (Map<String, Object>) any());
+    }
 }

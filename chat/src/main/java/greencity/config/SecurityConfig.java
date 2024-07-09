@@ -108,7 +108,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .hasAnyRole(USER, ADMIN, MODERATOR, UBS_EMPLOYEE)
             .antMatchers(HttpMethod.POST,
                 "/chat/create-chatRoom",
-                "/chat/sent-message/{userId}/{roomId}")
+                "/chat/sent-message/{userId}/{roomId}",
+                "/chat/upload/file",
+                "/chat/upload/image",
+                "/chat/upload/voice")
             .hasAnyRole(USER, ADMIN, MODERATOR, UBS_EMPLOYEE);
     }
 
