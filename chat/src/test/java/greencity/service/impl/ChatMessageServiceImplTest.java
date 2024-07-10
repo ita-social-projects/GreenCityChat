@@ -134,16 +134,17 @@ class ChatMessageServiceImplTest {
             .sender(owner)
             .build();
         PageRequest pageRequest =
-            PageRequest.of(0, 1, Sort.by(Sort.Direction.valueOf(SortOrder.DESC.toString()), "createDate"));
+            PageRequest.of(0, 1, Sort.by(Sort.Direction.valueOf(SortOrder.DESC.toString()),
+                "createDate"));
         Page<ChatMessage> messages = new PageImpl<>(Collections.singletonList(chatMessage), pageRequest, 1);
-        ChatMessageWithFileDto chatMessageDto = ChatMessageWithFileDto.builder()
+        ChatMessageWithFileDto chatMessageWithFileDto = ChatMessageWithFileDto.builder()
             .id(1L)
             .content("test")
             .roomId(1L)
             .senderId(1L)
             .unread(false)
             .build();
-        List<ChatMessageWithFileDto> chatMessageDtos = Collections.singletonList(chatMessageDto);
+        List<ChatMessageWithFileDto> chatMessageDtos = Collections.singletonList(chatMessageWithFileDto);
         PageableDto pageableDto = new PageableDto<>(
             chatMessageDtos,
             messages.getTotalElements(),
@@ -154,7 +155,8 @@ class ChatMessageServiceImplTest {
 
         when(chatMessageRepo.findAllByRoom(chatRoom, pageRequest)).thenReturn(messages);
 
-        when(modelMapper.map(messages.getContent().get(0), ChatMessageWithFileDto.class)).thenReturn(chatMessageDto);
+        when(modelMapper.map(messages.getContent().get(0), ChatMessageWithFileDto.class))
+            .thenReturn(chatMessageWithFileDto);
         when(principal.getName()).thenReturn(email);
         when(participantService.findByEmail(email)).thenReturn(owner);
 
