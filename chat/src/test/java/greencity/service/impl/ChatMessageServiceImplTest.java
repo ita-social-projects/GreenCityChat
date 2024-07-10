@@ -12,10 +12,12 @@ import greencity.entity.Participant;
 import greencity.enums.FilesType;
 import greencity.enums.SortOrder;
 import greencity.exception.exceptions.ChangesNotSavedException;
+import greencity.exception.exceptions.ChatRoomNotFoundException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
 
 import java.lang.reflect.Method;
+import java.security.Principal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -25,6 +27,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import greencity.service.AzureFileService;
+import greencity.service.ParticipantService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,6 +41,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.domain.Pageable;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -66,8 +70,11 @@ class ChatMessageServiceImplTest {
     private ChatRoomRepo chatRoomRepo;
     @Mock
     private AzureFileService azureFileService;
+    @Mock
+    private Principal principal;
+    @Mock
+    private ParticipantService participantService;
     ChatMessageDto expectedChatMessageDto;
-
     ChatMessageDto chatMessageDto;
     ChatMessage expectedChatMessage;
     ChatMessageResponseDto responseDto;
@@ -108,9 +115,11 @@ class ChatMessageServiceImplTest {
     }
 
     @Test
-    void findAllMessagesByChatRoomId() {
+    void findAllMessagesByChatRoomIdTest() {
+        String email = "user@example.com";
         Participant owner = Participant.builder()
             .id(1L)
+            .email(email)
             .build();
         ChatRoom chatRoom = ChatRoom.builder()
             .id(1L)
@@ -127,13 +136,14 @@ class ChatMessageServiceImplTest {
         PageRequest pageRequest =
             PageRequest.of(0, 1, Sort.by(Sort.Direction.valueOf(SortOrder.DESC.toString()), "createDate"));
         Page<ChatMessage> messages = new PageImpl<>(Collections.singletonList(chatMessage), pageRequest, 1);
-        ChatMessageDto chatMessageDto = ChatMessageDto.builder()
+        ChatMessageWithFileDto chatMessageDto = ChatMessageWithFileDto.builder()
             .id(1L)
             .content("test")
             .roomId(1L)
             .senderId(1L)
+            .unread(false)
             .build();
-        List<ChatMessageDto> chatMessageDtos = Collections.singletonList(chatMessageDto);
+        List<ChatMessageWithFileDto> chatMessageDtos = Collections.singletonList(chatMessageDto);
         PageableDto pageableDto = new PageableDto<>(
             chatMessageDtos,
             messages.getTotalElements(),
@@ -144,10 +154,23 @@ class ChatMessageServiceImplTest {
 
         when(chatMessageRepo.findAllByRoom(chatRoom, pageRequest)).thenReturn(messages);
 
-        when(modelMapper.map(messages.getContent().get(0), ChatMessageDto.class)).thenReturn(chatMessageDto);
+        when(modelMapper.map(messages.getContent().get(0), ChatMessageWithFileDto.class)).thenReturn(chatMessageDto);
+        when(principal.getName()).thenReturn(email);
+        when(participantService.findByEmail(email)).thenReturn(owner);
 
-        PageableDto<ChatMessageDto> actual = chatMessageServiceImpl.findAllMessagesByChatRoomId(1L, pageRequest);
+        PageableDto<ChatMessageWithFileDto> actual =
+            chatMessageServiceImpl.findAllMessagesByChatRoomId(1L, pageRequest, principal);
         assertEquals(pageableDto, actual);
+    }
+
+    @Test
+    void findAllMessagesByChatRoomIdTest_WhenChatRoomDoesNotExist() {
+        Pageable pageable = PageRequest.of(0, 10);
+        when(chatRoomRepo.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(ChatRoomNotFoundException.class, () -> {
+            chatMessageServiceImpl.findAllMessagesByChatRoomId(1L, pageable, principal);
+        });
     }
 
     @Test

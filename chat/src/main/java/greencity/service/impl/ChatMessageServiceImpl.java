@@ -19,10 +19,12 @@ import greencity.repository.ParticipantRepo;
 import greencity.repository.UnreadMessageRepo;
 import greencity.service.AzureFileService;
 import greencity.service.ChatMessageService;
+import java.security.Principal;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import greencity.service.ParticipantService;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -47,23 +49,31 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private final ParticipantRepo participantRepo;
     private final AzureFileService azureFileService;
     private final UnreadMessageRepo unreadMessageRepo;
-    private static final String ROOM_LINK = "/room";
+    private final ParticipantService participantService;
+    private static final String ROOM_LINK = "/room/";
     private static final String MESSAGE_LINK = "/queue/messages";
     private static final String HEADER_DELETE = "delete";
     private static final String HEADER_UPDATE = "update";
 
     @Override
-    public PageableDto<ChatMessageDto> findAllMessagesByChatRoomId(Long chatRoomId, Pageable pageable) {
+    public PageableDto<ChatMessageWithFileDto> findAllMessagesByChatRoomId(Long chatRoomId, Pageable pageable,
+        Principal principal) {
         ChatRoom chatRoom = chatRoomRepo.findById(chatRoomId)
             .orElseThrow(() -> new ChatRoomNotFoundException(ErrorMessage.CHAT_ROOM_NOT_FOUND_BY_ID));
+
+        Long userId = participantService.findByEmail((principal.getName())).getId();
+        Set<Long> unreadMessageIds = chatMessageRepo.findUnreadMessagesByRoomIdAndUserId(chatRoomId, userId);
 
         Sort sort = Sort.by(Sort.Direction.valueOf(SortOrder.DESC.toString()), "createDate");
         pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
 
         Page<ChatMessage> messages = chatMessageRepo.findAllByRoom(chatRoom, pageable);
-        List<ChatMessageDto> messageDtos = messages.getContent().stream()
-            .map(message -> modelMapper.map(message, ChatMessageDto.class)).collect(Collectors.toList());
-
+        List<ChatMessageWithFileDto> messageDtos = messages.getContent().stream()
+            .map(message -> {
+                ChatMessageWithFileDto dto = modelMapper.map(message, ChatMessageWithFileDto.class);
+                dto.setUnread(unreadMessageIds.contains(message.getId()));
+                return dto;
+            }).collect(Collectors.toList());
         Collections.reverse(messageDtos);
         return new PageableDto<>(
             messageDtos,
@@ -88,7 +98,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         ChatMessageResponseDto responseDto = modelMapper.map(chatMessageDto, ChatMessageResponseDto.class);
         responseDto.setCreateDate(chatMessageDto.getCreateDate().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
         participants.stream().forEach(participant -> {
-            messagingTemplate.convertAndSend(ROOM_LINK + "/message/chat-messages" + participant.getId(),
+            messagingTemplate.convertAndSend(ROOM_LINK + "message/chat-messages" + participant.getId(),
                 responseDto);
         });
     }

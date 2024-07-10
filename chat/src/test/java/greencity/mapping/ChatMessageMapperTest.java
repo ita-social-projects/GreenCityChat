@@ -31,8 +31,5 @@ class ChatMessageMapperTest {
         assertEquals(expected.getContent(), actual.getContent());
         assertEquals(expected.getSender(), actual.getSender());
         assertEquals(expected.getRoom(), actual.getRoom());
-        assertEquals(expected.getFileName(), actual.getFileName());
-        assertEquals(expected.getFileType(), actual.getFileType());
-        assertEquals(expected.getFileUrl(), actual.getFileUrl());
     }
 }
