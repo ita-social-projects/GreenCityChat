@@ -7,17 +7,20 @@ import greencity.entity.Participant;
 import greencity.enums.FilesType;
 import greencity.enums.SortOrder;
 import greencity.exception.exceptions.ChangesNotSavedException;
+import greencity.exception.exceptions.ChatRoomNotFoundException;
 import greencity.exception.exceptions.FileNotFoundException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
 
 import java.lang.reflect.Method;
+import java.security.Principal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 
 import greencity.repository.UnreadMessageRepo;
 import greencity.service.AzureFileService;
+import greencity.service.ParticipantService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,8 +54,11 @@ class ChatMessageServiceImplTest {
     private AzureFileService azureFileService;
     @Mock
     private UnreadMessageRepo unreadMessageRepo;
+    @Mock
+    private Principal principal;
+    @Mock
+    private ParticipantService participantService;
     ChatMessageDto expectedChatMessageDto;
-
     ChatMessageDto chatMessageDto;
     ChatMessage expectedChatMessage;
     ChatMessageResponseDto responseDto;
@@ -93,9 +99,11 @@ class ChatMessageServiceImplTest {
     }
 
     @Test
-    void findAllMessagesByChatRoomId() {
+    void findAllMessagesByChatRoomIdTest() {
+        String email = "user@example.com";
         Participant owner = Participant.builder()
             .id(1L)
+            .email(email)
             .build();
         ChatRoom chatRoom = ChatRoom.builder()
             .id(1L)
@@ -112,13 +120,14 @@ class ChatMessageServiceImplTest {
         PageRequest pageRequest =
             PageRequest.of(0, 1, Sort.by(Sort.Direction.valueOf(SortOrder.DESC.toString()), "createDate"));
         Page<ChatMessage> messages = new PageImpl<>(Collections.singletonList(chatMessage), pageRequest, 1);
-        ChatMessageWithFileDto chatMessageWithFileDto = ChatMessageWithFileDto.builder()
+        ChatMessageWithFileDto chatMessageDto = ChatMessageWithFileDto.builder()
             .id(1L)
             .content("test")
             .roomId(1L)
             .senderId(1L)
+            .unread(false)
             .build();
-        List<ChatMessageWithFileDto> chatMessageDtos = Collections.singletonList(chatMessageWithFileDto);
+        List<ChatMessageWithFileDto> chatMessageDtos = Collections.singletonList(chatMessageDto);
         PageableDto pageableDto = new PageableDto<>(
             chatMessageDtos,
             messages.getTotalElements(),
@@ -129,12 +138,23 @@ class ChatMessageServiceImplTest {
 
         when(chatMessageRepo.findAllByRoom(chatRoom, pageRequest)).thenReturn(messages);
 
-        when(modelMapper.map(messages.getContent().get(0), ChatMessageWithFileDto.class))
-            .thenReturn(chatMessageWithFileDto);
+        when(modelMapper.map(messages.getContent().get(0), ChatMessageWithFileDto.class)).thenReturn(chatMessageDto);
+        when(principal.getName()).thenReturn(email);
+        when(participantService.findByEmail(email)).thenReturn(owner);
 
         PageableDto<ChatMessageWithFileDto> actual =
-            chatMessageServiceImpl.findAllMessagesByChatRoomId(1L, pageRequest);
+            chatMessageServiceImpl.findAllMessagesByChatRoomId(1L, pageRequest, principal);
         assertEquals(pageableDto, actual);
+    }
+
+    @Test
+    void findAllMessagesByChatRoomIdTest_WhenChatRoomDoesNotExist() {
+        Pageable pageable = PageRequest.of(0, 10);
+        when(chatRoomRepo.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(ChatRoomNotFoundException.class, () -> {
+            chatMessageServiceImpl.findAllMessagesByChatRoomId(1L, pageable, principal);
+        });
     }
 
     @Test

@@ -90,9 +90,10 @@ public class ChatController {
     @GetMapping("/messages/{room_id}")
     public ResponseEntity<PageableDto<ChatMessageWithFileDto>> findAllMessages(
         @ApiIgnore Pageable pageable,
-        @PathVariable("room_id") Long id) {
+        @PathVariable("room_id") Long id,
+        Principal principal) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(chatMessageService.findAllMessagesByChatRoomId(id, pageable));
+            .body(chatMessageService.findAllMessagesByChatRoomId(id, pageable, principal));
     }
 
     /**

@@ -4,6 +4,7 @@ import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -125,4 +126,16 @@ public interface ChatMessageRepo extends PagingAndSortingRepository<ChatMessage,
     @Query(nativeQuery = true,
         value = "delete from message_like where message_id = :messageId")
     void deleteLikeFromMessageByMessageId(@Param("messageId") Long messageId);
+
+    /**
+     * Method return set of unread message by chat room id and user id.
+     *
+     * @param roomId {@link Long} id of chat room.
+     * @param userId {@link Long} id of user.
+     */
+    @Transactional
+    @Query(nativeQuery = true, value = "select cm.id from chat_messages cm left join unread_messages um "
+        + "on cm.id = um.message_id "
+        + "where cm.room_id = :roomId and um.user_id = :userId")
+    Set<Long> findUnreadMessagesByRoomIdAndUserId(@Param("roomId") Long roomId, @Param("userId") Long userId);
 }
