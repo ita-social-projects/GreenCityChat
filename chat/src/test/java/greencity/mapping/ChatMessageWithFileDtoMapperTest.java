@@ -32,7 +32,7 @@ class ChatMessageWithFileDtoMapperTest {
             "content", null, null, "fileName", "AUDIO",
             "https://example.wav", null);
         expected = new ChatMessageWithFileDto(1L, 1L, 1L, "content",
-            null, "fileName", "AUDIO", "https://example.wav", null);
+            null, "fileName", "AUDIO", "https://example.wav", null, false);
     }
 
     @Test
@@ -71,7 +71,7 @@ class ChatMessageWithFileDtoMapperTest {
             "content", null, null, null, null,
             null, null);
         ChatMessageWithFileDto expectedDto = new ChatMessageWithFileDto(1L, 1L, 1L, "content",
-            null, null, null, null, null);
+            null, null, null, null, null, false);
 
         assertEquals(expectedDto, chatMessageWithFileDtoMapper.convert(message));
     }

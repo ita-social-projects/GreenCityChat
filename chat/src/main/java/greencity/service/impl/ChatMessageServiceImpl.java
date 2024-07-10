@@ -21,11 +21,13 @@ import greencity.repository.UnreadMessageRepo;
 import greencity.service.AzureFileService;
 import greencity.service.ChatMessageService;
 
+import java.security.Principal;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import java.util.stream.Collectors;
+import greencity.service.ParticipantService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -51,22 +53,31 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private final ParticipantRepo participantRepo;
     private final AzureFileService azureFileService;
     private final UnreadMessageRepo unreadMessageRepo;
+    private final ParticipantService participantService;
     private static final String ROOM_LINK = "/room/";
     private static final String MESSAGE_LINK = "/queue/messages";
     private static final String HEADER_DELETE = "delete";
     private static final String HEADER_UPDATE = "update";
 
     @Override
-    public PageableDto<ChatMessageWithFileDto> findAllMessagesByChatRoomId(Long chatRoomId, Pageable pageable) {
+    public PageableDto<ChatMessageWithFileDto> findAllMessagesByChatRoomId(Long chatRoomId, Pageable pageable,
+        Principal principal) {
         ChatRoom chatRoom = chatRoomRepo.findById(chatRoomId)
             .orElseThrow(() -> new ChatRoomNotFoundException(ErrorMessage.CHAT_ROOM_NOT_FOUND_BY_ID));
+
+        Long userId = participantService.findByEmail((principal.getName())).getId();
+        Set<Long> unreadMessageIds = chatMessageRepo.findUnreadMessagesByRoomIdAndUserId(chatRoomId, userId);
 
         Sort sort = Sort.by(Sort.Direction.valueOf(SortOrder.DESC.toString()), "createDate");
         pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
 
         Page<ChatMessage> messages = chatMessageRepo.findAllByRoom(chatRoom, pageable);
         List<ChatMessageWithFileDto> messageDtos = messages.getContent().stream()
-            .map(message -> modelMapper.map(message, ChatMessageWithFileDto.class)).collect(Collectors.toList());
+            .map(message -> {
+                ChatMessageWithFileDto dto = modelMapper.map(message, ChatMessageWithFileDto.class);
+                dto.setUnread(unreadMessageIds.contains(message.getId()));
+                return dto;
+            }).collect(Collectors.toList());
 
         Collections.reverse(messageDtos);
         return new PageableDto<>(

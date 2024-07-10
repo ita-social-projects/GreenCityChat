@@ -22,4 +22,5 @@ public class ChatMessageWithFileDto {
     private String fileType;
     private String fileUrl;
     private Set<UserDto> likes;
+    private boolean unread;
 }

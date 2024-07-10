@@ -23,7 +23,7 @@ class ChatMessageWithFileMapperTest {
             "content", ZonedDateTime.now(), null, "fileName", "AUDIO",
             "https://example.wav", null);
         chatMessageWithFileDto = new ChatMessageWithFileDto(1L, 1L, 1L, "content",
-            null, "fileName", "AUDIO", "https://example.wav", null);
+            null, "fileName", "AUDIO", "https://example.wav", null, false);
     }
 
     @Test
