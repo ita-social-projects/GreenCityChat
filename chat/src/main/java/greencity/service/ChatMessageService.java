@@ -10,6 +10,7 @@ import greencity.entity.ChatRoom;
 import greencity.enums.FilesType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
+import java.security.Principal;
 
 public interface ChatMessageService {
     /**
@@ -18,7 +19,8 @@ public interface ChatMessageService {
      * @param chatRoomId {@link ChatMessage} id.
      * @return list of {@link ChatMessage} instances.
      */
-    PageableDto<ChatMessageDto> findAllMessagesByChatRoomId(Long chatRoomId, Pageable pageable);
+    PageableDto<ChatMessageWithFileDto> findAllMessagesByChatRoomId(Long chatRoomId, Pageable pageable,
+        Principal principal);
 
     /**
      * Method to process all {@link ChatMessageDto}'s that are sent from client

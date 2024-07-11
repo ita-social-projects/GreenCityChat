@@ -101,10 +101,12 @@ class ChatControllerTest {
 
     @Test
     void findAllMessagesTest() throws Exception {
-        mockMvc.perform(get(chatLink + "/messages/{room_id}", 1))
+        mockMvc.perform(get("/chat/messages/{room_id}", 1)
+            .principal(principal))
             .andExpect(status().isOk());
 
-        verify(chatMessageService).findAllMessagesByChatRoomId(1L, PageRequest.of(0, 20));
+        verify(chatMessageService).findAllMessagesByChatRoomId(1L,
+            PageRequest.of(0, 20), principal);
     }
 
     @Test
