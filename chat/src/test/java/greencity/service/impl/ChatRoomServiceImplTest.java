@@ -13,6 +13,7 @@ import greencity.exception.exceptions.ChatRoomNotFoundException;
 import greencity.exception.exceptions.TariffNotFoundException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
+import greencity.repository.UnreadMessageRepo;
 import greencity.service.ParticipantService;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -56,6 +57,8 @@ class ChatRoomServiceImplTest {
     private RestClientUser restClientUser;
     @Mock
     private RestClientUbs restClientUbs;
+    @Mock
+    private UnreadMessageRepo unreadMessageRepo;
 
     private final String email = "test.artur@mail.com";
     Participant expectedParticipant;
@@ -412,12 +415,23 @@ class ChatRoomServiceImplTest {
                     .hasChat(true)
                     .build()))
             .build();
-        List<ChatRoom> chatRooms = Collections.singletonList(ChatRoom.builder().id(1L).name("Chat Room 1").build());
+        List<ChatRoom> chatRooms = Collections.singletonList(
+            ChatRoom.builder()
+                .id(1L)
+                .name("Chat Room 1")
+                .messages(Collections.singletonList(
+                    ChatMessage.builder()
+                        .id(1L)
+                        .build()))
+                .build());
         Page<ChatRoom> chatRoomPage = new PageImpl<>(chatRooms, pageable, chatRooms.size());
+        Set<Long> unreadMessageIds = Collections.singleton(1L);
 
         when(restClientUbs.getEmployeeByEmail(email)).thenReturn(employeeWithTariffsDto);
         when(chatRoomRepo.findAllChatsByTariffIdPageable(Collections.singletonList(1L), pageable))
             .thenReturn(chatRoomPage);
+        when(participantService.findByEmail(email)).thenReturn(Participant.builder().id(1L).build());
+        when(unreadMessageRepo.findUnreadMessagesIdByUserId(1L)).thenReturn(unreadMessageIds);
         when(modelMapper.map(any(ChatRoom.class), eq(ChatRoomDto.class)))
             .thenAnswer(invocation -> {
                 ChatRoom chatRoom = invocation.getArgument(0);
@@ -426,15 +440,21 @@ class ChatRoomServiceImplTest {
                     .name(chatRoom.getName())
                     .build();
             });
+
         PageableDto<ChatRoomDto> actual = chatRoomService.getActiveChatsForAdmin(email, pageable);
 
         assertEquals(1, actual.getTotalElements());
         assertEquals(1, actual.getTotalPages());
         assertEquals(1, actual.getPage().size());
-        assertEquals("Chat Room 1", actual.getPage().get(0).getName());
+        ChatRoomDto chatRoomDto = actual.getPage().get(0);
+        assertEquals("Chat Room 1", chatRoomDto.getName());
+        assertEquals(1L, chatRoomDto.getId());
+        assertEquals(1L, chatRoomDto.getAmountUnreadMessages());
 
         verify(restClientUbs, times(1)).getEmployeeByEmail(email);
         verify(chatRoomRepo, times(1)).findAllChatsByTariffIdPageable(Collections.singletonList(1L), pageable);
+        verify(participantService, times(1)).findByEmail(email);
+        verify(unreadMessageRepo, times(1)).findUnreadMessagesIdByUserId(1L);
         verify(modelMapper, times(1)).map(any(ChatRoom.class), eq(ChatRoomDto.class));
     }
 
