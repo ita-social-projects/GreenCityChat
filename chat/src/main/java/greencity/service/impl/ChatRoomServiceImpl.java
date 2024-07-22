@@ -11,6 +11,7 @@ import greencity.exception.exceptions.ChatRoomNotFoundException;
 import greencity.exception.exceptions.TariffNotFoundException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
+import greencity.repository.UnreadMessageRepo;
 import greencity.service.ChatRoomService;
 import greencity.service.ParticipantService;
 import java.util.*;
@@ -35,6 +36,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     private final SimpMessagingTemplate messagingTemplate;
     private final RestClientUbs restClientUbs;
     private final RestClientUser restClientUser;
+    private final UnreadMessageRepo unreadMessageRepo;
     private static final String ROOM_LINK = "/rooms/user/";
     private static final String SUPPORT_LINK = "/rooms/support";
     private static final String HEADER_UPDATE_ROOM = "updateRoom";
@@ -393,15 +395,29 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             return new PageableDto<>(Collections.emptyList(), 0, 0, 0);
         }
 
+        Set<Long> allUnreadMessageIds =
+            unreadMessageRepo.findUnreadMessagesIdByUserId(participantService.findByEmail(email).getId());
+
         Page<ChatRoom> activeChatsPage = chatRoomRepo.findAllChatsByTariffIdPageable(tariffIdsWithChat, pageable);
 
         List<ChatRoomDto> chatRoomDtos = activeChatsPage.getContent().stream()
-            .map(chatRoom -> modelMapper.map(chatRoom, ChatRoomDto.class))
+            .map(chatRoom -> getChatRoomDtoWithAmountUnreadMessages(chatRoom, allUnreadMessageIds))
+            .sorted(Comparator.comparing(ChatRoomDto::getLastMessageDateTime,
+                Comparator.nullsFirst(Comparator.naturalOrder())).reversed())
             .collect(Collectors.toList());
 
         return new PageableDto<>(chatRoomDtos,
             activeChatsPage.getTotalElements(),
             activeChatsPage.getNumber(),
             activeChatsPage.getTotalPages());
+    }
+
+    private ChatRoomDto getChatRoomDtoWithAmountUnreadMessages(ChatRoom chatRoom, Set<Long> allUnreadMessageIds) {
+        ChatRoomDto dto = modelMapper.map(chatRoom, ChatRoomDto.class);
+        long unreadMessagesCount = chatRoom.getMessages().stream()
+            .filter(message -> allUnreadMessageIds.contains(message.getId()))
+            .count();
+        dto.setAmountUnreadMessages(unreadMessagesCount);
+        return dto;
     }
 }

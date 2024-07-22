@@ -8,6 +8,7 @@ import greencity.entity.Participant;
 import greencity.enums.ChatType;
 import greencity.enums.Role;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,7 +68,7 @@ class ChatRoomDtoMapperTest {
 
     @Test
     void convertWithNullMessages() {
-        chatRoom.setMessages(null);
+        chatRoom.setMessages(Collections.emptyList());
         ChatRoomDto actual = chatRoomDtoMapper.convert(chatRoom);
         assertEquals(chatRoomDto.getId(), actual.getId());
         assertEquals(chatRoomDto.getChatType(), actual.getChatType());
