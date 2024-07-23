@@ -361,6 +361,9 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             // chatRooms.forEach(chatRoom -> {
             // location.setChatId(chatRoom.getId());
             // });
+            ChatRoom chatRoom = chatRoomRepo.findByUserIdAndTariffId(userId,
+                tariffId);
+            location.setChatId(chatRoom.getId());
         });
 
         return allLocations;
