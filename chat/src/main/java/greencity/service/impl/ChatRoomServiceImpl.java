@@ -363,7 +363,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             // });
             ChatRoom chatRoom = chatRoomRepo.findByUserIdAndTariffId(userId,
                 tariffId);
-            location.setChatId(chatRoom.getId());
+            location.setChat(modelMapper.map(chatRoom, ChatRoomDto.class));
         });
 
         return allLocations;

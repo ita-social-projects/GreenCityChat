@@ -18,5 +18,5 @@ public class LocationsDto {
     private Double longitude;
     private String nameUk;
     private String nameEn;
-    private Long chatId;
+    private ChatRoomDto chat;
 }
