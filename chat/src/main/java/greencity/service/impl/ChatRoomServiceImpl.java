@@ -20,9 +20,11 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.data.domain.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
@@ -356,14 +358,9 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
         allLocations.forEach(location -> {
             Long tariffId = restClientUbs.getTariffIdByLocationId(location.getId());
-            // //List<ChatRoom> chatRooms = chatRoomRepo.findByUserIdAndTariffId(userId,
-            // tariffId);
-            // chatRooms.forEach(chatRoom -> {
-            // location.setChatId(chatRoom.getId());
-            // });
             ChatRoom chatRoom = chatRoomRepo.findByUserIdAndTariffId(userId,
                 tariffId);
-            location.setChat(modelMapper.map(chatRoom, ChatRoomDto.class));
+            location.setChat(chatRoom != null ? modelMapper.map(chatRoom, ChatRoomDto.class) : null);
         });
 
         return allLocations;

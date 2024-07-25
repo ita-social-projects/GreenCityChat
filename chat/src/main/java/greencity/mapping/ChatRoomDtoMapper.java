@@ -10,12 +10,14 @@ import java.util.stream.Collectors;
 import org.modelmapper.AbstractConverter;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Class that used by {@link ModelMapper} to map {@link ChatRoom} into
  * {@link ChatRoomDto}.
  */
 @Component
+@Transactional
 public class ChatRoomDtoMapper extends AbstractConverter<ChatRoom, ChatRoomDto> {
     /**
      * Method convert {@link ChatRoom} to {@link ChatRoomDto}.
