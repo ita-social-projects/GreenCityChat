@@ -356,14 +356,9 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
         allLocations.forEach(location -> {
             Long tariffId = restClientUbs.getTariffIdByLocationId(location.getId());
-            // //List<ChatRoom> chatRooms = chatRoomRepo.findByUserIdAndTariffId(userId,
-            // tariffId);
-            // chatRooms.forEach(chatRoom -> {
-            // location.setChatId(chatRoom.getId());
-            // });
             ChatRoom chatRoom = chatRoomRepo.findByUserIdAndTariffId(userId,
                 tariffId);
-            location.setChat(modelMapper.map(chatRoom, ChatRoomDto.class));
+            location.setChat(chatRoom != null ? modelMapper.map(chatRoom, ChatRoomDto.class) : null);
         });
 
         return allLocations;
