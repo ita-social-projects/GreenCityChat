@@ -26,6 +26,8 @@ public class ChatRoomDtoMapper extends AbstractConverter<ChatRoom, ChatRoomDto> 
      */
     @Override
     protected ChatRoomDto convert(ChatRoom chatRoom) {
+        Optional<ChatMessage> lastMessageOpt = getLastMassage(chatRoom);
+
         return ChatRoomDto.builder()
             .id(chatRoom.getId())
             .ownerId(chatRoom.getOwner().getId())
@@ -44,13 +46,13 @@ public class ChatRoomDtoMapper extends AbstractConverter<ChatRoom, ChatRoomDto> 
                     .profilePicture(participant.getProfilePicture())
                     .build())
                 .collect(Collectors.toSet()))
-            .lastMessage(getLastMassage(chatRoom).map(ChatMessage::getContent).orElse(null))
-            .lastMessageDateTime(getLastMassage(chatRoom).map(ChatMessage::getCreateDate).orElse(null))
+            .lastMessage(lastMessageOpt.map(ChatMessage::getContent).orElse(null))
+            .lastMessageDateTime(lastMessageOpt.map(ChatMessage::getCreateDate).orElse(null))
             .build();
     }
 
     private Optional<ChatMessage> getLastMassage(ChatRoom chatRoom) {
-        return chatRoom.getMessages().stream()
-            .max(Comparator.comparing(ChatMessage::getCreateDate));
+        return chatRoom.getMessages() != null ? chatRoom.getMessages().stream()
+            .max(Comparator.comparing(ChatMessage::getCreateDate)) : Optional.empty();
     }
 }
