@@ -74,7 +74,6 @@ public interface ChatMessageRepo extends PagingAndSortingRepository<ChatMessage,
      * @param roomId {@link Long} id of chat room.
      * @return {@link ChatMessage} instance.
      */
-    @EntityGraph(attributePaths = {"likes", "room", "sender"})
     @Query(nativeQuery = true, value = "SELECT *  from chat_messages "
         + "where room_id = :roomId "
         + "ORDER BY chat_messages.create_date DESC limit 1")

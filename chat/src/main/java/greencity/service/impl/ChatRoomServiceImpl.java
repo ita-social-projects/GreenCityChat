@@ -23,6 +23,7 @@ import org.modelmapper.TypeToken;
 import org.springframework.data.domain.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
@@ -53,12 +54,11 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             .collect(Collectors.toList());
         List<ChatRoomDto> chatRoomDtos = modelMapper.map(chatRooms, new TypeToken<List<ChatRoomDto>>() {
         }.getType());
-        chatRoomDtos.forEach(chatRoom -> chatMessageRepo.getLastByRoomId(chatRoom.getId()).stream().findFirst()
-            .ifPresent(chatMessage -> {
-                chatRoom.setLastMessage(chatMessage.getContent());
-                chatRoom.setLastMessageDateTime(chatMessage.getCreateDate());
-            }));
-        return chatRoomDtos;
+
+        return chatRoomDtos.stream().map(this::setLastMessageAndLastMessageDateTime)
+            .sorted(Comparator.comparing(ChatRoomDto::getLastMessageDateTime,
+                Comparator.nullsFirst(Comparator.naturalOrder())).reversed())
+            .collect(Collectors.toList());
     }
 
     @Override
@@ -72,7 +72,10 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         List<ChatRoomDto> roomDtos = mapListChatMessageDto(rooms);
         roomDtos
             .forEach(x -> x.setAmountUnreadMessages(chatRoomRepo.countUnreadMessages(participant.getId(), x.getId())));
-        return roomDtos;
+        return roomDtos.stream().map(this::setLastMessageAndLastMessageDateTime)
+            .sorted(Comparator.comparing(ChatRoomDto::getLastMessageDateTime,
+                Comparator.nullsFirst(Comparator.naturalOrder())).reversed())
+            .collect(Collectors.toList());
     }
 
     @Override
@@ -87,7 +90,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     public ChatRoomDto findChatRoomById(Long id) {
         ChatRoom chatRoom = chatRoomRepo.findById(id)
             .orElseThrow(() -> new ChatRoomNotFoundException(ErrorMessage.CHAT_ROOM_NOT_FOUND_BY_ID));
-        return modelMapper.map(chatRoom, ChatRoomDto.class);
+        return setLastMessageAndLastMessageDateTime(modelMapper.map(chatRoom, ChatRoomDto.class));
     }
 
     private ChatRoomDto filterPrivateRoom(List<ChatRoom> chatRooms, Set<Participant> participants, Participant owner,
@@ -136,7 +139,10 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             toReturn = chatRoom;
         }
 
-        return toReturn.stream().map(room -> modelMapper.map(room, ChatRoomDto.class)).collect(Collectors.toList());
+        return toReturn.stream()
+            .map(room -> modelMapper.map(room, ChatRoomDto.class))
+            .map(this::setLastMessageAndLastMessageDateTime)
+            .collect(Collectors.toList());
     }
 
     @Override
@@ -248,6 +254,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     public List<ChatRoomDto> findGroupChatRooms(Participant participant, ChatType chatType) {
         return chatRoomRepo.findGroupChats(participant, chatType).stream()
             .map(room -> modelMapper.map(room, ChatRoomDto.class))
+            .map(this::setLastMessageAndLastMessageDateTime)
             .collect(Collectors.toList());
     }
 
@@ -346,6 +353,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             var allChatsByTariffId = chatRoomRepo.findAllChatsByTariffId(tariffId);
             return allChatsByTariffId.stream()
                 .map(chatRoom -> modelMapper.map(chatRoom, ChatRoomDto.class))
+                .map(this::setLastMessageAndLastMessageDateTime)
                 .collect(Collectors.toList());
         }
     }
@@ -377,6 +385,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
      * @param pageable Pagination information.
      */
     @Override
+    @Transactional
     public PageableDto<ChatRoomDto> getActiveChatsForAdmin(String email, Pageable pageable) {
         EmployeeWithTariffsDto employee = restClientUbs.getEmployeeByEmail(email);
 
@@ -400,6 +409,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
         List<ChatRoomDto> chatRoomDtos = activeChatsPage.getContent().stream()
             .map(chatRoom -> getChatRoomDtoWithAmountUnreadMessages(chatRoom, allUnreadMessageIds))
+            .map(this::setLastMessageAndLastMessageDateTime)
             .sorted(Comparator.comparing(ChatRoomDto::getLastMessageDateTime,
                 Comparator.nullsFirst(Comparator.naturalOrder())).reversed())
             .collect(Collectors.toList());
@@ -417,5 +427,14 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             .count();
         dto.setAmountUnreadMessages(unreadMessagesCount);
         return dto;
+    }
+
+    private ChatRoomDto setLastMessageAndLastMessageDateTime(ChatRoomDto chatRoomDto) {
+        chatMessageRepo.getLastByRoomId(chatRoomDto.getId()).stream().findFirst()
+            .ifPresent(chatMessage -> {
+                chatRoomDto.setLastMessage(chatMessage.getContent());
+                chatRoomDto.setLastMessageDateTime(chatMessage.getCreateDate());
+            });
+        return chatRoomDto;
     }
 }
