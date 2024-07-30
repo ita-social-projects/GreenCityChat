@@ -535,4 +535,20 @@ public class ChatController {
         return ResponseEntity.status(HttpStatus.OK)
             .body(chatRoomService.getActiveChatsForAdmin(principal.getName(), pageable));
     }
+
+    /**
+     * Method to retrieve all locations by courier id.
+     *
+     * @return ResponseEntity containing a list of LocationDto objects and an OK
+     *         status if successful.
+     */
+    @ApiOperation(value = "Get all locations by courier id.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = HttpStatuses.OK, response = LocationsDto.class, responseContainer = "List")
+    })
+    @GetMapping("/locationsByCourier/{userId}")
+    public ResponseEntity<List<LocationsDto>> getAllLocationsByCourierId(@PathVariable Long userId, @RequestParam Long courierId) {
+        List<LocationsDto> allLocations = chatRoomService.getAllLocationsWithChatsByCourierId(userId, courierId);
+        return ResponseEntity.status(HttpStatus.OK).body(allLocations);
+    }
 }

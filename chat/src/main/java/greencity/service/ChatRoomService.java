@@ -138,4 +138,11 @@ public interface ChatRoomService {
      *         active chat rooms.
      */
     PageableDto<ChatRoomDto> getActiveChatsForAdmin(String email, Pageable pageable);
+
+    /**
+     * Retrieves a list of all locations by courier id.
+     *
+     * @return A list of {@link LocationsDto} objects representing all locations by courier id.
+     */
+    List<LocationsDto> getAllLocationsWithChatsByCourierId(Long userId, Long courierId);
 }

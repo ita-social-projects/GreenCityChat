@@ -371,6 +371,18 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
         return allLocations;
     }
+    @Override
+    public List<LocationsDto> getAllLocationsWithChatsByCourierId(Long userId, Long courierId) {
+        List<LocationsDto> allLocations = restClientUbs.getAllLocationsByCourierId(courierId);
+
+        allLocations.forEach(location -> {
+            ChatRoom chatRoom = chatRoomRepo.findByUserIdAndTariffId(userId,
+                    location.getTariffsId());
+            location.setChat(chatRoom != null ? modelMapper.map(chatRoom, ChatRoomDto.class) : null);
+        });
+
+        return allLocations;
+    }
 
     @Override
     public Long getTariffIdByLocationId(Long locationId) {

@@ -57,6 +57,22 @@ public class RestClientUbs {
     }
 
     /**
+     * Retrieves a list of all locations from the UBS service.
+     *
+     * @return A list of {@link LocationsDto} objects representing all locations.
+     */
+    public List<LocationsDto> getAllLocationsByCourierId(Long courierId) {
+        HttpEntity<String> entity = new HttpEntity<>(setHeader());
+
+        return restTemplate.exchange(
+                greenCityUbsServerAddress + "/ubs/locationsByCourier/" + courierId,
+                HttpMethod.GET,
+                entity,
+                new ParameterizedTypeReference<List<LocationsDto>>() {
+                }).getBody();
+    }
+
+    /**
      * Retrieves the tariff ID associated with the given location ID from the UBS
      * service.
      *
