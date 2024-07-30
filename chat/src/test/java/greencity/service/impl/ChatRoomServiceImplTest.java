@@ -485,6 +485,18 @@ class ChatRoomServiceImplTest {
     }
 
     @Test
+    void testGetAllLocationsWithChatsByCourierId() {
+        Long userId = 1L;
+        Long courierId = 1L;
+        List<LocationsDto> mockedLocations = Arrays.asList(LocationsDto.builder().id(1L).build());
+        when(restClientUbs.getAllLocationsByCourierId(anyLong())).thenReturn(mockedLocations);
+
+        List<LocationsDto> locationsWithChats = chatRoomService.getAllLocationsWithChatsByCourierId(userId, courierId);
+
+        assertEquals(mockedLocations, locationsWithChats);
+    }
+
+    @Test
     void testFindPrivateByParticipantsForSocketsGPT() {
         Long locationId = 1L;
         Long currentUserId = 1L;
