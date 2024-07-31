@@ -544,10 +544,11 @@ public class ChatController {
      */
     @ApiOperation(value = "Get all locations by courier id.")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = HttpStatuses.OK, response = LocationsDto.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = HttpStatuses.OK, response = LocationsDto.class, responseContainer = "List")
     })
     @GetMapping("/locationsByCourier/{userId}")
-    public ResponseEntity<List<LocationsDto>> getAllLocationsByCourierId(@PathVariable Long userId, @RequestParam Long courierId) {
+    public ResponseEntity<List<LocationsDto>> getAllLocationsByCourierId(@PathVariable Long userId,
+        @RequestParam Long courierId) {
         List<LocationsDto> allLocations = chatRoomService.getAllLocationsWithChatsByCourierId(userId, courierId);
         return ResponseEntity.status(HttpStatus.OK).body(allLocations);
     }
