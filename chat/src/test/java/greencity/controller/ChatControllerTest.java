@@ -372,9 +372,9 @@ class ChatControllerTest {
     private List<LocationsDto> createMockLocations() {
         List<LocationsDto> locations = new ArrayList<>();
         locations.add(new LocationsDto(1L, "ACTIVE", "Київ", "Kyiv Oblast",
-            50.4547, 30.5238, "Київ", "Kyiv",1L, ChatRoomDto.builder().id(1L).build()));
+            50.4547, 30.5238, "Київ", "Kyiv", 1L, ChatRoomDto.builder().id(1L).build()));
         locations.add(new LocationsDto(2L, "INACTIVE", "Львівcька область", "Lviv Oblast",
-            49.842957, 24.031111, "Львів", "Lviv",2L, ChatRoomDto.builder().id(2L).build()));
+            49.842957, 24.031111, "Львів", "Lviv", 2L, ChatRoomDto.builder().id(2L).build()));
         return locations;
     }
 }

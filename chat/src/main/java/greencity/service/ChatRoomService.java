@@ -142,7 +142,8 @@ public interface ChatRoomService {
     /**
      * Retrieves a list of all locations by courier id.
      *
-     * @return A list of {@link LocationsDto} objects representing all locations by courier id.
+     * @return A list of {@link LocationsDto} objects representing all locations by
+     *         courier id.
      */
     List<LocationsDto> getAllLocationsWithChatsByCourierId(Long userId, Long courierId);
 }

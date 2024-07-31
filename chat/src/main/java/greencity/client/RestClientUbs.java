@@ -65,11 +65,11 @@ public class RestClientUbs {
         HttpEntity<String> entity = new HttpEntity<>(setHeader());
 
         return restTemplate.exchange(
-                greenCityUbsServerAddress + "/ubs/locationsByCourier/" + courierId,
-                HttpMethod.GET,
-                entity,
-                new ParameterizedTypeReference<List<LocationsDto>>() {
-                }).getBody();
+            greenCityUbsServerAddress + "/ubs/locationsByCourier/" + courierId,
+            HttpMethod.GET,
+            entity,
+            new ParameterizedTypeReference<List<LocationsDto>>() {
+            }).getBody();
     }
 
     /**
