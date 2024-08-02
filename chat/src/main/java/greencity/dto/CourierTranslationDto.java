@@ -9,7 +9,8 @@ import lombok.Builder;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CreateNewChatDto {
-    private Long currentUserId;
-    private Long locationsIds;
+public class CourierTranslationDto {
+    private Long id;
+    private String nameUk;
+    private String nameEn;
 }

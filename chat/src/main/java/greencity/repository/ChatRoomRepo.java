@@ -5,6 +5,8 @@ import greencity.entity.Participant;
 import greencity.enums.ChatType;
 import java.util.List;
 import java.util.Set;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -81,14 +83,14 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
     @Modifying
     @Transactional
     @Query(nativeQuery = true, value = "insert into chat_rooms_participants(room_id,participant_id)"
-        + "values ( :chatroomid, :prticipantid )")
-    void addUserToSystemChatRoom(@Param("chatroomid") Long chatroomid, @Param("prticipantid") Long prticipantid);
+        + "values ( :chatroomid, :participantId)")
+    void addUserToChatRoom(@Param("chatroomid") Long chatroomid, @Param("participantId") Long participantId);
 
     /**
      * {@inheritDoc}
      */
     @Query("select cr.participants from ChatRoom cr where cr.id = :id")
-    Set<Participant> getPatricipantsByChatRoomId(@Param("id") Long id);
+    Set<Participant> getParticipantsByChatRoomId(@Param("id") Long id);
 
     /**
      * {@inheritDoc}
@@ -105,4 +107,56 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
         + "GROUP  BY room_id HAVING COUNT(room_id) = 2 ",
         nativeQuery = true)
     List<Long> chatExistBetweenTwo(@Param("first") Long firstUser, @Param("second") Long secondUser);
+
+    /**
+     * Retrieves all chat rooms associated with a specific tariff.
+     *
+     * @param tariffId the ID of the tariff
+     * @return a list of chat rooms associated with the specified tariff
+     */
+    @Query("select cr from ChatRoom  cr where cr.tariffId = :tariffId")
+    List<ChatRoom> findAllChatsByTariffId(Long tariffId);
+
+    /**
+     * Retrieves a page of chat rooms associated with a list of tariff IDs.
+     *
+     * @param tariffIds The list of tariff IDs for which to retrieve chat rooms.
+     * @param pageable  The Pageable object that provides pagination information.
+     * @return A page of chat rooms associated with the specified tariff IDs.
+     */
+    @Query("select cr from ChatRoom cr where cr.tariffId IN (:tariffIds)")
+    Page<ChatRoom> findAllChatsByTariffIdPageable(List<Long> tariffIds, Pageable pageable);
+
+    /**
+     * Checks if a chat room exists with the provided userId and tariffId. If the
+     * count is greater than 0, it returns true, indicating that a chat exists with
+     * the provided userId and tariffId. Otherwise, it returns false.
+     *
+     * @param userId   The ID of the user.
+     * @param tariffId The ID of the tariff.
+     * @return true if a chat room exists with the provided userId and tariffId,
+     *         false otherwise.
+     */
+    @Query(value = "SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END FROM ChatRoom c "
+        + "JOIN c.participants p WHERE p.id = :userId AND c.tariffId = :tariffId")
+    boolean existsByUserIdAndTariffId(@Param("userId") Long userId, @Param("tariffId") Long tariffId);
+
+    /**
+     * Finds a chat room with the provided userId and tariffId.
+     *
+     * @param userId The ID of the user.
+     * @return The ChatRoom entity if a chat room exists with the provided userId
+     *         and tariffId, null otherwise.
+     */
+    @Query("SELECT c FROM ChatRoom c JOIN c.participants p WHERE p.id = :userId AND c.tariffId = :tariffId")
+    ChatRoom findByUserIdAndTariffId(@Param("userId") Long userId, @Param("tariffId") Long tariffId);
+
+    /**
+     * Retrieves a page of all chat rooms.
+     *
+     * @param pageable Pagination information.
+     * @return A page of chat rooms.
+     */
+    @Query("SELECT c FROM ChatRoom c")
+    Page<ChatRoom> findAll(Pageable pageable);
 }

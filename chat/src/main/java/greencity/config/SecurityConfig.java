@@ -2,7 +2,7 @@ package greencity.config;
 
 import static greencity.constant.AppConstant.*;
 import static greencity.constant.AppConstant.UBS_EMPLOYEE;
-import greencity.client.RestClient;
+import greencity.client.RestClientUser;
 import greencity.jwt.JwtTool;
 import greencity.security.providers.JwtAuthenticationProvider;
 import java.util.Arrays;
@@ -37,7 +37,7 @@ import org.springframework.web.cors.CorsConfiguration;
 @EnableGlobalAuthentication
 public class SecurityConfig {
     private final JwtTool jwtTool;
-    private final RestClient restClient;
+    private final RestClientUser restClientUser;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final String[] allowedOrigins;
 
@@ -45,11 +45,11 @@ public class SecurityConfig {
      * Constructor.
      */
     @Autowired
-    public SecurityConfig(JwtTool jwtTool, RestClient restClient,
+    public SecurityConfig(JwtTool jwtTool, RestClientUser restClientUser,
         AuthenticationConfiguration authenticationConfiguration,
         @Value("${spring.messaging.stomp.websocket.allowed-origins}") String[] allowedOrigins) {
         this.jwtTool = jwtTool;
-        this.restClient = restClient;
+        this.restClientUser = restClientUser;
         this.authenticationConfiguration = authenticationConfiguration;
         this.allowedOrigins = allowedOrigins;
     }
@@ -85,7 +85,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
             .addFilterBefore(
                 new greencity.security.filters.AccessTokenAuthenticationFilter(jwtTool, authenticationManager(),
-                    restClient),
+                    restClientUser),
                 UsernamePasswordAuthenticationFilter.class)
             .exceptionHandling(exception -> exception
                 .authenticationEntryPoint((req, resp, exc) -> resp.sendError(SC_UNAUTHORIZED, "Authorize first."))

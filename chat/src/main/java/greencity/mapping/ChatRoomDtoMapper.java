@@ -1,10 +1,8 @@
 package greencity.mapping;
 
-import greencity.dto.ChatMessageDto;
 import greencity.dto.ChatRoomDto;
 import greencity.dto.ParticipantDto;
 import greencity.entity.ChatRoom;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import org.modelmapper.AbstractConverter;
 import org.modelmapper.ModelMapper;
@@ -27,6 +25,8 @@ public class ChatRoomDtoMapper extends AbstractConverter<ChatRoom, ChatRoomDto> 
             .id(chatRoom.getId())
             .ownerId(chatRoom.getOwner().getId())
             .chatType(chatRoom.getType())
+            .chatStatus(chatRoom.getChatStatus())
+            .tariffId(chatRoom.getTariffId())
             .name(chatRoom.getName())
             .logo(chatRoom.getLogo())
             .participants(chatRoom.getParticipants().stream()

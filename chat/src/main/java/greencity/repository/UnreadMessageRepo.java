@@ -3,6 +3,7 @@ package greencity.repository;
 import greencity.entity.ChatMessage;
 import greencity.entity.UnreadMessage;
 import java.util.List;
+import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -25,4 +26,14 @@ public interface UnreadMessageRepo extends JpaRepository<UnreadMessage, Long>,
     @Query(nativeQuery = true,
         value = "select exists(select 1 from unread_messages where message_id = :messageId and user_id = :userId)")
     boolean existsUnreadMessageByMessageIdAndUserId(Long messageId, Long userId);
+
+    /**
+     * Method to find all unread message by user id.
+     *
+     * @param userId {@link Long} id of user.
+     */
+    @Transactional
+    @Query(nativeQuery = true, value = "select um.message_id from unread_messages um "
+        + "where um.user_id = :userId")
+    Set<Long> findUnreadMessagesIdByUserId(Long userId);
 }

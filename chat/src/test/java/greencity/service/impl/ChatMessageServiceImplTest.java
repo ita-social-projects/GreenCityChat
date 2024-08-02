@@ -183,7 +183,7 @@ class ChatMessageServiceImplTest {
 
         when(modelMapper.map(null, ChatMessageDto.class)).thenReturn(chatMessageDto);
 
-        when(chatRoomRepo.getPatricipantsByChatRoomId(anyLong())).thenReturn(participants);
+        when(chatRoomRepo.getParticipantsByChatRoomId(anyLong())).thenReturn(participants);
 
         when(modelMapper.map(chatMessageDto, ChatMessageResponseDto.class)).thenReturn(responseDto);
 

@@ -1,7 +1,7 @@
 package greencity.converters;
 
 import greencity.annotations.CurrentUserId;
-import greencity.client.RestClient;
+import greencity.client.RestClientUser;
 import lombok.AllArgsConstructor;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
@@ -14,7 +14,8 @@ import java.security.Principal;
 @Component
 @AllArgsConstructor
 public class UserArgumentResolver implements HandlerMethodArgumentResolver {
-    private RestClient restClient;
+
+    private RestClientUser restClientUser;
 
     /**
      * Method checks if parameter is {@link Long} and is annotated with
@@ -33,6 +34,6 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
         NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
         Principal principal = webRequest.getUserPrincipal();
-        return principal != null ? restClient.findIdByEmail(principal.getName()) : null;
+        return principal != null ? restClientUser.findIdByEmail(principal.getName()) : null;
     }
 }

@@ -1,11 +1,13 @@
 package greencity.exception.handlers;
 
+import java.util.HashMap;
+import java.util.Map;
 import greencity.exception.exceptions.ChatRoomNotFoundException;
 import greencity.exception.exceptions.FileNotSavedException;
 import greencity.exception.exceptions.UserNotFoundException;
 import greencity.exception.exceptions.VoiceMessageNotFoundException;
-import java.util.HashMap;
-import java.util.Map;
+import greencity.exception.exceptions.UserIsNotAdminException;
+import greencity.exception.exceptions.TariffNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
@@ -93,5 +95,38 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
     private Map<String, Object> getErrorAttributes(WebRequest webRequest) {
         return new HashMap<>(errorAttributes.getErrorAttributes(webRequest, ErrorAttributeOptions.defaults()));
+    }
+
+    /**
+     * Handles the UserIsNotAdminException by returning a ResponseEntity with a
+     * BAD_REQUEST status and an ExceptionResponse containing error details.
+     *
+     * @param ex      The UserIsNotAdminException to handle.
+     * @param request The WebRequest containing the request details.
+     * @return A ResponseEntity containing an ExceptionResponse with error details
+     *         and a BAD_REQUEST status.
+     */
+    @ExceptionHandler(UserIsNotAdminException.class)
+    public final ResponseEntity<Object> handleUserIsNotAdminException(UserIsNotAdminException ex,
+        WebRequest request) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(getErrorAttributes(request));
+        log.trace(ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);
+    }
+
+    /**
+     * Handles the TariffNotFoundException by returning a ResponseEntity with a
+     * NOT_FOUND status and an ExceptionResponse containing error details.
+     *
+     * @param ex      The TariffNotFoundException to handle.
+     * @param request The WebRequest containing the request details.
+     * @return A ResponseEntity containing an ExceptionResponse with error details
+     *         and a NOT_FOUND status.
+     */
+    @ExceptionHandler(TariffNotFoundException.class)
+    public final ResponseEntity<Object> handleTariffNotFoundException(TariffNotFoundException ex, WebRequest request) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(getErrorAttributes(request));
+        log.trace(ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exceptionResponse);
     }
 }
