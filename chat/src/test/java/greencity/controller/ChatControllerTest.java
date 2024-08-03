@@ -120,16 +120,6 @@ class ChatControllerTest {
             PageRequest.of(0, 20), principal);
     }
 
-//    @Test
-//    void findPrivateRoomWithUserTest() throws Exception {
-//        when(principal.getName()).thenReturn("name");
-//        mockMvc.perform(get(chatLink + "/user/{id}", 1)
-//            .principal(principal))
-//            .andExpect(status().isOk());
-//
-//        verify(chatRoomService).findPrivateByParticipants(1L, "name");
-//    }
-
     @Test
     void findRoomByIdTest() throws Exception {
         mockMvc.perform(get(chatLink + "/room/{room_id}", 1))
@@ -409,7 +399,7 @@ class ChatControllerTest {
     }
 
     @Test
-    void testGetAllLocationsByCourierId_ReturnsListOfLocations() throws Exception {
+    void testGetAllLocationsByCourierId_ReturnsListOfLocations() {
         Long id = 1L;
         List<LocationsDto> expectedLocations = createMockLocations();
 
@@ -422,7 +412,7 @@ class ChatControllerTest {
     }
 
     @Test
-    void testFindAllChatsByTariffId_WithValidTariffId_ReturnsChats() throws Exception {
+    void testFindAllChatsByTariffId_WithValidTariffId_ReturnsChats() {
         Long tariffId = 1L;
         List<ChatRoomDto> expectedChats = createMockChats();
 
@@ -460,7 +450,7 @@ class ChatControllerTest {
     }
 
     @Test
-    void getAllLocationsByCourierId_ReturnsListOfLocations() throws Exception {
+    void getAllLocationsByCourierId_ReturnsListOfLocations() {
         Long userId = 1L;
         Long courierId = 1L;
         List<LocationsDto> expectedLocations = createMockLocations();

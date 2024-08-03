@@ -274,16 +274,6 @@ public class ChatController {
     }
 
     /**
-     * Handles the update of chat status based on the provided message.
-     *
-     * @param chatMessageDto The ChatMessageDto containing the information for
-     *                       updating the chat status.
-     */
-    @MessageMapping("/chat/update/status")
-    public void updateStatus(ChatMessageDto chatMessageDto) {
-    }
-
-    /**
      * Method return group chats.
      *
      * @return list of {@link ChatMessageDto}.
@@ -476,7 +466,6 @@ public class ChatController {
         @ApiResponse(responseCode = "403", description = HttpStatuses.FORBIDDEN),
         @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
     })
-    @Deprecated
     @PostMapping(value = "/create-chatRoom")
     public ResponseEntity<ChatRoomDto> createChatRoom(
         @Valid @RequestBody GroupChatRoomCreateDto dto) {

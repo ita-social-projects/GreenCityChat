@@ -31,11 +31,14 @@ public class RestClientUbs {
     public boolean checkIfTariffExistsById(Long tariffInfoId) {
         HttpEntity<String> entity = new HttpEntity<>(setHeader());
 
-        return restTemplate.exchange(
+        ResponseEntity<Boolean> responseEntity = restTemplate.exchange(
             greenCityUbsServerAddress + "/ubs/check-if-tariff-exists/" + tariffInfoId,
             HttpMethod.GET,
             entity,
-            Boolean.class).getBody();
+            Boolean.class);
+
+        Boolean body = responseEntity.getBody();
+        return body != null && body;
     }
 
     /**

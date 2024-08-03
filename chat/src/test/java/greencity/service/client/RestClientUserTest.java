@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class RestClientUserTest {
+class RestClientUserTest {
     @InjectMocks
     private RestClientUser restClientUser;
     @Mock
@@ -32,7 +32,7 @@ public class RestClientUserTest {
     @Value("localhost:1111")
     private String greenCityUserServerAddress;
     @Mock
-    private java.lang.Object Object;
+    private java.lang.Object someObject;
 
     @Test
     void findIdByEmailTest() {
@@ -40,7 +40,6 @@ public class RestClientUserTest {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", accessToken);
         HttpEntity<String> entity = new HttpEntity<>(headers);
-        RestClientUser restClientUser = new RestClientUser(restTemplate, request);
         when(request.getHeader("Authorization")).thenReturn(accessToken);
         when(restTemplate.exchange(greenCityUserServerAddress
             + "/user/findIdByEmail" + "?email=taras@gmail.com", HttpMethod.GET, entity, Long.class)).thenReturn(
@@ -61,7 +60,7 @@ public class RestClientUserTest {
         when(request.getHeader("Authorization")).thenReturn(accessToken);
         when(restTemplate.exchange(greenCityUserServerAddress + "/user/updateUserLastActivityTime/"
             + dateFormat.format(date),
-            HttpMethod.PUT, entity, Object.class)).thenReturn(ResponseEntity.ok(Object));
+            HttpMethod.PUT, entity, Object.class)).thenReturn(ResponseEntity.ok(someObject));
         restClient.updateUserLastActivityTime(date);
         verify(restTemplate).exchange(greenCityUserServerAddress
             + "/user/updateUserLastActivityTime/" + dateFormat.format(date),

@@ -143,7 +143,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         return toReturn.stream()
             .map(room -> modelMapper.map(room, ChatRoomDto.class))
             .map(this::setLastMessageAndLastMessageDateTime)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     @Override

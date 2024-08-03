@@ -1,5 +1,6 @@
 package greencity.client;
 
+import java.util.ArrayList;
 import java.util.List;
 import greencity.dto.EmployeeWithTariffsDto;
 import greencity.dto.LocationsDto;
@@ -19,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class RestClientUbsTest {
+class RestClientUbsTest {
 
     @InjectMocks
     private RestClientUbs restClientUbs;
@@ -87,5 +88,37 @@ public class RestClientUbsTest {
         EmployeeWithTariffsDto result = restClientUbs.getEmployeeByEmail(email);
 
         assertNotNull(result);
+    }
+
+    @Test
+    void testGetTariffIdByLocationId() {
+        Long locationId = 1L;
+        Long expectedTariffId = 100L;
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        when(restTemplate.exchange(
+            greenCityUbsServerAddress + "/ubs/tariffs/" + locationId,
+            HttpMethod.GET,
+            entity,
+            Long.class)).thenReturn(ResponseEntity.ok(expectedTariffId));
+
+        Long actualTariffId = restClientUbs.getTariffIdByLocationId(locationId);
+        assertEquals(expectedTariffId, actualTariffId);
+    }
+
+    @Test
+    void testGetEmployeesByTariffIdWithChat() {
+        Long tariffId = 1L;
+        List<EmployeeWithTariffsDto> expectedEmployees = new ArrayList<>();
+
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        when(restTemplate.exchange(greenCityUbsServerAddress + "/admin/ubs-employee/get-employees/" + tariffId,
+            HttpMethod.GET, entity, new ParameterizedTypeReference<List<EmployeeWithTariffsDto>>() {
+            }))
+                .thenReturn(ResponseEntity.ok(expectedEmployees));
+        List<EmployeeWithTariffsDto> actualEmployees = restClientUbs.getEmployeesByTariffIdWithChat(tariffId);
+        assertEquals(expectedEmployees, actualEmployees);
     }
 }

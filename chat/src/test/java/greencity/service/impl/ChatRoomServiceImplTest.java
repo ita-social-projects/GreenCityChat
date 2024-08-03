@@ -166,19 +166,6 @@ class ChatRoomServiceImplTest {
         assertEquals(chatRoomService.findAllVisibleRooms("name"), expectedListEmpty);
     }
 
-//    @Test
-//    void findPrivateByParticipants() {
-//        when(participantService.findByEmail(anyString())).thenReturn(expectedParticipant);
-//        when(participantService.findById(any())).thenReturn(expectedParticipant);
-//        when(chatRoomRepo.findByParticipantsAndStatus(any(), any(), any())).thenReturn(expectedListEmpty);
-//        when(chatRoomRepo.save(any())).thenReturn(expected);
-//        when(modelMapper.map(expected, ChatRoomDto.class)).thenReturn(expectedDto);
-//
-//        ChatRoomDto actual = chatRoomService.findPrivateByParticipants(1L, "name");
-//
-//        assertEquals(expectedDto, actual);
-//    }
-
     @Test
     void findGroupByParticipants() {
         when(participantService.findByEmail(anyString())).thenReturn(expectedParticipant);
@@ -452,7 +439,6 @@ class ChatRoomServiceImplTest {
 
     @Test
     void testGetActiveChatsForAdmin() {
-        String email = "admin@example.com";
         Pageable pageable = PageRequest.of(0, 20);
         EmployeeWithTariffsDto employeeWithTariffsDto = EmployeeWithTariffsDto.builder()
             .employeeDto(EmployeeDto.builder().build())
@@ -546,7 +532,6 @@ class ChatRoomServiceImplTest {
             .id(1L)
             .name("Owner")
             .chatType(ChatType.PRIVATE)
-//                .participants(new HashSet<>(participants))
             .build();
 
         when(participantService.findById(currentUserId)).thenReturn(owner);
@@ -573,12 +558,12 @@ class ChatRoomServiceImplTest {
         verify(chatRoomRepo, times(1)).save(any(ChatRoom.class));
         verify(restClientUbs, times(1)).getEmployeesByTariffIdWithChat(tariffId);
         verify(messagingTemplate, times(1)).convertAndSendToUser(
-            eq("employee@example.com"), eq("/rooms/support"), eq(expectedRoomDto));
-        verify(messagingTemplate, times(1)).convertAndSend(eq("/rooms/user/new-chats1"), eq(expectedRoomDto));
+            "employee@example.com", "/rooms/support", expectedRoomDto);
+        verify(messagingTemplate, times(1)).convertAndSend("/rooms/user/new-chats1", expectedRoomDto);
     }
 
     @Test
-    void testGetTariffIdByLocationId() throws Exception {
+    void testGetTariffIdByLocationId() {
         Long locationId = 10L;
         Long expectedTariffId = 15L;
 
@@ -616,11 +601,11 @@ class ChatRoomServiceImplTest {
 
         assertEquals(expectedChatRoomDtos.size(), actualChatRoomDtos.size());
         for (int i = 0; i < expectedChatRoomDtos.size(); i++) {
-            ChatRoomDto expectedDto = expectedChatRoomDtos.get(i);
+            ChatRoomDto expectedChatRoomDto = expectedChatRoomDtos.get(i);
             ChatRoomDto actualDto = actualChatRoomDtos.get(i);
-            assertEquals(expectedDto.getId(), actualDto.getId());
-            assertEquals(expectedDto.getName(), actualDto.getName());
-            assertEquals(expectedDto.getTariffId(), actualDto.getTariffId());
+            assertEquals(expectedChatRoomDto.getId(), actualDto.getId());
+            assertEquals(expectedChatRoomDto.getName(), actualDto.getName());
+            assertEquals(expectedChatRoomDto.getTariffId(), actualDto.getTariffId());
         }
         verify(restClientUbs, times(1)).checkIfTariffExistsById(tariffId);
         verify(chatRoomRepo, times(1)).findAllChatsByTariffId(tariffId);
