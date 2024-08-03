@@ -38,7 +38,7 @@ public class RestClientUbs {
             Boolean.class);
 
         Boolean body = responseEntity.getBody();
-        return body != null && body;
+        return body != null ? body : false;
     }
 
     /**

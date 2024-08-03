@@ -442,7 +442,6 @@ class ChatControllerTest {
         PageableDto<ChatRoomDto> pageableDto = new PageableDto<>(new ArrayList<>(), 0, 0, 0);
         when(chatRoomService.getActiveChatsForAdmin(anyString(), any(Pageable.class))).thenReturn(pageableDto);
 
-        Principal principal = Mockito.mock(Principal.class);
         when(principal.getName()).thenReturn("testUser");
 
         mockMvc.perform(get(chatLink + "/chats/active").principal(principal))

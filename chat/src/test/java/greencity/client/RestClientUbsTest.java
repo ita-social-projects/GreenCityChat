@@ -112,7 +112,6 @@ class RestClientUbsTest {
         Long tariffId = 1L;
         List<EmployeeWithTariffsDto> expectedEmployees = new ArrayList<>();
 
-        HttpHeaders headers = new HttpHeaders();
         HttpEntity<String> entity = new HttpEntity<>(headers);
         when(restTemplate.exchange(greenCityUbsServerAddress + "/admin/ubs-employee/get-employees/" + tariffId,
             HttpMethod.GET, entity, new ParameterizedTypeReference<List<EmployeeWithTariffsDto>>() {

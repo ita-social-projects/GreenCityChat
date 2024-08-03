@@ -94,26 +94,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         return setLastMessageAndLastMessageDateTime(modelMapper.map(chatRoom, ChatRoomDto.class));
     }
 
-    private ChatRoomDto filterPrivateRoom(List<ChatRoom> chatRooms, Set<Participant> participants, Participant owner,
-        Long tariffId) {
-        ChatRoom toReturn;
-        if (chatRooms.isEmpty()) {
-            toReturn = chatRoomRepo.save(
-                ChatRoom.builder()
-                    .name(participants.stream().map(Participant::getName).collect(Collectors.joining(":")))
-                    .owner(owner)
-                    .tariffId(tariffId)
-                    .participants(participants)
-                    .type(ChatType.PRIVATE)
-                    .build());
-            toReturn.setName(toReturn.getName().replaceAll(owner.getName(), "")
-                .replaceAll(":", ""));
-        } else {
-            toReturn = chatRooms.get(0);
-        }
-        return modelMapper.map(toReturn, ChatRoomDto.class);
-    }
-
     @Override
     public List<ChatRoomDto> findGroupByParticipants(List<Long> ids, String name, String chatName) {
         Set<Participant> participants = new HashSet<>();
