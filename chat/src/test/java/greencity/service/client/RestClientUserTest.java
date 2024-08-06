@@ -1,6 +1,6 @@
 package greencity.service.client;
 
-import greencity.client.RestClient;
+import greencity.client.RestClientUser;
 import greencity.dto.UserVO;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -22,9 +22,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class RestClientTest {
+class RestClientUserTest {
     @InjectMocks
-    private RestClient restClient;
+    private RestClientUser restClientUser;
     @Mock
     private RestTemplate restTemplate;
     @Mock
@@ -32,7 +32,7 @@ public class RestClientTest {
     @Value("localhost:1111")
     private String greenCityUserServerAddress;
     @Mock
-    private java.lang.Object Object;
+    private java.lang.Object someObject;
 
     @Test
     void findIdByEmailTest() {
@@ -40,13 +40,12 @@ public class RestClientTest {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", accessToken);
         HttpEntity<String> entity = new HttpEntity<>(headers);
-        RestClient restClient = new RestClient(restTemplate, request);
         when(request.getHeader("Authorization")).thenReturn(accessToken);
         when(restTemplate.exchange(greenCityUserServerAddress
             + "/user/findIdByEmail" + "?email=taras@gmail.com", HttpMethod.GET, entity, Long.class)).thenReturn(
                 ResponseEntity.ok(1L));
 
-        assertEquals(1L, restClient.findIdByEmail("taras@gmail.com"));
+        assertEquals(1L, restClientUser.findIdByEmail("taras@gmail.com"));
     }
 
     @Test
@@ -55,13 +54,13 @@ public class RestClientTest {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", accessToken);
         HttpEntity<String> entity = new HttpEntity<>(headers);
-        RestClient restClient = new RestClient(restTemplate, request);
+        RestClientUser restClient = new RestClientUser(restTemplate, request);
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd.HH:mm:ss.SSSSSS");
         Date date = new Date();
         when(request.getHeader("Authorization")).thenReturn(accessToken);
         when(restTemplate.exchange(greenCityUserServerAddress + "/user/updateUserLastActivityTime/"
             + dateFormat.format(date),
-            HttpMethod.PUT, entity, Object.class)).thenReturn(ResponseEntity.ok(Object));
+            HttpMethod.PUT, entity, Object.class)).thenReturn(ResponseEntity.ok(someObject));
         restClient.updateUserLastActivityTime(date);
         verify(restTemplate).exchange(greenCityUserServerAddress
             + "/user/updateUserLastActivityTime/" + dateFormat.format(date),
@@ -81,6 +80,6 @@ public class RestClientTest {
             + "/user/findNotDeactivatedByEmail" + "?email="
             + email, HttpMethod.GET, entity, UserVO.class)).thenReturn(ResponseEntity.ok(userVO));
 
-        assertEquals(Optional.of(userVO), restClient.findNotDeactivatedByEmail(email));
+        assertEquals(Optional.of(userVO), restClientUser.findNotDeactivatedByEmail(email));
     }
 }

@@ -12,6 +12,7 @@ import greencity.dto.MessageLike;
 import greencity.dto.PageableDto;
 import greencity.dto.ParticipantDto;
 import greencity.dto.ChatMessageWithFileDto;
+import greencity.dto.LocationsDto;
 import greencity.enums.ChatType;
 import greencity.enums.FilesType;
 import greencity.service.AzureFileService;
@@ -108,25 +109,6 @@ public class ChatController {
         Principal principal) {
         return ResponseEntity.status(HttpStatus.OK)
             .body(chatMessageService.findAllMessagesByChatRoomId(id, pageable, principal));
-    }
-
-    /**
-     * Method return private room for current user with other user.
-     *
-     * @param id - id of user
-     * @return list of {@link ChatRoomDto}.
-     */
-    @Operation(summary = "Get private room for current user with other user.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = HttpStatuses.OK,
-            content = @Content(schema = @Schema(implementation = ChatRoomDto.class))),
-        @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
-        @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED)
-    })
-    @GetMapping("/user/{id}")
-    public ResponseEntity<ChatRoomDto> findPrivateRoomWithUser(@PathVariable Long id, Principal principal) {
-        return ResponseEntity.status(HttpStatus.OK)
-            .body(chatRoomService.findPrivateByParticipants(id, principal.getName()));
     }
 
     /**
@@ -257,7 +239,7 @@ public class ChatController {
      */
     @MessageMapping("/chat/user")
     public void createNewPrivateChatIfNotExist(@RequestBody CreateNewChatDto createNewChatDto) {
-        chatRoomService.findPrivateByParticipantsForSockets(createNewChatDto.getParticipantsIds(),
+        chatRoomService.findPrivateByParticipantsForSockets(createNewChatDto.getLocationsIds(),
             createNewChatDto.getCurrentUserId());
     }
 
@@ -410,17 +392,33 @@ public class ChatController {
     }
 
     /**
-     * Method add user to system chat room.
+     * Method add user to chat room.
      *
      * @param userId id of new user.
      */
-    @Operation(summary = "Add user to system chat.")
+    @Operation(summary = "Add user to chat room.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = HttpStatuses.OK)
     })
-    @PostMapping("/user")
-    public ResponseEntity<Long> addUserToSystemChatRoom(@RequestBody Long userId) {
-        return ResponseEntity.status(HttpStatus.OK).body(chatRoomService.addNewUserToSystemChat(userId));
+    @PostMapping("/user/{userId}/{chatId}")
+    public ResponseEntity<Long> addUserToChatRoom(@PathVariable Long userId, @PathVariable Long chatId) {
+        return ResponseEntity.status(HttpStatus.OK).body(chatRoomService.addNewUserToChat(userId, chatId));
+    }
+
+    /**
+     * Adds an admin to a chat room.
+     *
+     * @param userId The ID of the user who will be added as an admin to the chat
+     *               room.
+     * @param chatId The ID of the chat room to which the admin will be added.
+     */
+    @Operation(summary = "Add admin to chat room.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = HttpStatuses.OK)
+    })
+    @PostMapping("/admin/{userId}/{chatId}")
+    public void addAdminToChatRoom(@PathVariable Long userId, @PathVariable Long chatId) {
+        chatRoomService.addNewAdminToChat(userId, chatId);
     }
 
     /**
@@ -506,5 +504,79 @@ public class ChatController {
         @PathVariable Long chatId) {
         chatRoomService.deleteMessagesFromChatRoom(chatId, userId);
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+    }
+
+    /**
+     * Retrieves a list of chat rooms associated with the specified tariff ID.
+     *
+     * @param tariffId The ID of the tariff for which to retrieve chat rooms.
+     * @return A ResponseEntity containing a list of ChatRoomDto objects and an OK
+     *         status if successful.
+     */
+    @GetMapping("/tariffs/{tariffId}")
+    public ResponseEntity<List<ChatRoomDto>> findAllChatsByTariffId(@PathVariable Long tariffId) {
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(chatRoomService.findAllChatsByTariffId(tariffId));
+    }
+
+    /**
+     * Retrieves the tariff ID associated with the specified location ID.
+     *
+     * @param locationId The ID of the location for which to retrieve the tariff ID.
+     * @return ResponseEntity containing the tariff ID if found, or appropriate
+     *         error response if not found or if there are any issues during the
+     *         retrieval process
+     */
+    @Operation(summary = "Get Tariff ID by Location ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+        @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+        @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+        @ApiResponse(responseCode = "403", description = HttpStatuses.FORBIDDEN),
+        @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
+    })
+    @GetMapping(value = "/tariffs/byLocation/{locationId}")
+    public ResponseEntity<Long> getTariffIdByLocationId(@PathVariable("locationId") Long locationId) {
+        Long tariffId = chatRoomService.getTariffIdByLocationId(locationId);
+        return ResponseEntity.status(HttpStatus.OK).body(tariffId);
+    }
+
+    /**
+     * Retrieves all active chats for an admin user.
+     *
+     * @param principal The authenticated principal representing the admin user.
+     * @param pageable  The pageable object used for pagination.
+     * @return A ResponseEntity containing a PageableDto of ChatRoomDto objects
+     *         representing active chats.
+     */
+    @Operation(summary = "Get all active chats for admin")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+        @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+        @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED)
+    })
+    @GetMapping(value = "/chats/active")
+    @ApiPageable
+    public ResponseEntity<PageableDto<ChatRoomDto>> getAllActiveChatsForAdmin(Principal principal,
+        @Parameter(hidden = true) Pageable pageable) {
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(chatRoomService.getActiveChatsForAdmin(principal.getName(), pageable));
+    }
+
+    /**
+     * Method to retrieve all locations by courier id.
+     *
+     * @return ResponseEntity containing a list of LocationDto objects and an OK
+     *         status if successful.
+     */
+    @Operation(summary = "Get all locations by courier id.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = HttpStatuses.OK)
+    })
+    @GetMapping("/locationsByCourier/{userId}")
+    public ResponseEntity<List<LocationsDto>> getAllLocationsByCourierId(@PathVariable Long userId,
+        @RequestParam Long courierId) {
+        List<LocationsDto> allLocations = chatRoomService.getAllLocationsWithChatsByCourierId(userId, courierId);
+        return ResponseEntity.status(HttpStatus.OK).body(allLocations);
     }
 }

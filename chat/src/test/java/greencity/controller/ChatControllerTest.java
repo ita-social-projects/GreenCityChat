@@ -9,7 +9,10 @@ import greencity.dto.GroupChatRoomCreateDto;
 import greencity.dto.ParticipantDto;
 import greencity.dto.FriendsChatDto;
 import greencity.dto.MessageLike;
+import greencity.dto.PageableDto;
+import greencity.dto.LocationsDto;
 import greencity.entity.Participant;
+import greencity.enums.ChatStatus;
 import greencity.enums.ChatType;
 import greencity.enums.FilesType;
 import greencity.service.AzureFileService;
@@ -25,20 +28,28 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.multipart.MultipartFile;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -107,16 +118,6 @@ class ChatControllerTest {
 
         verify(chatMessageService).findAllMessagesByChatRoomId(1L,
             PageRequest.of(0, 20), principal);
-    }
-
-    @Test
-    void findPrivateRoomWithUserTest() throws Exception {
-        when(principal.getName()).thenReturn("name");
-        mockMvc.perform(get(chatLink + "/user/{id}", 1)
-            .principal(principal))
-            .andExpect(status().isOk());
-
-        verify(chatRoomService).findPrivateByParticipants(1L, "name");
     }
 
     @Test
@@ -351,21 +352,6 @@ class ChatControllerTest {
     }
 
     @Test
-    void addUserToSystemChatRoomTest() throws Exception {
-        Long userId = 1L;
-        when(chatRoomService.addNewUserToSystemChat(userId)).thenReturn(userId);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        mockMvc.perform(post(chatLink + "/user")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(userId)))
-            .andExpect(status().isOk());
-
-        verify(chatRoomService).addNewUserToSystemChat(userId);
-    }
-
-    @Test
     @SneakyThrows
     void deleteAllMessagesFromChatRoomTest() {
         mockMvc.perform(delete(chatLink + "/room/378/10/delete"))
@@ -398,5 +384,99 @@ class ChatControllerTest {
         MessageLike messageLike = new MessageLike(1L, 1L);
         chatController.likeMessage(messageLike);
         verify(chatMessageService).likeMessage(messageLike);
+    }
+
+    @Test
+    void testGetTariffIdByLocationId_WithValidLocationId_ReturnsTariffId() {
+        Long locationId = 1L;
+        Long expectedTariffId = 1L;
+        when(chatRoomService.getTariffIdByLocationId(locationId)).thenReturn(expectedTariffId);
+
+        ResponseEntity<Long> response = chatController.getTariffIdByLocationId(locationId);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(expectedTariffId, response.getBody());
+    }
+
+    @Test
+    void testGetAllLocationsByCourierId_ReturnsListOfLocations() {
+        Long id = 1L;
+        List<LocationsDto> expectedLocations = createMockLocations();
+
+        when(chatRoomService.getAllLocationsWithChatsByCourierId(id, id)).thenReturn(expectedLocations);
+
+        ResponseEntity<List<LocationsDto>> response = chatController.getAllLocationsByCourierId(id, id);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(expectedLocations, response.getBody());
+    }
+
+    @Test
+    void testFindAllChatsByTariffId_WithValidTariffId_ReturnsChats() {
+        Long tariffId = 1L;
+        List<ChatRoomDto> expectedChats = createMockChats();
+
+        when(chatRoomService.findAllChatsByTariffId(tariffId)).thenReturn(expectedChats);
+
+        ResponseEntity<List<ChatRoomDto>> response = chatController.findAllChatsByTariffId(tariffId);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(expectedChats, response.getBody());
+    }
+
+    @Test
+    void testAddUserToChatRoom() throws Exception {
+        Long userId = 1L;
+        Long chatId = 1L;
+
+        Mockito.when(chatRoomService.addNewUserToChat(userId, chatId)).thenReturn(userId);
+
+        mockMvc.perform(MockMvcRequestBuilders.post(chatLink + "/user/{userId}/{chatId}", userId, chatId))
+            .andExpect(status().isOk());
+
+        verify(chatRoomService, times(1)).addNewUserToChat(userId, chatId);
+    }
+
+    @Test
+    void getAllActiveChatsForAdminTest() throws Exception {
+        PageableDto<ChatRoomDto> pageableDto = new PageableDto<>(new ArrayList<>(), 0, 0, 0);
+        when(chatRoomService.getActiveChatsForAdmin(anyString(), any(Pageable.class))).thenReturn(pageableDto);
+
+        when(principal.getName()).thenReturn("testUser");
+
+        mockMvc.perform(get(chatLink + "/chats/active").principal(principal))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void getAllLocationsByCourierId_ReturnsListOfLocations() {
+        Long userId = 1L;
+        Long courierId = 1L;
+        List<LocationsDto> expectedLocations = createMockLocations();
+
+        when(chatRoomService.getAllLocationsWithChatsByCourierId(userId, courierId)).thenReturn(expectedLocations);
+
+        ResponseEntity<List<LocationsDto>> response = chatController.getAllLocationsByCourierId(userId, courierId);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(expectedLocations, response.getBody());
+    }
+
+    private List<ChatRoomDto> createMockChats() {
+        List<ChatRoomDto> chats = new ArrayList<>();
+        chats.add(new ChatRoomDto(1L, "General Chat", ChatType.GROUP, null,
+            1L, 1L, ChatStatus.NEW, 0L, null, null, null));
+        chats.add(new ChatRoomDto(2L, "Private Chat", ChatType.PRIVATE, null,
+            2L, 2L, ChatStatus.NEW, 0L, null, null, null));
+        return chats;
+    }
+
+    private List<LocationsDto> createMockLocations() {
+        List<LocationsDto> locations = new ArrayList<>();
+        locations.add(new LocationsDto(1L, "ACTIVE", "Київ", "Kyiv Oblast",
+            50.4547, 30.5238, "Київ", "Kyiv", 1L, ChatRoomDto.builder().id(1L).build()));
+        locations.add(new LocationsDto(2L, "INACTIVE", "Львівcька область", "Lviv Oblast",
+            49.842957, 24.031111, "Львів", "Lviv", 1L, ChatRoomDto.builder().id(2L).build()));
+        return locations;
     }
 }

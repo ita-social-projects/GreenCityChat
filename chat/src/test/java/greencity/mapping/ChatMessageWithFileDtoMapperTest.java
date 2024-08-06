@@ -5,6 +5,7 @@ import greencity.dto.UserDto;
 import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
 import greencity.entity.Participant;
+import greencity.enums.ChatStatus;
 import greencity.enums.ChatType;
 import greencity.enums.Role;
 import greencity.enums.UserStatus;
@@ -25,7 +26,7 @@ class ChatMessageWithFileDtoMapperTest {
     @BeforeEach
     void init() {
         chatMessage = new ChatMessage(1L, new ChatRoom(1L, "name", null, null,
-            ChatType.GROUP, null, null),
+            ChatType.GROUP, ChatStatus.NEW, 1L, null, null),
             new Participant(1L, "name", "asd@asd.asd", null,
                 null, UserStatus.ACTIVATED, Role.ROLE_USER, null),
             "content", null, null, "fileName", "AUDIO",
@@ -64,7 +65,7 @@ class ChatMessageWithFileDtoMapperTest {
     @Test
     void convertWithNullFields() {
         ChatMessage message = new ChatMessage(1L, new ChatRoom(1L, "name", null, null,
-            ChatType.GROUP, null, null),
+            ChatType.GROUP, ChatStatus.NEW, 1L, null, null),
             new Participant(1L, "name", "asd@asd.asd", null,
                 null, UserStatus.ACTIVATED, Role.ROLE_USER, null),
             "content", null, null, null, null,
