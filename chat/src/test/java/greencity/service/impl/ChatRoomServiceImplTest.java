@@ -158,7 +158,7 @@ class ChatRoomServiceImplTest {
             .type(ChatType.GROUP)
             .participants(new HashSet<>())
             .build();
-        ;
+
         chatRoom.setMessages(expectedChatMessageList);
         when(participantService.findByEmail(any())).thenReturn(expectedParticipant);
         when(chatRoomRepo.findAllByParticipant(anyLong())).thenReturn(List.of(chatRoom, new ChatRoom()));
