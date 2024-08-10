@@ -1,10 +1,8 @@
 package greencity.service;
 
 import java.util.List;
-import java.util.Set;
 import greencity.dto.ChatRoomDto;
 import greencity.dto.GroupChatRoomCreateDto;
-import greencity.dto.LeaveChatDto;
 import greencity.dto.PageableDto;
 import greencity.dto.LocationsDto;
 import greencity.entity.ChatMessage;
@@ -23,33 +21,17 @@ public interface ChatRoomService {
     List<ChatRoomDto> findAllByParticipantName(String name);
 
     /**
-     * Method to find all {@link ChatRoom}'s by {@link Participant}/{@code User} and
-     * {@link ChatType}.
-     *
-     * @param participants {@link Set} of {@link Participant}'s that are in certain
-     *                     rooms.
-     * @param chatType     {@link ChatType} room type.
-     * @return list of {@link ChatRoom} instances.
-     */
-    List<ChatRoomDto> findAllRoomsByParticipantsAndStatus(Set<Participant> participants, ChatType chatType);
-
-    /**
      * Method to find {@link ChatRoom} by it's id.
      *
      * @param id {@link ChatRoom} id.
      * @return {@link ChatRoom} instance.
      */
-    ChatRoomDto findChatRoomById(Long id);
+    ChatRoomDto findChatRoomById(Long id, String name);
 
     /**
      * {@inheritDoc}
      */
-    List<ChatRoomDto> findGroupByParticipants(List<Long> id, String name, String chatName);
-
-    /**
-     * {@inheritDoc}
-     */
-    List<ChatRoomDto> findGroupChatRooms(Participant participant, ChatType chatType);
+    List<ChatRoomDto> findChatRoomsByChatType(Participant participant, ChatType chatType);
 
     /**
      * {@inheritDoc}
@@ -79,12 +61,12 @@ public interface ChatRoomService {
     /**
      * {@inheritDoc}
      */
-    void deleteParticipantsFromChatRoom(ChatRoomDto chatRoomDto);
+    void deleteParticipantsFromChatRoom(ChatRoomDto chatRoomDto, Long userId);
 
     /**
      * {@inheritDoc}
      */
-    void updateChatRoom(ChatRoomDto chatRoomDto);
+    void updateChatRoom(ChatRoomDto chatRoomDto, Long userId);
 
     /**
      * {@inheritDoc}
@@ -94,12 +76,12 @@ public interface ChatRoomService {
     /**
      * {@inheritDoc}
      */
-    void leaveChatRoom(LeaveChatDto leaveChatDto);
+    void leaveChatRoom(ChatRoomDto chatRoomDto, Long userId);
 
     /**
      * {@inheritDoc}
      */
-    void findPrivateByParticipantsForSockets(Long id, Long currentUserId);
+    void findSystemChatByParticipantsForSockets(Long id, Long currentUserId);
 
     /**
      * Method deletes all {@link ChatMessage}s from chatroom.
@@ -123,7 +105,7 @@ public interface ChatRoomService {
      * @param locationId The ID of the location for which to retrieve the tariff ID.
      * @return The tariff ID associated with the specified location ID.
      */
-    Long getTariffIdByLocationId(Long locationId);
+    List<Long> getTariffIdByLocationId(Long locationId);
 
     /**
      * Retrieves a pageable list of active chat rooms for the admin associated with

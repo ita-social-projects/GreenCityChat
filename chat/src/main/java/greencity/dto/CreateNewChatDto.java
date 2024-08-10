@@ -11,5 +11,5 @@ import lombok.Builder;
 @Builder
 public class CreateNewChatDto {
     private Long currentUserId;
-    private Long locationsIds;
+    private Long tariffId;
 }

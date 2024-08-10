@@ -7,7 +7,6 @@ import greencity.dto.ChatRoomDto;
 import greencity.dto.CreateNewChatDto;
 import greencity.dto.FriendsChatDto;
 import greencity.dto.GroupChatRoomCreateDto;
-import greencity.dto.LeaveChatDto;
 import greencity.dto.MessageLike;
 import greencity.dto.PageableDto;
 import greencity.dto.ParticipantDto;
@@ -33,8 +32,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -125,9 +126,9 @@ public class ChatController {
         @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
     })
     @GetMapping("/room/{room_id}")
-    public ResponseEntity<ChatRoomDto> findRoomById(@PathVariable("room_id") Long id) {
+    public ResponseEntity<ChatRoomDto> findRoomById(@PathVariable("room_id") Long id, Principal principal) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(chatRoomService.findChatRoomById(id));
+            .body(chatRoomService.findChatRoomById(id, principal.getName()));
     }
 
     /**
@@ -228,18 +229,19 @@ public class ChatController {
      * Delete participants from group chat room.
      *
      * @param chatRoomDto of {@link ChatRoomDto}
+     * @param userId id of current user.
      */
     @MessageMapping("/chat/users/delete-participants-room")
-    public void deleteParticipantsFromChatRoom(ChatRoomDto chatRoomDto) {
-        chatRoomService.deleteParticipantsFromChatRoom(chatRoomDto);
+    public void deleteParticipantsFromChatRoom(@Payload ChatRoomDto chatRoomDto, @Header("userId") Long userId) {
+        chatRoomService.deleteParticipantsFromChatRoom(chatRoomDto, userId);
     }
 
     /**
-     * Method return private chat for current user.
+     * Method return system chat for current user.
      */
     @MessageMapping("/chat/user")
-    public void createNewPrivateChatIfNotExist(@RequestBody CreateNewChatDto createNewChatDto) {
-        chatRoomService.findPrivateByParticipantsForSockets(createNewChatDto.getLocationsIds(),
+    public void createNewSystemChatIfNotExist(@RequestBody CreateNewChatDto createNewChatDto) {
+        chatRoomService.findSystemChatByParticipantsForSockets(createNewChatDto.getTariffId(),
             createNewChatDto.getCurrentUserId());
     }
 
@@ -247,20 +249,22 @@ public class ChatController {
      * Add participants from group chat room.
      *
      * @param chatRoomDto of {@link ChatRoomDto}
+     * @param userId id of current user.
      */
     @MessageMapping("/chat/users/update-room")
-    public void addParticipantsToChatRoom(ChatRoomDto chatRoomDto) {
-        chatRoomService.updateChatRoom(chatRoomDto);
+    public void updateChatRoom(@Payload ChatRoomDto chatRoomDto, @Header("userId") Long userId) {
+        chatRoomService.updateChatRoom(chatRoomDto, userId);
     }
 
     /**
      * Delete current user from group chat room.
      *
-     * @param leaveChatDto of {@link LeaveChatDto}
+     * @param chatRoomDto of {@link ChatRoomDto}
+     * @param userId id of current user.
      */
     @MessageMapping("/chat/users/leave-room")
-    public void leaveRoom(LeaveChatDto leaveChatDto) {
-        chatRoomService.leaveChatRoom(leaveChatDto);
+    public void leaveRoom(@Payload ChatRoomDto chatRoomDto, @Header("userId") Long userId) {
+        chatRoomService.leaveChatRoom(chatRoomDto, userId);
     }
 
     /**
@@ -287,7 +291,7 @@ public class ChatController {
     @GetMapping("/groups")
     public ResponseEntity<List<ChatRoomDto>> getGroupChats(Principal principal) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(chatRoomService.findGroupChatRooms(participantService.findByEmail(principal.getName()),
+            .body(chatRoomService.findChatRoomsByChatType(participantService.findByEmail(principal.getName()),
                 ChatType.GROUP));
     }
 
@@ -503,7 +507,7 @@ public class ChatController {
     public ResponseEntity deleteAllMessagesFromChatRoom(@PathVariable Long userId,
         @PathVariable Long chatId) {
         chatRoomService.deleteMessagesFromChatRoom(chatId, userId);
-        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     /**
@@ -536,8 +540,8 @@ public class ChatController {
         @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
     })
     @GetMapping(value = "/tariffs/byLocation/{locationId}")
-    public ResponseEntity<Long> getTariffIdByLocationId(@PathVariable("locationId") Long locationId) {
-        Long tariffId = chatRoomService.getTariffIdByLocationId(locationId);
+    public ResponseEntity<List<Long>> getTariffIdByLocationId(@PathVariable("locationId") Long locationId) {
+        List<Long> tariffId = chatRoomService.getTariffIdByLocationId(locationId);
         return ResponseEntity.status(HttpStatus.OK).body(tariffId);
     }
 
