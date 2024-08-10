@@ -2,15 +2,7 @@ package greencity.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import greencity.dto.ChatMessageDto;
-import greencity.dto.ChatMessageWithFileDto;
-import greencity.dto.ChatRoomDto;
-import greencity.dto.GroupChatRoomCreateDto;
-import greencity.dto.ParticipantDto;
-import greencity.dto.FriendsChatDto;
-import greencity.dto.MessageLike;
-import greencity.dto.PageableDto;
-import greencity.dto.LocationsDto;
+import greencity.dto.*;
 import greencity.entity.Participant;
 import greencity.enums.ChatStatus;
 import greencity.enums.ChatType;
@@ -481,6 +473,31 @@ class ChatControllerTest {
         ChatRoomDto chatRoomDto = createGroupChat();
         chatController.leaveRoom(chatRoomDto, 1L);
         verify(chatRoomService).leaveChatRoom(chatRoomDto, 1L);
+    }
+
+    @Test
+    void createNewSystemChatIfNotExistTest() {
+        Long tariffId = 2L;
+        Long userId = 158L;
+        CreateNewChatDto createNewChatDto = CreateNewChatDto.builder()
+            .tariffId(tariffId)
+            .currentUserId(userId)
+            .build();
+        chatController.createNewSystemChatIfNotExist(createNewChatDto);
+        verify(chatRoomService).findSystemChatByParticipantsForSockets(tariffId, userId);
+    }
+
+    @Test
+    void deleteChatRoomTest() {
+        ChatRoomDto chatRoomDto = createGroupChat();
+        chatController.deleteChatRoom(1L, chatRoomDto);
+        verify(chatRoomService).deleteChatRoom(1L, chatRoomDto);
+    }
+
+    @Test
+    void addAdminToChatRoomTest() {
+        chatController.addAdminToChatRoom(1L, 15L);
+        verify(chatRoomService).addNewAdminToChat(1L, 15L);
     }
 
     private List<ChatRoomDto> createMockChats() {
