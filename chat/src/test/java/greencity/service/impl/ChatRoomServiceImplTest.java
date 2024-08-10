@@ -12,7 +12,7 @@ import greencity.exception.exceptions.ChatRoomNotFoundException;
 import greencity.exception.exceptions.TariffNotFoundException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
-import greencity.repository.UnreadMessageRepo;
+import greencity.service.AzureFileService;
 import greencity.service.ParticipantService;
 
 import java.lang.reflect.Method;
@@ -60,7 +60,7 @@ class ChatRoomServiceImplTest {
     @Mock
     private RestClientUbs restClientUbs;
     @Mock
-    private UnreadMessageRepo unreadMessageRepo;
+    private AzureFileService azureFileService;
 
     private final String email = "test.artur@mail.com";
     Participant expectedParticipant;
@@ -151,10 +151,23 @@ class ChatRoomServiceImplTest {
 
     @Test
     void findAllVisibleRooms() {
+        ChatRoom chatRoom = ChatRoom.builder()
+            .id(1L)
+            .name("test")
+            .messages(new LinkedList<>())
+            .type(ChatType.GROUP)
+            .participants(new HashSet<>())
+            .build();
+        ;
+        chatRoom.setMessages(expectedChatMessageList);
         when(participantService.findByEmail(any())).thenReturn(expectedParticipant);
-        when(chatRoomRepo.findAllByParticipant(anyLong())).thenReturn(expectedListEmpty);
+        when(chatRoomRepo.findAllByParticipant(anyLong())).thenReturn(List.of(chatRoom, new ChatRoom()));
+        when(modelMapper.map(chatRoom, ChatRoomDto.class)).thenReturn(expectedDto);
+        when(chatMessageRepo.getLastByRoomId(chatRoom.getId())).thenReturn(expectedChatMessageList);
 
-        assertEquals(chatRoomService.findAllVisibleRooms("name"), expectedListEmpty);
+        List<ChatRoomDto> actual = chatRoomService.findAllVisibleRooms("name");
+        assertEquals(expectedDto, actual.get(0));
+        assertEquals(1, actual.size());
     }
 
     @Test
@@ -256,11 +269,12 @@ class ChatRoomServiceImplTest {
 
     @Test
     void findAllChatRoomsByQuery() {
-        when(chatRoomRepo.findAllChatRoomsByQuery(anyString(), any())).thenReturn(Collections.singletonList(expected));
+        when(chatRoomRepo.findAllChatRoomsByQuery(anyString(), any())).thenReturn(List.of(expected, new ChatRoom()));
         when(modelMapper.map(any(), any(Type.class))).thenReturn(Collections.singletonList(expectedDto));
 
-        ChatRoomDto actual = chatRoomService.findAllChatRoomsByQuery("query", expectedParticipant).get(0);
-        assertEquals(expectedDto, actual);
+        List<ChatRoomDto> actual = chatRoomService.findAllChatRoomsByQuery("query", expectedParticipant);
+        assertEquals(expectedDto, actual.get(0));
+        assertEquals(1, actual.size());
     }
 
     @Test
@@ -310,8 +324,29 @@ class ChatRoomServiceImplTest {
             .build();
         when(chatRoomRepo.findById(anyLong())).thenReturn(Optional.ofNullable(chatRoom));
         when(modelMapper.map(chatRoom, ChatRoomDto.class)).thenReturn(chatRoomDto);
+        when(chatMessageRepo.getAllByRoomId(1L)).thenReturn(expectedChatMessageList);
 
         chatRoomService.deleteMessagesFromChatRoom(1L, 378L);
+
+        verify(chatMessageRepo, times(1)).delete(any(ChatMessage.class));
+    }
+
+    @Test
+    void deleteMessagesFromChatRoomTest_MessageWithFile() {
+        ChatMessage chatMessage = ChatMessage.builder()
+            .id(1L)
+            .room(expected)
+            .sender(expectedParticipant)
+            .fileName("testFileName")
+            .build();
+        when(chatRoomRepo.findById(anyLong())).thenReturn(Optional.ofNullable(expected));
+        when(modelMapper.map(expected, ChatRoomDto.class)).thenReturn(expectedDto);
+        when(chatMessageRepo.getAllByRoomId(1L)).thenReturn(List.of(chatMessage));
+
+        chatRoomService.deleteMessagesFromChatRoom(1L, 1L);
+
+        verify(chatMessageRepo, times(1)).delete(any(ChatMessage.class));
+        verify(azureFileService, times(1)).deleteFile("testFileName");
     }
 
     @Test
@@ -402,6 +437,18 @@ class ChatRoomServiceImplTest {
         verify(participantService, times(1)).findByEmail(email);
         verify(chatRoomRepo, times(1)).countUnreadMessages(id, id);
         verify(modelMapper, times(1)).map(any(ChatRoom.class), eq(ChatRoomDto.class));
+    }
+
+    @Test
+    void testGetActiveChatsForAdmin_WithoutEmployee() {
+        Pageable pageable = PageRequest.of(0, 20);
+
+        when(restClientUbs.getEmployeeByEmail(email)).thenReturn(null);
+
+        PageableDto<ChatRoomDto> actual = chatRoomService.getActiveChatsForAdmin(email, pageable);
+        assertEquals(new PageableDto<>(Collections.emptyList(), 0, 0, 0), actual);
+
+        verify(restClientUbs, times(1)).getEmployeeByEmail(email);
     }
 
     @Test

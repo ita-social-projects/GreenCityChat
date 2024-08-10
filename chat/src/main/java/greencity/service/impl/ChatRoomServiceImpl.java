@@ -137,7 +137,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     @Override
     public List<ChatRoomDto> findChatRoomsByChatType(Participant participant, ChatType chatType) {
         return formattingChatRooms(chatRoomRepo.findChatRoomsByChatType(participant, chatType).stream()
-            .map(room -> modelMapper.map(room, ChatRoomDto.class)).collect(Collectors.toList()), participant.getId());
+            .map(room -> modelMapper.map(room, ChatRoomDto.class)).toList(), participant.getId());
     }
 
     @Override
