@@ -101,7 +101,8 @@ class RestClientUbsTest {
             greenCityUbsServerAddress + "/ubs/tariffs/" + locationId,
             HttpMethod.GET,
             entity,
-                new ParameterizedTypeReference<List<Long>>(){})).thenReturn(ResponseEntity.ok(expectedTariffId));
+            new ParameterizedTypeReference<List<Long>>() {
+            })).thenReturn(ResponseEntity.ok(expectedTariffId));
 
         List<Long> actualTariffId = restClientUbs.getTariffIdByLocationId(locationId);
         assertEquals(expectedTariffId, actualTariffId);

@@ -60,7 +60,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         Participant participant = participantService.findByEmail(name);
         List<ChatRoom> rooms = chatRoomRepo.findAllByParticipant(participant.getId()).stream()
             .filter(chatRoom -> !chatRoom.getMessages().isEmpty() && chatRoom.getType() != null)
-                .collect(Collectors.toList());
+            .collect(Collectors.toList());
         List<ChatRoomDto> roomDtos = mapListChatRoomDto(rooms);
         return formattingChatRooms(roomDtos, participant.getId());
     }
@@ -100,7 +100,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         Set<Participant> participantToSend = chatRoomRepo.getParticipantsByChatRoomId(chatRoomDto.getId());
         room = chatRoomRepo.save(room);
         sendToParticipant(modelMapper.map(room, ChatRoomDto.class),
-                participantToSend.stream()
+            participantToSend.stream()
                 .map(Participant::getId)
                 .collect(Collectors.toSet()),
             HEADER_UPDATE_ROOM);
@@ -112,7 +112,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         ChatRoom room = modelMapper.map(chatRoomDto, ChatRoom.class);
         room = chatRoomRepo.save(room);
         sendToParticipant(modelMapper.map(room, ChatRoomDto.class),
-                getParticipantIds(chatRoomDto), HEADER_UPDATE_ROOM);
+            getParticipantIds(chatRoomDto), HEADER_UPDATE_ROOM);
     }
 
     @Override
@@ -120,8 +120,8 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         validateChatOwnership(chatRoomDto, userId);
         chatRoomRepo.deleteById(chatRoomDto.getId());
         Set<Long> participantIds = chatRoomDto.getParticipants().stream()
-                .map(ParticipantDto::getId)
-                .collect(Collectors.toSet());
+            .map(ParticipantDto::getId)
+            .collect(Collectors.toSet());
         sendToParticipant(chatRoomDto, participantIds, HEADER_DELETE_ROOM);
     }
 
@@ -218,10 +218,11 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         ChatRoomDto chatRoomDto = modelMapper.map(room, ChatRoomDto.class);
         validatePrivateChatMembership(chatRoomDto, userId);
         chatMessageRepo.getAllByRoomId(roomId).forEach(chatMessage -> {
-                if (chatMessage.getFileName() != null) {
-                    azureFileService.deleteFile(chatMessage.getFileName());
-                }
-                chatMessageRepo.delete(chatMessage);});
+            if (chatMessage.getFileName() != null) {
+                azureFileService.deleteFile(chatMessage.getFileName());
+            }
+            chatMessageRepo.delete(chatMessage);
+        });
     }
 
     @Override
@@ -263,7 +264,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         Page<ChatRoom> activeChatsPage = chatRoomRepo.findAllChatsByTariffIdPageable(tariffIdsWithChat, pageable);
 
         List<ChatRoomDto> chatRoomDtos = activeChatsPage.getContent().stream()
-                .map(chatRoom -> modelMapper.map(chatRoom, ChatRoomDto.class))
+            .map(chatRoom -> modelMapper.map(chatRoom, ChatRoomDto.class))
             .collect(Collectors.toList());
         return new PageableDto<>(formattingChatRooms(chatRoomDtos, participantService.findByEmail(email).getId()),
             activeChatsPage.getTotalElements(),
@@ -309,10 +310,11 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         headers.put(headerString, new Object());
         for (Long participantId : participantToSendId) {
             messagingTemplate.convertAndSend(ROOM_LINK + participantId,
-                    object, headers);
+                object, headers);
         }
     }
-    private void validateChatOwnership(ChatRoomDto chatRoomDto, Long userId){
+
+    private void validateChatOwnership(ChatRoomDto chatRoomDto, Long userId) {
         if (chatRoomDto.getChatType() == ChatType.GROUP) {
             validateGroupChatOwnership(chatRoomDto, userId);
         } else if (chatRoomDto.getChatType() == ChatType.PRIVATE) {
@@ -328,11 +330,12 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     private void validatePrivateChatMembership(ChatRoomDto chatRoomDto, Long userId) {
         boolean isParticipant = chatRoomDto.getParticipants().stream()
-                .anyMatch(participantDto -> Objects.equals(participantDto.getId(), userId));
+            .anyMatch(participantDto -> Objects.equals(participantDto.getId(), userId));
         if (!isParticipant) {
             throw new UnsupportedOperationException(ErrorMessage.USER_NOT_BELONG_TO_CHAT);
         }
     }
+
     private Set<Long> getParticipantIds(ChatRoomDto chatRoomDto) {
         return chatRoomDto.getParticipants().stream().map(ParticipantDto::getId).collect(Collectors.toSet());
     }

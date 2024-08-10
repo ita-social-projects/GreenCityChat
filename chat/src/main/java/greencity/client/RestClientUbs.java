@@ -72,8 +72,8 @@ public class RestClientUbs {
             greenCityUbsServerAddress + "/ubs/tariffs/" + locationId,
             HttpMethod.GET,
             entity,
-                new ParameterizedTypeReference<List<Long>>(){
-                }).getBody();
+            new ParameterizedTypeReference<List<Long>>() {
+            }).getBody();
     }
 
     /**

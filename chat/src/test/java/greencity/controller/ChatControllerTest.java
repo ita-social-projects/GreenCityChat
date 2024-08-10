@@ -475,6 +475,7 @@ class ChatControllerTest {
         chatController.updateChatRoom(chatRoomDto, 1L);
         verify(chatRoomService).updateChatRoom(chatRoomDto, 1L);
     }
+
     @Test
     void leaveRoomTest() {
         ChatRoomDto chatRoomDto = createGroupChat();
@@ -488,13 +489,15 @@ class ChatControllerTest {
         chats.add(createPrivateChat());
         return chats;
     }
+
     private ChatRoomDto createGroupChat() {
         return new ChatRoomDto(1L, "General Chat", ChatType.GROUP, null,
-                1L, 1L, ChatStatus.NEW, 0L, null, null, null);
+            1L, 1L, ChatStatus.NEW, 0L, null, null, null);
     }
+
     private ChatRoomDto createPrivateChat() {
         return new ChatRoomDto(2L, "Private Chat", ChatType.PRIVATE, null,
-                2L, 2L, ChatStatus.NEW, 0L, null, null, null);
+            2L, 2L, ChatStatus.NEW, 0L, null, null, null);
     }
 
     private List<LocationsDto> createMockLocations() {

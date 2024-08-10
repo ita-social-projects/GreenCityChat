@@ -24,36 +24,37 @@ class ChatRoomMapperTest {
     @BeforeEach
     void init() {
         Participant participant = Participant.builder()
-                .id(1L)
-                .email("asd@asd.asd")
-                .role(Role.ROLE_USER)
-                .profilePicture("asd")
-                .build();
+            .id(1L)
+            .email("asd@asd.asd")
+            .role(Role.ROLE_USER)
+            .profilePicture("asd")
+            .build();
         chatRoom = ChatRoom.builder()
-                .id(1L)
-                .messages(Arrays.asList(ChatMessage.builder().id(1L).sender(Participant.builder()
-                        .id(1L).build()).build()))
-                .name("Name")
-                .participants(Set.of(participant))
-                .owner(participant)
-                .type(ChatType.GROUP)
-                .build();
+            .id(1L)
+            .messages(Arrays.asList(ChatMessage.builder().id(1L).sender(Participant.builder()
+                .id(1L).build()).build()))
+            .name("Name")
+            .participants(Set.of(participant))
+            .owner(participant)
+            .type(ChatType.GROUP)
+            .build();
         chatRoomDto = ChatRoomDto.builder()
-                .id(1L)
-                .ownerId(1L)
-                .chatType(ChatType.GROUP)
-                .name("Name")
-                .participants(chatRoom.getParticipants().stream().map(
-                                participantt -> ParticipantDto.builder()
-                                        .name(participantt.getName())
-                                        .profilePicture(participantt.getProfilePicture())
-                                        .id(participantt.getId())
-                                        .email(participantt.getEmail())
-                                        .role(participantt.getRole())
-                                        .build())
-                        .collect(Collectors.toSet()))
-                .build();
+            .id(1L)
+            .ownerId(1L)
+            .chatType(ChatType.GROUP)
+            .name("Name")
+            .participants(chatRoom.getParticipants().stream().map(
+                participantt -> ParticipantDto.builder()
+                    .name(participantt.getName())
+                    .profilePicture(participantt.getProfilePicture())
+                    .id(participantt.getId())
+                    .email(participantt.getEmail())
+                    .role(participantt.getRole())
+                    .build())
+                .collect(Collectors.toSet()))
+            .build();
     }
+
     @Test
     void convert() {
         ChatRoom actual = chatRoomMapper.convert(chatRoomDto);

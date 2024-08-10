@@ -229,7 +229,7 @@ public class ChatController {
      * Delete participants from group chat room.
      *
      * @param chatRoomDto of {@link ChatRoomDto}
-     * @param userId id of current user.
+     * @param userId      id of current user.
      */
     @MessageMapping("/chat/users/delete-participants-room")
     public void deleteParticipantsFromChatRoom(@Payload ChatRoomDto chatRoomDto, @Header("userId") Long userId) {
@@ -249,7 +249,7 @@ public class ChatController {
      * Add participants from group chat room.
      *
      * @param chatRoomDto of {@link ChatRoomDto}
-     * @param userId id of current user.
+     * @param userId      id of current user.
      */
     @MessageMapping("/chat/users/update-room")
     public void updateChatRoom(@Payload ChatRoomDto chatRoomDto, @Header("userId") Long userId) {
@@ -260,7 +260,7 @@ public class ChatController {
      * Delete current user from group chat room.
      *
      * @param chatRoomDto of {@link ChatRoomDto}
-     * @param userId id of current user.
+     * @param userId      id of current user.
      */
     @MessageMapping("/chat/users/leave-room")
     public void leaveRoom(@Payload ChatRoomDto chatRoomDto, @Header("userId") Long userId) {
