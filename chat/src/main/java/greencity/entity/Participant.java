@@ -13,7 +13,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
+@ToString(exclude = {"rooms", "unreadMessages"})
 @Table(name = "users")
 public class Participant {
     @Id

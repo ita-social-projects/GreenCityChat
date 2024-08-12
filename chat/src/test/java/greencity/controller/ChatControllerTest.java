@@ -2,15 +2,7 @@ package greencity.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import greencity.dto.ChatMessageDto;
-import greencity.dto.ChatMessageWithFileDto;
-import greencity.dto.ChatRoomDto;
-import greencity.dto.GroupChatRoomCreateDto;
-import greencity.dto.ParticipantDto;
-import greencity.dto.FriendsChatDto;
-import greencity.dto.MessageLike;
-import greencity.dto.PageableDto;
-import greencity.dto.LocationsDto;
+import greencity.dto.*;
 import greencity.entity.Participant;
 import greencity.enums.ChatStatus;
 import greencity.enums.ChatType;
@@ -86,7 +78,6 @@ class ChatControllerTest {
         this.mockMvc = MockMvcBuilders.standaloneSetup(chatController)
             .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
             .build();
-
     }
 
     @Test
@@ -97,7 +88,6 @@ class ChatControllerTest {
         mockMvc.perform(get(chatLink + "/").principal(principal)).andExpect(status().isOk());
 
         verify(chatRoomService).findAllByParticipantName("test");
-
     }
 
     @Test
@@ -122,9 +112,11 @@ class ChatControllerTest {
 
     @Test
     void findRoomByIdTest() throws Exception {
-        mockMvc.perform(get(chatLink + "/room/{room_id}", 1))
+        when(principal.getName()).thenReturn("test");
+        mockMvc.perform(get(chatLink + "/room/{room_id}", 1)
+            .principal(principal))
             .andExpect(status().isOk());
-        verify(chatRoomService).findChatRoomById(1L);
+        verify(chatRoomService).findChatRoomById(1L, "test");
     }
 
     @Test
@@ -256,11 +248,11 @@ class ChatControllerTest {
         Participant participant = new Participant();
         when(participantService.findByEmail("testmail@gmail.com")).thenReturn(participant);
         List<ChatRoomDto> listOfGroupChatRooms = new ArrayList<>();
-        when(chatRoomService.findGroupChatRooms(participant, chatType)).thenReturn(listOfGroupChatRooms);
+        when(chatRoomService.findChatRoomsByChatType(participant, chatType)).thenReturn(listOfGroupChatRooms);
         mockMvc.perform(get(chatLink + "/groups").principal(principal))
             .andExpect(status().isOk());
 
-        verify(chatRoomService).findGroupChatRooms(participant, chatType);
+        verify(chatRoomService).findChatRoomsByChatType(participant, chatType);
     }
 
     @Test
@@ -355,7 +347,7 @@ class ChatControllerTest {
     @SneakyThrows
     void deleteAllMessagesFromChatRoomTest() {
         mockMvc.perform(delete(chatLink + "/room/378/10/delete"))
-            .andExpect(status().isAccepted());
+            .andExpect(status().isOk());
     }
 
     @Test
@@ -389,10 +381,10 @@ class ChatControllerTest {
     @Test
     void testGetTariffIdByLocationId_WithValidLocationId_ReturnsTariffId() {
         Long locationId = 1L;
-        Long expectedTariffId = 1L;
+        List<Long> expectedTariffId = List.of(1L);
         when(chatRoomService.getTariffIdByLocationId(locationId)).thenReturn(expectedTariffId);
 
-        ResponseEntity<Long> response = chatController.getTariffIdByLocationId(locationId);
+        ResponseEntity<List<Long>> response = chatController.getTariffIdByLocationId(locationId);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(expectedTariffId, response.getBody());
@@ -462,13 +454,67 @@ class ChatControllerTest {
         assertEquals(expectedLocations, response.getBody());
     }
 
+    @Test
+    void deleteParticipantsFromChatRoomTest() {
+        ChatRoomDto chatRoomDto = createPrivateChat();
+        chatController.deleteParticipantsFromChatRoom(chatRoomDto, 1L);
+        verify(chatRoomService).deleteParticipantsFromChatRoom(chatRoomDto, 1L);
+    }
+
+    @Test
+    void updateChatRoomTest() {
+        ChatRoomDto chatRoomDto = createGroupChat();
+        chatController.updateChatRoom(chatRoomDto, 1L);
+        verify(chatRoomService).updateChatRoom(chatRoomDto, 1L);
+    }
+
+    @Test
+    void leaveRoomTest() {
+        ChatRoomDto chatRoomDto = createGroupChat();
+        chatController.leaveRoom(chatRoomDto, 1L);
+        verify(chatRoomService).leaveChatRoom(chatRoomDto, 1L);
+    }
+
+    @Test
+    void createNewSystemChatIfNotExistTest() {
+        Long tariffId = 2L;
+        Long userId = 158L;
+        CreateNewChatDto createNewChatDto = CreateNewChatDto.builder()
+            .tariffId(tariffId)
+            .currentUserId(userId)
+            .build();
+        chatController.createNewSystemChatIfNotExist(createNewChatDto);
+        verify(chatRoomService).findSystemChatByParticipantsForSockets(tariffId, userId);
+    }
+
+    @Test
+    void deleteChatRoomTest() {
+        ChatRoomDto chatRoomDto = createGroupChat();
+        chatController.deleteChatRoom(1L, chatRoomDto);
+        verify(chatRoomService).deleteChatRoom(1L, chatRoomDto);
+    }
+
+    @Test
+    void addAdminToChatRoomTest() {
+        chatController.addAdminToChatRoom(1L, 15L);
+        verify(chatRoomService).addNewAdminToChat(1L, 15L);
+    }
+
     private List<ChatRoomDto> createMockChats() {
         List<ChatRoomDto> chats = new ArrayList<>();
-        chats.add(new ChatRoomDto(1L, "General Chat", ChatType.GROUP, null,
-            1L, 1L, ChatStatus.NEW, 0L, null, null, null));
-        chats.add(new ChatRoomDto(2L, "Private Chat", ChatType.PRIVATE, null,
-            2L, 2L, ChatStatus.NEW, 0L, null, null, null));
+        chats.add(createGroupChat());
+        chats.add(createPrivateChat());
         return chats;
+    }
+
+    private ChatRoomDto createGroupChat() {
+        return new ChatRoomDto(1L, "General Chat", ChatType.GROUP, null,
+            1L, 1L, ChatStatus.NEW, 0L, null, null, null);
+    }
+
+    private ChatRoomDto createPrivateChat() {
+        return new ChatRoomDto(2L, "Private Chat", ChatType.PRIVATE, null,
+            2L, 2L, ChatStatus.NEW, 0L, null, null, null);
     }
 
     private List<LocationsDto> createMockLocations() {

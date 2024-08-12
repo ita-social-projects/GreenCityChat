@@ -93,7 +93,7 @@ class RestClientUbsTest {
     @Test
     void testGetTariffIdByLocationId() {
         Long locationId = 1L;
-        Long expectedTariffId = 100L;
+        List<Long> expectedTariffId = List.of(100L);
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -101,9 +101,10 @@ class RestClientUbsTest {
             greenCityUbsServerAddress + "/ubs/tariffs/" + locationId,
             HttpMethod.GET,
             entity,
-            Long.class)).thenReturn(ResponseEntity.ok(expectedTariffId));
+            new ParameterizedTypeReference<List<Long>>() {
+            })).thenReturn(ResponseEntity.ok(expectedTariffId));
 
-        Long actualTariffId = restClientUbs.getTariffIdByLocationId(locationId);
+        List<Long> actualTariffId = restClientUbs.getTariffIdByLocationId(locationId);
         assertEquals(expectedTariffId, actualTariffId);
     }
 

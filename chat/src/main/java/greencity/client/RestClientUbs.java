@@ -64,7 +64,7 @@ public class RestClientUbs {
      * @param locationId The ID of the location for which to retrieve the tariff ID.
      * @return The tariff ID associated with the specified location ID.
      */
-    public Long getTariffIdByLocationId(Long locationId) {
+    public List<Long> getTariffIdByLocationId(Long locationId) {
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -72,7 +72,8 @@ public class RestClientUbs {
             greenCityUbsServerAddress + "/ubs/tariffs/" + locationId,
             HttpMethod.GET,
             entity,
-            Long.class).getBody();
+            new ParameterizedTypeReference<List<Long>>() {
+            }).getBody();
     }
 
     /**
