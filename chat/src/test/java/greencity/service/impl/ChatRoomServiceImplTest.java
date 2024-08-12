@@ -1,7 +1,6 @@
 package greencity.service.impl;
 
 import greencity.client.RestClientUbs;
-import greencity.client.RestClientUser;
 import greencity.dto.*;
 import greencity.entity.ChatMessage;
 import greencity.entity.ChatRoom;
@@ -13,7 +12,7 @@ import greencity.exception.exceptions.ChatRoomNotFoundException;
 import greencity.exception.exceptions.TariffNotFoundException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
-import greencity.repository.UnreadMessageRepo;
+import greencity.service.AzureFileService;
 import greencity.service.ParticipantService;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -52,13 +51,9 @@ class ChatRoomServiceImplTest {
     @Mock
     private ChatMessageRepo chatMessageRepo;
     @Mock
-    private ChatMessageServiceImpl chatMessageService;
-    @Mock
-    private RestClientUser restClientUser;
-    @Mock
     private RestClientUbs restClientUbs;
     @Mock
-    private UnreadMessageRepo unreadMessageRepo;
+    private AzureFileService azureFileService;
 
     private final String email = "test.artur@mail.com";
     Participant expectedParticipant;
@@ -116,7 +111,7 @@ class ChatRoomServiceImplTest {
             .id(1L)
             .name("test")
             .chatType(ChatType.PRIVATE)
-            .participants(new HashSet<>())
+            .participants(Set.of(expectedParticipantDto))
             .build();
         expectedChatMessageList.add(ChatMessage.builder().id(1L).room(expected).sender(expectedParticipant).build());
         expectedCreateDto = GroupChatRoomCreateDto.builder().usersId(List.of(1L, 2L, 3L)).ownerId(4L).build();
@@ -150,18 +145,32 @@ class ChatRoomServiceImplTest {
 
     @Test
     void findChatRoomById() {
+        when(participantService.findByEmail(email)).thenReturn(expectedParticipant);
         when(chatRoomRepo.findById(1L)).thenReturn(Optional.of(expected)).thenThrow(ChatRoomNotFoundException.class);
         when(modelMapper.map(expected, ChatRoomDto.class)).thenReturn(expectedDto);
-        ChatRoomDto actual = chatRoomService.findChatRoomById(1L);
+        ChatRoomDto actual = chatRoomService.findChatRoomById(1L, email);
         assertEquals(expectedDto, actual);
     }
 
     @Test
     void findAllVisibleRooms() {
-        when(participantService.findByEmail(any())).thenReturn(expectedParticipant);
-        when(chatRoomRepo.findAllByParticipant(anyLong())).thenReturn(expectedListEmpty);
+        ChatRoom chatRoom = ChatRoom.builder()
+            .id(1L)
+            .name("test")
+            .messages(new LinkedList<>())
+            .type(ChatType.GROUP)
+            .participants(new HashSet<>())
+            .build();
 
-        assertEquals(chatRoomService.findAllVisibleRooms("name"), expectedListEmpty);
+        chatRoom.setMessages(expectedChatMessageList);
+        when(participantService.findByEmail(any())).thenReturn(expectedParticipant);
+        when(chatRoomRepo.findAllByParticipant(anyLong())).thenReturn(List.of(chatRoom, new ChatRoom()));
+        when(modelMapper.map(chatRoom, ChatRoomDto.class)).thenReturn(expectedDto);
+        when(chatMessageRepo.getLastByRoomId(chatRoom.getId())).thenReturn(expectedChatMessageList);
+
+        List<ChatRoomDto> actual = chatRoomService.findAllVisibleRooms("test");
+        assertEquals(expectedDto, actual.get(0));
+        assertEquals(1, actual.size());
     }
 
     @Test
@@ -191,25 +200,22 @@ class ChatRoomServiceImplTest {
     @Test
     void deleteParticipantsFromChatRoom() {
         when(modelMapper.map(any(ChatRoomDto.class), eq(ChatRoom.class))).thenReturn(expected);
-        when(participantService.findById(any())).thenReturn(expectedParticipant);
         when(chatRoomRepo.getParticipantsByChatRoomId(any())).thenReturn(Collections.singleton(expectedParticipant));
         when(chatRoomRepo.save(any())).thenReturn(expected);
+        when(modelMapper.map(any(ChatRoom.class), eq(ChatRoomDto.class))).thenReturn(expectedDto);
 
-        chatRoomService.deleteParticipantsFromChatRoom(expectedDto);
+        chatRoomService.deleteParticipantsFromChatRoom(expectedDto, 1L);
 
         verify(modelMapper, times(1)).map(expected, ChatRoomDto.class);
-        verify(messagingTemplate, times(1)).convertAndSend(eq("/rooms/user/" + expectedParticipant.getId()),
+        verify(messagingTemplate, times(1)).convertAndSend(eq("/rooms/user/" + expectedParticipantDto.getId()),
             any(), any(Map.class));
     }
 
     @Test
     void updateChatRoom() {
-        expectedDto.setParticipants(Collections.singleton(expectedParticipantDto));
-
         when(modelMapper.map(any(ChatRoomDto.class), eq(ChatRoom.class))).thenReturn(expected);
-        when(participantService.findById(any())).thenReturn(expectedParticipant);
         when(chatRoomRepo.save(any())).thenReturn(expected);
-        chatRoomService.updateChatRoom(expectedDto);
+        chatRoomService.updateChatRoom(expectedDto, 1L);
 
         verify(messagingTemplate, times(1))
             .convertAndSend(eq("/rooms/user/" + expectedParticipant.getId()), any(), any(Map.class));
@@ -240,7 +246,6 @@ class ChatRoomServiceImplTest {
     @Test
     void deletePrivateChatRoom() {
         expectedDto.setOwnerId(1L);
-        expectedDto.setParticipants(Collections.singleton(expectedParticipantDto));
 
         chatRoomService.deleteChatRoom(1L, expectedDto);
 
@@ -260,39 +265,11 @@ class ChatRoomServiceImplTest {
 
     @Test
     void leaveChatRoom() {
-//        ChatRoomDto chatRoomDto = leaveChatDto.getChatRoomDto();
-//        ChatRoom chatRoom = modelMapper.map(chatRoomDto, ChatRoom.class);
-//        chatRoom.setOwner(participantService.findById(chatRoomDto.getOwnerId()));
-//        chatRoom.setType(ChatType.GROUP);
-//        chatRoom.getParticipants().removeIf(participant -> participant.getId().equals(leaveChatDto.getUserId()));
-//        chatRoomRepo.save(chatRoom);
-//        chatRoomDto = modelMapper.map(chatRoom, ChatRoomDto.class);
-//        Map<String, Object> headers = new HashMap<>();
-//        headers.put(HEADER_LEAVE_ROOM, new Object());
-//        for (ParticipantDto participant : chatRoomDto.getParticipants()) {
-//            messagingTemplate.convertAndSend(ROOM_LINK + participant.getId(), chatRoomDto, headers);
-//        }
-//        LeaveChatDto leaveChatDto = new LeaveChatDto();
-//        expectedDto.setParticipants(Collections.singleton(expectedParticipantDto));
-//        leaveChatDto.setChatRoomDto(expectedDto);
-//        leaveChatDto.setUserId(1L);
-//        when(modelMapper.map(expectedDto, ChatRoom.class)).thenReturn(expected);
-//
-//        when(chatRoomRepo.save())
-
-        // Fix
-        LeaveChatDto leaveChatDto = LeaveChatDto.builder()
-            .chatRoomDto(expectedDto)
-            .userId(1L)
-            .build();
-        expectedDto.setParticipants(Collections.singleton(expectedParticipantDto));
-
         when(modelMapper.map(any(), eq(ChatRoom.class))).thenReturn(expected);
-        when(participantService.findById(any())).thenReturn(expectedParticipant);
         when(chatRoomRepo.save(any())).thenReturn(expected);
         when(modelMapper.map(any(), eq(ChatRoomDto.class))).thenReturn(expectedDto);
 
-        chatRoomService.leaveChatRoom(leaveChatDto);
+        chatRoomService.leaveChatRoom(expectedDto, 1L);
 
         verify(messagingTemplate, times(1))
             .convertAndSend(eq("/rooms/user/" + expectedParticipant.getId()), eq(expectedDto), any(Map.class));
@@ -300,20 +277,21 @@ class ChatRoomServiceImplTest {
 
     @Test
     void findGroupChatRooms() {
-        when(chatRoomRepo.findGroupChats(any(), any())).thenReturn(Collections.singletonList(expected));
+        when(chatRoomRepo.findChatRoomsByChatType(any(), any())).thenReturn(Collections.singletonList(expected));
         when(modelMapper.map(expected, ChatRoomDto.class)).thenReturn(expectedDto);
 
-        ChatRoomDto actual = chatRoomService.findGroupChatRooms(expectedParticipant, ChatType.GROUP).get(0);
+        ChatRoomDto actual = chatRoomService.findChatRoomsByChatType(expectedParticipant, ChatType.GROUP).get(0);
         assertEquals(expectedDto, actual);
     }
 
     @Test
     void findAllChatRoomsByQuery() {
-        when(chatRoomRepo.findAllChatRoomsByQuery(anyString(), any())).thenReturn(Collections.singletonList(expected));
+        when(chatRoomRepo.findAllChatRoomsByQuery(anyString(), any())).thenReturn(List.of(expected, new ChatRoom()));
         when(modelMapper.map(any(), any(Type.class))).thenReturn(Collections.singletonList(expectedDto));
 
-        ChatRoomDto actual = chatRoomService.findAllChatRoomsByQuery("query", expectedParticipant).get(0);
-        assertEquals(expectedDto, actual);
+        List<ChatRoomDto> actual = chatRoomService.findAllChatRoomsByQuery("query", expectedParticipant);
+        assertEquals(expectedDto, actual.get(0));
+        assertEquals(1, actual.size());
     }
 
     @Test
@@ -338,8 +316,8 @@ class ChatRoomServiceImplTest {
 
     @Test
     @SneakyThrows
-    void mapListChatMessageDto() {
-        Method method = ChatRoomServiceImpl.class.getDeclaredMethod("mapListChatMessageDto", List.class);
+    void mapListChatRoomDtoTest() {
+        Method method = ChatRoomServiceImpl.class.getDeclaredMethod("mapListChatRoomDto", List.class);
         method.setAccessible(true);
 
         when(modelMapper.map(expected, ChatRoomDto.class)).thenReturn(expectedDto);
@@ -373,8 +351,29 @@ class ChatRoomServiceImplTest {
             .build();
         when(chatRoomRepo.findById(anyLong())).thenReturn(Optional.ofNullable(chatRoom));
         when(modelMapper.map(chatRoom, ChatRoomDto.class)).thenReturn(chatRoomDto);
+        when(chatMessageRepo.getAllByRoomId(1L)).thenReturn(expectedChatMessageList);
 
         chatRoomService.deleteMessagesFromChatRoom(1L, 378L);
+
+        verify(chatMessageRepo, times(1)).delete(any(ChatMessage.class));
+    }
+
+    @Test
+    void deleteMessagesFromChatRoomTest_MessageWithFile() {
+        ChatMessage chatMessage = ChatMessage.builder()
+            .id(1L)
+            .room(expected)
+            .sender(expectedParticipant)
+            .fileName("testFileName")
+            .build();
+        when(chatRoomRepo.findById(anyLong())).thenReturn(Optional.ofNullable(expected));
+        when(modelMapper.map(expected, ChatRoomDto.class)).thenReturn(expectedDto);
+        when(chatMessageRepo.getAllByRoomId(1L)).thenReturn(List.of(chatMessage));
+
+        chatRoomService.deleteMessagesFromChatRoom(1L, 1L);
+
+        verify(chatMessageRepo, times(1)).delete(any(ChatMessage.class));
+        verify(azureFileService, times(1)).deleteFile("testFileName");
     }
 
     @Test
@@ -405,33 +404,32 @@ class ChatRoomServiceImplTest {
 
     @Test
     void testGetActiveChatsForAdmin() {
-        String email = "admin@example.com";
+        Long id = 1L;
         Pageable pageable = PageRequest.of(0, 20);
         EmployeeWithTariffsDto employeeWithTariffsDto = EmployeeWithTariffsDto.builder()
             .employeeDto(EmployeeDto.builder().build())
             .tariffs(Collections.singletonList(
                 GetTariffInfoForEmployeeDto.builder()
-                    .id(1L)
+                    .id(id)
                     .hasChat(true)
                     .build()))
             .build();
         List<ChatRoom> chatRooms = Collections.singletonList(
             ChatRoom.builder()
-                .id(1L)
+                .id(id)
                 .name("Chat Room 1")
                 .messages(Collections.singletonList(
                     ChatMessage.builder()
-                        .id(1L)
+                        .id(id)
                         .build()))
                 .build());
         Page<ChatRoom> chatRoomPage = new PageImpl<>(chatRooms, pageable, chatRooms.size());
-        Set<Long> unreadMessageIds = Collections.singleton(1L);
 
         when(restClientUbs.getEmployeeByEmail(email)).thenReturn(employeeWithTariffsDto);
-        when(chatRoomRepo.findAllChatsByTariffIdPageable(Collections.singletonList(1L), pageable))
+        when(chatRoomRepo.findAllChatsByTariffIdPageable(Collections.singletonList(id), pageable))
             .thenReturn(chatRoomPage);
-        when(participantService.findByEmail(email)).thenReturn(Participant.builder().id(1L).build());
-        when(unreadMessageRepo.findUnreadMessagesIdByUserId(1L)).thenReturn(unreadMessageIds);
+        when(participantService.findByEmail(email)).thenReturn(Participant.builder().id(id).build());
+        when(chatRoomRepo.countUnreadMessages(id, id)).thenReturn(id);
         when(modelMapper.map(any(ChatRoom.class), eq(ChatRoomDto.class)))
             .thenAnswer(invocation -> {
                 ChatRoom chatRoom = invocation.getArgument(0);
@@ -448,14 +446,26 @@ class ChatRoomServiceImplTest {
         assertEquals(1, actual.getPage().size());
         ChatRoomDto chatRoomDto = actual.getPage().get(0);
         assertEquals("Chat Room 1", chatRoomDto.getName());
-        assertEquals(1L, chatRoomDto.getId());
-        assertEquals(1L, chatRoomDto.getAmountUnreadMessages());
+        assertEquals(id, chatRoomDto.getId());
+        assertEquals(id, chatRoomDto.getAmountUnreadMessages());
 
         verify(restClientUbs, times(1)).getEmployeeByEmail(email);
         verify(chatRoomRepo, times(1)).findAllChatsByTariffIdPageable(Collections.singletonList(1L), pageable);
         verify(participantService, times(1)).findByEmail(email);
-        verify(unreadMessageRepo, times(1)).findUnreadMessagesIdByUserId(1L);
+        verify(chatRoomRepo, times(1)).countUnreadMessages(id, id);
         verify(modelMapper, times(1)).map(any(ChatRoom.class), eq(ChatRoomDto.class));
+    }
+
+    @Test
+    void testGetActiveChatsForAdmin_WithoutEmployee() {
+        Pageable pageable = PageRequest.of(0, 20);
+
+        when(restClientUbs.getEmployeeByEmail(email)).thenReturn(null);
+
+        PageableDto<ChatRoomDto> actual = chatRoomService.getActiveChatsForAdmin(email, pageable);
+        assertEquals(new PageableDto<>(Collections.emptyList(), 0, 0, 0), actual);
+
+        verify(restClientUbs, times(1)).getEmployeeByEmail(email);
     }
 
     @Test
@@ -473,18 +483,6 @@ class ChatRoomServiceImplTest {
     }
 
     @Test
-    void testGetAllLocationsWithChats() {
-        Long userId = 1L;
-
-        List<LocationsDto> mockedLocations = Arrays.asList(LocationsDto.builder().id(1L).build());
-        when(restClientUbs.getAllLocations()).thenReturn(mockedLocations);
-
-        List<LocationsDto> locationsWithChats = chatRoomService.getAllLocationsWithChats(userId);
-
-        assertEquals(mockedLocations, locationsWithChats);
-    }
-
-    @Test
     void testGetAllLocationsWithChatsByCourierId() {
         Long userId = 1L;
         Long courierId = 1L;
@@ -497,8 +495,8 @@ class ChatRoomServiceImplTest {
     }
 
     @Test
-    void testFindPrivateByParticipantsForSocketsGPT() {
-        Long locationId = 1L;
+    void findSystemChatByParticipantsForSocketsTest() {
+        Long tariffId = 1L;
         Long currentUserId = 1L;
         Set<Participant> participants = new LinkedHashSet<>();
         Participant owner = Participant.builder()
@@ -511,17 +509,10 @@ class ChatRoomServiceImplTest {
             .id(1L)
             .name("Owner")
             .chatType(ChatType.PRIVATE)
-//                .participants(new HashSet<>(participants))
             .build();
 
         when(participantService.findById(currentUserId)).thenReturn(owner);
-
-        Long tariffId = 1L;
-        when(restClientUbs.getTariffIdByLocationId(locationId)).thenReturn(tariffId);
-
-        when(chatRoomRepo.existsByUserIdAndTariffId(currentUserId, tariffId)).thenReturn(false);
         when(chatRoomRepo.save(any(ChatRoom.class))).thenReturn(new ChatRoom());
-
         when(modelMapper.map(any(), eq(ChatRoomDto.class))).thenReturn(expectedRoomDto);
 
         List<EmployeeWithTariffsDto> employeesWithTariffs = Collections.singletonList(
@@ -530,26 +521,24 @@ class ChatRoomServiceImplTest {
                 .build());
         when(restClientUbs.getEmployeesByTariffIdWithChat(tariffId)).thenReturn(employeesWithTariffs);
 
-        chatRoomService.findPrivateByParticipantsForSockets(locationId, currentUserId);
+        chatRoomService.findSystemChatByParticipantsForSockets(tariffId, currentUserId);
 
         verify(participantService, times(1)).findById(currentUserId);
-        verify(restClientUbs, times(1)).getTariffIdByLocationId(locationId);
-        verify(chatRoomRepo, times(1)).existsByUserIdAndTariffId(currentUserId, tariffId);
         verify(chatRoomRepo, times(1)).save(any(ChatRoom.class));
         verify(restClientUbs, times(1)).getEmployeesByTariffIdWithChat(tariffId);
         verify(messagingTemplate, times(1)).convertAndSendToUser(
-            eq("employee@example.com"), eq("/rooms/support"), eq(expectedRoomDto));
-        verify(messagingTemplate, times(1)).convertAndSend(eq("/rooms/user/new-chats1"), eq(expectedRoomDto));
+            "employee@example.com", "/rooms/support", expectedRoomDto);
+        verify(messagingTemplate, times(1)).convertAndSend("/rooms/user/new-chats1", expectedRoomDto);
     }
 
     @Test
-    void testGetTariffIdByLocationId() throws Exception {
+    void testGetTariffIdByLocationId() {
         Long locationId = 10L;
-        Long expectedTariffId = 15L;
+        List<Long> expectedTariffId = List.of(15L);
 
         when(restClientUbs.getTariffIdByLocationId(locationId)).thenReturn(expectedTariffId);
 
-        Long actualTariffId = chatRoomService.getTariffIdByLocationId(locationId);
+        List<Long> actualTariffId = chatRoomService.getTariffIdByLocationId(locationId);
 
         assertEquals(expectedTariffId, actualTariffId);
         verify(restClientUbs, times(1)).getTariffIdByLocationId(locationId);

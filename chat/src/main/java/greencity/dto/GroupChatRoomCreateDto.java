@@ -3,18 +3,21 @@ package greencity.dto;
 import java.util.List;
 
 import greencity.enums.ChatStatus;
-import lombok.*;
+import greencity.enums.ChatType;
+import lombok.Data;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class GroupChatRoomCreateDto {
     private List<Long> usersId;
-    private Long tariffId;
     private ChatStatus chatStatus;
     private String chatName;
     private Long ownerId;
     private String logo;
+    private ChatType chatType;
 }

@@ -35,7 +35,7 @@ public interface ChatRoomService {
      * @param id {@link ChatRoom} id.
      * @return {@link ChatRoom} instance.
      */
-    ChatRoomDto findChatRoomById(Long id);
+    ChatRoomDto findChatRoomById(Long id, String name);
 
     /**
      * {@inheritDoc}
@@ -45,7 +45,7 @@ public interface ChatRoomService {
     /**
      * {@inheritDoc}
      */
-    List<ChatRoomDto> findGroupChatRooms(Participant participant, ChatType chatType);
+    List<ChatRoomDto> findChatRoomsByChatType(Participant participant, ChatType chatType);
 
     /**
      * {@inheritDoc}
@@ -75,12 +75,12 @@ public interface ChatRoomService {
     /**
      * {@inheritDoc}
      */
-    void deleteParticipantsFromChatRoom(ChatRoomDto chatRoomDto);
+    void deleteParticipantsFromChatRoom(ChatRoomDto chatRoomDto, Long userId);
 
     /**
      * {@inheritDoc}
      */
-    void updateChatRoom(ChatRoomDto chatRoomDto);
+    void updateChatRoom(ChatRoomDto chatRoomDto, Long userId);
 
     /**
      * {@inheritDoc}
@@ -90,12 +90,12 @@ public interface ChatRoomService {
     /**
      * {@inheritDoc}
      */
-    void leaveChatRoom(LeaveChatDto leaveChatDto);
+    void leaveChatRoom(ChatRoomDto chatRoomDto, Long userId);
 
     /**
      * {@inheritDoc}
      */
-    void findPrivateByParticipantsForSockets(Long id, Long currentUserId);
+    void findSystemChatByParticipantsForSockets(Long id, Long currentUserId);
 
     /**
      * Method deletes all {@link ChatMessage}s from chatroom.
@@ -114,19 +114,12 @@ public interface ChatRoomService {
     List<ChatRoomDto> findAllChatsByTariffId(Long tariffId);
 
     /**
-     * Retrieves a list of all locations.
-     *
-     * @return A list of {@link LocationsDto} objects representing all locations.
-     */
-    List<LocationsDto> getAllLocationsWithChats(Long userId);
-
-    /**
      * Retrieves the tariff ID associated with the specified location ID.
      *
      * @param locationId The ID of the location for which to retrieve the tariff ID.
      * @return The tariff ID associated with the specified location ID.
      */
-    Long getTariffIdByLocationId(Long locationId);
+    List<Long> getTariffIdByLocationId(Long locationId);
 
     /**
      * Retrieves a pageable list of active chat rooms for the admin associated with
