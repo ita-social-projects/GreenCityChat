@@ -254,7 +254,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         }
 
         List<Long> tariffIdsWithChat = employee.getTariffs().stream()
-            .filter(GetTariffInfoForEmployeeDto::getHasChat)
             .map(GetTariffInfoForEmployeeDto::getId)
             .collect(Collectors.toList());
         if (tariffIdsWithChat.isEmpty()) {
