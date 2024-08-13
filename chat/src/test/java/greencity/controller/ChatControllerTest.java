@@ -476,15 +476,50 @@ class ChatControllerTest {
     }
 
     @Test
-    void createNewSystemChatIfNotExistTest() {
+    void createNewSystemChatIfNotExistTest_SystemChat() {
         Long tariffId = 2L;
         Long userId = 158L;
         CreateNewChatDto createNewChatDto = CreateNewChatDto.builder()
             .tariffId(tariffId)
             .currentUserId(userId)
             .build();
-        chatController.createNewSystemChatIfNotExist(createNewChatDto);
+        chatController.createNewChatIfNotExist(createNewChatDto);
         verify(chatRoomService).findSystemChatByParticipantsForSockets(tariffId, userId);
+        verify(chatRoomService, times(0)).findPrivateChatByParticipantsForSockets(any(), any());
+        verify(chatRoomService, times(0)).createNewChatRoom(any());
+    }
+
+    @Test
+    void createNewSystemChatIfNotExistTest_PrivateChat() {
+        Long participantId = 2L;
+        Long userId = 158L;
+        CreateNewChatDto createNewChatDto = CreateNewChatDto.builder()
+            .participantId(participantId)
+            .currentUserId(userId)
+            .build();
+        chatController.createNewChatIfNotExist(createNewChatDto);
+        verify(chatRoomService).findPrivateChatByParticipantsForSockets(participantId, userId);
+        verify(chatRoomService, times(0)).findSystemChatByParticipantsForSockets(any(), any());
+        verify(chatRoomService, times(0)).createNewChatRoom(any());
+    }
+
+    @Test
+    void createNewSystemChatIfNotExistTest_GroupChat() {
+        Long userId = 158L;
+        GroupChatRoomCreateDto groupChatRoomCreateDto = GroupChatRoomCreateDto.builder()
+            .ownerId(userId)
+            .chatStatus(ChatStatus.NEW)
+            .chatName("GroupChat")
+            .usersId(List.of(15L, 148L, 240L))
+            .build();
+        CreateNewChatDto createNewChatDto = CreateNewChatDto.builder()
+            .groupChatRoomCreateDto(groupChatRoomCreateDto)
+            .currentUserId(userId)
+            .build();
+        chatController.createNewChatIfNotExist(createNewChatDto);
+        verify(chatRoomService).createNewChatRoom(groupChatRoomCreateDto);
+        verify(chatRoomService, times(0)).findPrivateChatByParticipantsForSockets(any(), any());
+        verify(chatRoomService, times(0)).findSystemChatByParticipantsForSockets(any(), any());
     }
 
     @Test

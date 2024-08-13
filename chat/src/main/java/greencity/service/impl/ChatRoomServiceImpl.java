@@ -85,7 +85,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             .builder()
             .participants(participants)
             .owner(owner)
-            .type(dto.getChatType())
+            .type(ChatType.GROUP)
             .chatStatus(dto.getChatStatus())
             .name(dto.getChatName())
             .logo(dto.getLogo())
@@ -209,6 +209,39 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
         participants.forEach(participant -> messagingTemplate
             .convertAndSend(ROOM_LINK + "new-chats" + participant.getId(), room));
+    }
+
+    @Override
+    public void findPrivateChatByParticipantsForSockets(Long participantId, Long currentUserId) {
+        Set<Participant> participants = new LinkedHashSet<>();
+        Participant owner = participantService.findById(currentUserId);
+        participants.add(owner);
+        participants.add(participantService.findById(participantId));
+        List<ChatRoom> chatRoom = chatRoomRepo.findByParticipantsAndStatus(participants, participants.size(),
+            ChatType.PRIVATE);
+        chatRoom.forEach(chat -> chat.setName(chat.getName().replaceAll(owner.getName(), "")
+            .replaceAll(":", "")));
+        ChatRoomDto chatRoomDto = filterPrivateRoom(chatRoom, participants, owner);
+        participants.forEach(participant -> messagingTemplate
+            .convertAndSend(ROOM_LINK + "new-chats" + participant.getId(), chatRoomDto));
+    }
+
+    private ChatRoomDto filterPrivateRoom(List<ChatRoom> chatRooms, Set<Participant> participants, Participant owner) {
+        ChatRoom toReturn;
+        if (chatRooms.isEmpty()) {
+            toReturn = chatRoomRepo.save(
+                ChatRoom.builder()
+                    .name(participants.stream().map(Participant::getName).collect(Collectors.joining(":")))
+                    .owner(owner)
+                    .participants(participants)
+                    .type(ChatType.PRIVATE)
+                    .build());
+            toReturn.setName(toReturn.getName().replaceAll(owner.getName(), "")
+                .replaceAll(":", ""));
+        } else {
+            toReturn = chatRooms.get(0);
+        }
+        return modelMapper.map(toReturn, ChatRoomDto.class);
     }
 
     @Override
