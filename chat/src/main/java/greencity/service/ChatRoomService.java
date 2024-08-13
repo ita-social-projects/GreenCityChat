@@ -98,6 +98,15 @@ public interface ChatRoomService {
     void findSystemChatByParticipantsForSockets(Long id, Long currentUserId);
 
     /**
+     * The method creates a private chat room for two users if no such chat room
+     * already exists for those users.
+     *
+     * @param currentUserId id of current user.
+     * @param participantId id other user in chat room.
+     */
+    void findPrivateChatByParticipantsForSockets(Long participantId, Long currentUserId);
+
+    /**
      * Method deletes all {@link ChatMessage}s from chatroom.
      *
      * @param roomId {@link Long} chatroom's id

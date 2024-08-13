@@ -10,7 +10,6 @@ import greencity.exception.exceptions.ChatRoomNotFoundException;
 import greencity.exception.exceptions.TariffNotFoundException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
-import greencity.repository.UnreadMessageRepo;
 import greencity.service.AzureFileService;
 import greencity.service.ChatRoomService;
 import greencity.service.ParticipantService;
@@ -84,15 +83,13 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         return setLastMessageAndLastMessageDateTime(chatRoomDto);
     }
 
-    private ChatRoomDto filterPrivateRoom(List<ChatRoom> chatRooms, Set<Participant> participants, Participant owner,
-        Long tariffId) {
+    private ChatRoomDto filterPrivateRoom(List<ChatRoom> chatRooms, Set<Participant> participants, Participant owner) {
         ChatRoom toReturn;
         if (chatRooms.isEmpty()) {
             toReturn = chatRoomRepo.save(
                 ChatRoom.builder()
                     .name(participants.stream().map(Participant::getName).collect(Collectors.joining(":")))
                     .owner(owner)
-                    .tariffId(tariffId)
                     .participants(participants)
                     .type(ChatType.PRIVATE)
                     .build());
@@ -146,7 +143,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             .builder()
             .participants(participants)
             .owner(owner)
-            .type(dto.getChatType())
+            .type(ChatType.GROUP)
             .chatStatus(dto.getChatStatus())
             .name(dto.getChatName())
             .logo(dto.getLogo())
@@ -271,6 +268,21 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
         participants.forEach(participant -> messagingTemplate
             .convertAndSend(ROOM_LINK + "new-chats" + participant.getId(), room));
+    }
+
+    @Override
+    public void findPrivateChatByParticipantsForSockets(Long participantId, Long currentUserId) {
+        Set<Participant> participants = new LinkedHashSet<>();
+        Participant owner = participantService.findById(currentUserId);
+        participants.add(owner);
+        participants.add(participantService.findById(participantId));
+        List<ChatRoom> chatRoom = chatRoomRepo.findByParticipantsAndStatus(participants, participants.size(),
+            ChatType.PRIVATE);
+        chatRoom.forEach(chat -> chat.setName(chat.getName().replaceAll(owner.getName(), "")
+            .replaceAll(":", "")));
+        ChatRoomDto chatRoomDto = filterPrivateRoom(chatRoom, participants, owner);
+        participants.forEach(participant -> messagingTemplate
+            .convertAndSend(ROOM_LINK + "new-chats" + participant.getId(), chatRoomDto));
     }
 
     @Override

@@ -209,12 +209,19 @@ public class ChatController {
     }
 
     /**
-     * Method return system chat for current user.
+     * Method returns a new chat for the current user if none existed before.
      */
     @MessageMapping("/chat/user")
-    public void createNewSystemChatIfNotExist(@RequestBody CreateNewChatDto createNewChatDto) {
-        chatRoomService.findSystemChatByParticipantsForSockets(createNewChatDto.getTariffId(),
-            createNewChatDto.getCurrentUserId());
+    public void createNewChatIfNotExist(@RequestBody CreateNewChatDto createNewChatDto) {
+        if (createNewChatDto.getTariffId() != null) {
+            chatRoomService.findSystemChatByParticipantsForSockets(createNewChatDto.getTariffId(),
+                createNewChatDto.getCurrentUserId());
+        } else if (createNewChatDto.getParticipantId() != null) {
+            chatRoomService.findPrivateChatByParticipantsForSockets(createNewChatDto.getParticipantId(),
+                createNewChatDto.getCurrentUserId());
+        } else if (createNewChatDto.getGroupChatRoomCreateDto() != null) {
+            chatRoomService.createNewChatRoom(createNewChatDto.getGroupChatRoomCreateDto());
+        }
     }
 
     /**

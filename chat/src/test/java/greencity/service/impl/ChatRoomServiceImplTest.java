@@ -592,4 +592,72 @@ class ChatRoomServiceImplTest {
         verify(chatRoomRepo, never()).findAllChatsByTariffId(tariffId);
         verify(modelMapper, never()).map(any(ChatRoom.class), eq(ChatRoomDto.class));
     }
+
+    @Test
+    void testFindPrivateChatByParticipantsForSockets_ExistingChat() {
+        Participant owner = expectedParticipant;
+        Participant otherParticipant = Participant.builder()
+            .id(1L)
+            .name("Other")
+            .email("Other")
+            .profilePicture(null)
+            .userStatus(UserStatus.ACTIVATED)
+            .build();
+        Set<Participant> participants = new LinkedHashSet<>(Arrays.asList(owner, otherParticipant));
+        ChatRoom existingChat = new ChatRoom();
+        existingChat.setName("artur:Other");
+        when(participantService.findById(1L)).thenReturn(owner);
+        when(participantService.findById(2L)).thenReturn(otherParticipant);
+        when(chatRoomRepo.findByParticipantsAndStatus(participants, participants.size(), ChatType.PRIVATE))
+            .thenReturn(Collections.singletonList(existingChat));
+
+        ChatRoomDto expectedRoomDto = ChatRoomDto.builder()
+            .id(1L)
+            .name("Other")
+            .chatType(ChatType.PRIVATE)
+            .build();
+        when(modelMapper.map(any(ChatRoom.class), eq(ChatRoomDto.class))).thenReturn(expectedRoomDto);
+
+        chatRoomService.findPrivateChatByParticipantsForSockets(2L, 1L);
+
+        verify(chatRoomRepo, times(0)).save(any(ChatRoom.class));
+        verify(messagingTemplate, times(2))
+            .convertAndSend(any(String.class), eq(expectedRoomDto));
+    }
+
+    @Test
+    void testFindPrivateChatByParticipantsForSockets_NewChat() {
+        Participant owner = expectedParticipant;
+        Participant otherParticipant = Participant.builder()
+            .id(1L)
+            .name("Other")
+            .email("Other")
+            .profilePicture(null)
+            .userStatus(UserStatus.ACTIVATED)
+            .build();
+        Set<Participant> participants = new LinkedHashSet<>(Arrays.asList(owner, otherParticipant));
+        when(participantService.findById(1L)).thenReturn(owner);
+        when(participantService.findById(2L)).thenReturn(otherParticipant);
+        when(chatRoomRepo.findByParticipantsAndStatus(participants, participants.size(), ChatType.PRIVATE))
+            .thenReturn(Collections.emptyList());
+
+        ChatRoom newChat = new ChatRoom();
+        newChat.setName("Other");
+        when(chatRoomRepo.save(any(ChatRoom.class))).thenReturn(newChat);
+
+        ChatRoomDto chatRoomDto = new ChatRoomDto();
+        when(modelMapper.map(any(ChatRoom.class), eq(ChatRoomDto.class))).thenReturn(chatRoomDto);
+
+        chatRoomService.findPrivateChatByParticipantsForSockets(2L, 1L);
+
+        verify(chatRoomRepo, times(1)).save(any(ChatRoom.class));
+        verify(messagingTemplate, times(2))
+            .convertAndSend(any(String.class), eq(chatRoomDto));
+    }
+
+    @Test
+    void testFindPrivateChatByParticipantsForSockets_NoParticipants() {
+        assertThrows(NullPointerException.class,
+            () -> chatRoomService.findPrivateChatByParticipantsForSockets(null, null));
+    }
 }
