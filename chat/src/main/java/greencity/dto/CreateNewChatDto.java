@@ -12,4 +12,6 @@ import lombok.Builder;
 public class CreateNewChatDto {
     private Long currentUserId;
     private Long tariffId;
+    private Long participantId;
+    private GroupChatRoomCreateDto groupChatRoomCreateDto;
 }

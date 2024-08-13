@@ -18,5 +18,4 @@ public class GroupChatRoomCreateDto {
     private String chatName;
     private Long ownerId;
     private String logo;
-    private ChatType chatType;
 }
