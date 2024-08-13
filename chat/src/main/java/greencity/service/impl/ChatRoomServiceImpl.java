@@ -218,10 +218,9 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         participants.add(owner);
         participants.add(participantService.findById(participantId));
         List<ChatRoom> chatRoom = chatRoomRepo.findByParticipantsAndStatus(participants, participants.size(),
-            ChatType.PRIVATE).stream().peek(
-                chat -> chat.setName(chat.getName().replaceAll(owner.getName(), "")
-                    .replaceAll(":", "")))
-            .collect(Collectors.toList());
+            ChatType.PRIVATE);
+        chatRoom.forEach(chat -> chat.setName(chat.getName().replaceAll(owner.getName(), "")
+            .replaceAll(":", "")));
         ChatRoomDto chatRoomDto = filterPrivateRoom(chatRoom, participants, owner);
         participants.forEach(participant -> messagingTemplate
             .convertAndSend(ROOM_LINK + "new-chats" + participant.getId(), chatRoomDto));

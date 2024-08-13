@@ -575,7 +575,7 @@ class ChatRoomServiceImplTest {
     }
 
     @Test
-    public void testFindPrivateChatByParticipantsForSockets_ExistingChat() {
+    void testFindPrivateChatByParticipantsForSockets_ExistingChat() {
         Participant owner = expectedParticipant;
         Participant otherParticipant = Participant.builder()
             .id(1L)
@@ -607,7 +607,7 @@ class ChatRoomServiceImplTest {
     }
 
     @Test
-    public void testFindPrivateChatByParticipantsForSockets_NewChat() {
+    void testFindPrivateChatByParticipantsForSockets_NewChat() {
         Participant owner = expectedParticipant;
         Participant otherParticipant = Participant.builder()
             .id(1L)
@@ -637,7 +637,7 @@ class ChatRoomServiceImplTest {
     }
 
     @Test
-    public void testFindPrivateChatByParticipantsForSockets_NoParticipants() {
+    void testFindPrivateChatByParticipantsForSockets_NoParticipants() {
         assertThrows(NullPointerException.class,
             () -> chatRoomService.findPrivateChatByParticipantsForSockets(null, null));
     }
