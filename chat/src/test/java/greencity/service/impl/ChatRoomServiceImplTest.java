@@ -64,7 +64,7 @@ class ChatRoomServiceImplTest {
     Participant expectedParticipant;
     ChatRoom expected;
     ChatRoom chatRoomWithoutType;
-    ChatRoom chatRoomWithoutTariffId;
+    ChatRoom chatRoomWithTariffId;
     ChatRoom expectedToReturn;
     ChatRoomDto expectedDto;
     List<ChatRoomDto> expectedListDto;
@@ -104,7 +104,6 @@ class ChatRoomServiceImplTest {
             .name("test")
             .messages(new LinkedList<>())
             .type(ChatType.PRIVATE)
-            .tariffId(1L)
             .participants(new HashSet<>())
             .build();
         chatRoomWithoutType = ChatRoom.builder()
@@ -112,13 +111,15 @@ class ChatRoomServiceImplTest {
             .name("test")
             .messages(new LinkedList<>())
             .participants(new HashSet<>())
-            .tariffId(12L)
+            .type(null)
+            .tariffId(null)
             .build();
-        chatRoomWithoutTariffId = ChatRoom.builder()
+        chatRoomWithTariffId = ChatRoom.builder()
             .id(1L)
             .name("test")
             .messages(new LinkedList<>())
             .type(ChatType.PRIVATE)
+            .tariffId(1L)
             .participants(new HashSet<>())
             .build();
         expectedList.add(expected);
@@ -190,7 +191,7 @@ class ChatRoomServiceImplTest {
     void findAllVisibleRooms_EmptyResult() {
         when(participantService.findByEmail(any())).thenReturn(expectedParticipant);
         when(chatRoomRepo.findAllByParticipant(anyLong())).thenReturn(List.of(new ChatRoom(),
-            chatRoomWithoutType, chatRoomWithoutTariffId));
+            chatRoomWithoutType, chatRoomWithTariffId));
 
         List<ChatRoomDto> actual = chatRoomService.findAllVisibleRooms("name");
         assertTrue(actual.isEmpty());
@@ -297,7 +298,7 @@ class ChatRoomServiceImplTest {
     @Test
     void findAllChatRoomsByQuery() {
         when(chatRoomRepo.findAllChatRoomsByQuery(anyString(), any())).thenReturn(List.of(expected, new ChatRoom(),
-            chatRoomWithoutType, chatRoomWithoutTariffId));
+            chatRoomWithoutType, chatRoomWithTariffId));
         when(modelMapper.map(any(), any(Type.class))).thenReturn(Collections.singletonList(expectedDto));
 
         List<ChatRoomDto> actual = chatRoomService.findAllChatRoomsByQuery("query", expectedParticipant);
@@ -308,13 +309,44 @@ class ChatRoomServiceImplTest {
     @Test
     void testFindAllChatRoomsByQuery_EmptyResult() {
         when(chatRoomRepo.findAllChatRoomsByQuery(anyString(), any())).thenReturn(List.of(new ChatRoom(),
-            chatRoomWithoutType, chatRoomWithoutTariffId));
+            chatRoomWithoutType, chatRoomWithTariffId));
 
         List<ChatRoomDto> result = chatRoomService.findAllChatRoomsByQuery("query", expectedParticipant);
 
         assertTrue(result.isEmpty());
         verify(chatRoomRepo).findAllChatRoomsByQuery("query", expectedParticipant);
         verify(modelMapper, never()).map(any(), any(TypeToken.class));
+    }
+
+    @Test
+    void testFindAllChatRoomsByQuery_Filtering() {
+        ChatRoom chatRoom1 = new ChatRoom();
+        chatRoom1.setTariffId(1L);
+
+        ChatRoom chatRoom2 = new ChatRoom();
+        chatRoom2.setTariffId(null);
+        chatRoom2.setMessages(Collections.emptyList());
+
+        ChatRoom chatRoom3 = new ChatRoom();
+        chatRoom3.setTariffId(null);
+        chatRoom3.setMessages(expectedChatMessageList);
+        chatRoom3.setType(null);
+
+        ChatRoom chatRoom4 = new ChatRoom();
+        chatRoom4.setTariffId(null);
+        chatRoom4.setMessages(expectedChatMessageList);
+        chatRoom4.setType(ChatType.GROUP);
+
+        List<ChatRoom> chatRooms = Arrays.asList(chatRoom1, chatRoom2, chatRoom3, chatRoom4);
+        when(chatRoomRepo.findAllChatRoomsByQuery("test", expectedParticipant)).thenReturn(chatRooms);
+
+        when(modelMapper.map(any(), any(Type.class))).thenReturn(Collections.singletonList(expectedDto));
+
+        List<ChatRoomDto> result = chatRoomService.findAllChatRoomsByQuery("test", expectedParticipant);
+
+        assertEquals(1, result.size());
+        verify(chatRoomRepo).findAllChatRoomsByQuery("test", expectedParticipant);
+        verify(modelMapper).map(any(), any(Type.class));
     }
 
     @Test
