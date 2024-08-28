@@ -152,7 +152,8 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                     .collect(Collectors.toList()),
                 new TypeToken<List<ChatRoomDto>>() {
                 }.getType());
-        return formattingChatRooms(roomsDto, participant.getId());
+        return roomsDto == null || roomsDto.isEmpty() ? Collections.emptyList()
+            : formattingChatRooms(roomsDto, participant.getId());
     }
 
     @Override
