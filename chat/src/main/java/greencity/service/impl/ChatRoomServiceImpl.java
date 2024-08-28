@@ -59,7 +59,8 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     public List<ChatRoomDto> findAllVisibleRooms(String name) {
         Participant participant = participantService.findByEmail(name);
         List<ChatRoom> rooms = chatRoomRepo.findAllByParticipant(participant.getId()).stream()
-            .filter(chatRoom -> !chatRoom.getMessages().isEmpty() && chatRoom.getType() != null)
+            .filter(chatRoom -> chatRoom.getTariffId() == null && !chatRoom.getMessages().isEmpty()
+                && chatRoom.getType() != null)
             .collect(Collectors.toList());
         List<ChatRoomDto> roomDtos = mapListChatRoomDto(rooms);
         return formattingChatRooms(roomDtos, participant.getId());
@@ -146,7 +147,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         List<ChatRoomDto> roomsDto = modelMapper
             .map(
                 rooms.stream()
-                    .filter(chatRoom -> !chatRoom.getMessages().isEmpty()
+                    .filter(chatRoom -> chatRoom.getTariffId() == null && !chatRoom.getMessages().isEmpty()
                         && chatRoom.getType() != null)
                     .collect(Collectors.toList()),
                 new TypeToken<List<ChatRoomDto>>() {
