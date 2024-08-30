@@ -27,8 +27,8 @@ public interface ChatRoomRepo extends JpaRepository<ChatRoom, Long>,
     @Query(
         value = "SELECT room.* FROM chat_rooms room "
             + "INNER JOIN chat_rooms_participants crp ON room.id = crp.room_id "
-            + "AND room.tariff_id IS NULL"
-            + "WHERE crp.participant_id = :id",
+            + "WHERE crp.participant_id = :id "
+            + "AND room.tariff_id IS NULL",
         nativeQuery = true)
     List<ChatRoom> findAllByParticipant(@Param("id") Long id);
 
