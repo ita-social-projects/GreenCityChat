@@ -2,17 +2,14 @@ package greencity.config;
 
 import static greencity.constant.AppConstant.*;
 import static greencity.constant.AppConstant.UBS_EMPLOYEE;
-
 import greencity.client.RestClientUser;
 import greencity.jwt.JwtTool;
 import greencity.security.providers.JwtAuthenticationProvider;
 import java.util.Arrays;
 import java.util.List;
-
 import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -72,17 +69,17 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.cors(corsCustomizer -> corsCustomizer.configurationSource(request -> {
-                CorsConfiguration config = new CorsConfiguration();
-                config.setAllowedOriginPatterns(List.of(allowedOrigins));
-                config.setAllowedMethods(
-                    Arrays.asList("GET", "POST", "OPTIONS", "DELETE", "PUT", "PATCH"));
-                config.setAllowedHeaders(
-                    Arrays.asList("Access-Control-Allow-Origin", "Access-Control-Allow-Headers",
-                        "X-Requested-With", "Origin", "Content-Type", "Accept", "Authorization"));
-                config.setAllowCredentials(true);
-                config.setMaxAge(3600L);
-                return config;
-            }))
+            CorsConfiguration config = new CorsConfiguration();
+            config.setAllowedOriginPatterns(List.of(allowedOrigins));
+            config.setAllowedMethods(
+                Arrays.asList("GET", "POST", "OPTIONS", "DELETE", "PUT", "PATCH"));
+            config.setAllowedHeaders(
+                Arrays.asList("Access-Control-Allow-Origin", "Access-Control-Allow-Headers",
+                    "X-Requested-With", "Origin", "Content-Type", "Accept", "Authorization"));
+            config.setAllowCredentials(true);
+            config.setMaxAge(3600L);
+            return config;
+        }))
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
             .addFilterBefore(
