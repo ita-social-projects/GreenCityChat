@@ -8,6 +8,7 @@ import greencity.exception.exceptions.UserNotFoundException;
 import greencity.exception.exceptions.VoiceMessageNotFoundException;
 import greencity.exception.exceptions.UserIsNotAdminException;
 import greencity.exception.exceptions.TariffNotFoundException;
+import greencity.exception.exceptions.ResourceNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
@@ -127,6 +128,25 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     public final ResponseEntity<Object> handleTariffNotFoundException(TariffNotFoundException ex, WebRequest request) {
         ExceptionResponse exceptionResponse = new ExceptionResponse(getErrorAttributes(request));
         log.trace(ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exceptionResponse);
+    }
+
+    /**
+     * Method intercepts exception {@link ResourceNotFoundException}.
+     *
+     * @param ex      Exception that should be intercepted.
+     * @param request Contains details about the occurred exception.
+     * @return {@code ResponseEntity} which contains the HTTP status and body with
+     *         the exception message.
+     */
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public final ResponseEntity<Object> handleResourceNotFoundException(ResourceNotFoundException ex,
+        WebRequest request) {
+        log.error(ex.getMessage(), ex);
+
+        ExceptionResponse exceptionResponse = new ExceptionResponse(getErrorAttributes(request));
+        exceptionResponse.setMessage(ex.getMessage());
+
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exceptionResponse);
     }
 }
