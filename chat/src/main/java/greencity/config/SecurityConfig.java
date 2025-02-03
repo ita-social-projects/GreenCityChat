@@ -14,6 +14,7 @@ import java.util.List;
 
 import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -35,7 +36,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
  * Config for security.
- *
  */
 @Configuration
 @EnableWebSecurity
@@ -92,6 +92,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 "/socket/**",
                 "/socket/**/**",
                 "/socket/info")
+            .permitAll()
+            .antMatchers(HttpMethod.GET,
+                "/commit-info")
             .permitAll()
             .antMatchers(HttpMethod.GET,
                 "/chat",
