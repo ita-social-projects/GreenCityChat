@@ -11,5 +11,7 @@ import lombok.*;
 @ToString
 public class CreateNewChatDto {
     private Long currentUserId;
-    private Long locationsIds;
+    private Long tariffId;
+    private Long participantId;
+    private GroupChatRoomCreateDto groupChatRoomCreateDto;
 }

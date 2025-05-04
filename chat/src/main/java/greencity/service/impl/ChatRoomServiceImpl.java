@@ -1,7 +1,6 @@
 package greencity.service.impl;
 
 import greencity.client.RestClientUbs;
-import greencity.client.RestClientUser;
 import greencity.constant.ErrorMessage;
 import greencity.dto.*;
 import greencity.entity.ChatRoom;
@@ -11,7 +10,7 @@ import greencity.exception.exceptions.ChatRoomNotFoundException;
 import greencity.exception.exceptions.TariffNotFoundException;
 import greencity.repository.ChatMessageRepo;
 import greencity.repository.ChatRoomRepo;
-import greencity.repository.UnreadMessageRepo;
+import greencity.service.AzureFileService;
 import greencity.service.ChatRoomService;
 import greencity.service.ParticipantService;
 import java.util.*;
@@ -29,15 +28,13 @@ import org.springframework.transaction.annotation.Transactional;
 @AllArgsConstructor
 @Slf4j
 public class ChatRoomServiceImpl implements ChatRoomService {
-    private final ChatMessageServiceImpl chatMessageService;
     private final ChatRoomRepo chatRoomRepo;
     private final ParticipantService participantService;
     private final ModelMapper modelMapper;
     private final ChatMessageRepo chatMessageRepo;
     private final SimpMessagingTemplate messagingTemplate;
     private final RestClientUbs restClientUbs;
-    private final RestClientUser restClientUser;
-    private final UnreadMessageRepo unreadMessageRepo;
+    private final AzureFileService azureFileService;
     private static final String ROOM_LINK = "/rooms/user/";
     private static final String SUPPORT_LINK = "/rooms/support";
     private static final String HEADER_UPDATE_ROOM = "updateRoom";
@@ -54,28 +51,18 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             .collect(Collectors.toList());
         List<ChatRoomDto> chatRoomDtos = modelMapper.map(chatRooms, new TypeToken<List<ChatRoomDto>>() {
         }.getType());
-
-        return chatRoomDtos.stream().map(this::setLastMessageAndLastMessageDateTime)
-            .sorted(Comparator.comparing(ChatRoomDto::getLastMessageDateTime,
-                Comparator.nullsFirst(Comparator.naturalOrder())).reversed())
-            .collect(Collectors.toList());
+        return formattingChatRooms(chatRoomDtos, participant.getId());
     }
 
     @Override
     public List<ChatRoomDto> findAllVisibleRooms(String name) {
         Participant participant = participantService.findByEmail(name);
         List<ChatRoom> rooms = chatRoomRepo.findAllByParticipant(participant.getId()).stream()
-            .filter(chatRoom -> !chatRoom.getMessages().isEmpty() && chatRoom.getType().equals(ChatType.PRIVATE)
-                || chatRoom.getType().equals(ChatType.GROUP) || chatRoom.getType().equals(ChatType.SYSTEM))
+            .filter(chatRoom -> !chatRoom.getMessages().isEmpty() && chatRoom.getType() != null)
             .collect(Collectors.toList());
 
-        List<ChatRoomDto> roomDtos = mapListChatMessageDto(rooms);
-        roomDtos
-            .forEach(x -> x.setAmountUnreadMessages(chatRoomRepo.countUnreadMessages(participant.getId(), x.getId())));
-        return roomDtos.stream().map(this::setLastMessageAndLastMessageDateTime)
-            .sorted(Comparator.comparing(ChatRoomDto::getLastMessageDateTime,
-                Comparator.nullsFirst(Comparator.naturalOrder())).reversed())
-            .collect(Collectors.toList());
+        List<ChatRoomDto> roomDtos = mapListChatRoomDto(rooms);
+        return formattingChatRooms(roomDtos, participant.getId());
     }
 
     @Override
@@ -87,21 +74,22 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     }
 
     @Override
-    public ChatRoomDto findChatRoomById(Long id) {
+    public ChatRoomDto findChatRoomById(Long id, String name) {
         ChatRoom chatRoom = chatRoomRepo.findById(id)
             .orElseThrow(() -> new ChatRoomNotFoundException(ErrorMessage.CHAT_ROOM_NOT_FOUND_BY_ID));
-        return setLastMessageAndLastMessageDateTime(modelMapper.map(chatRoom, ChatRoomDto.class));
+        ChatRoomDto chatRoomDto = modelMapper.map(chatRoom, ChatRoomDto.class);
+        chatRoomDto.setAmountUnreadMessages(
+            chatRoomRepo.countUnreadMessages(participantService.findByEmail(name).getId(), chatRoomDto.getId()));
+        return setLastMessageAndLastMessageDateTime(chatRoomDto);
     }
 
-    private ChatRoomDto filterPrivateRoom(List<ChatRoom> chatRooms, Set<Participant> participants, Participant owner,
-        Long tariffId) {
+    private ChatRoomDto filterPrivateRoom(List<ChatRoom> chatRooms, Set<Participant> participants, Participant owner) {
         ChatRoom toReturn;
         if (chatRooms.isEmpty()) {
             toReturn = chatRoomRepo.save(
                 ChatRoom.builder()
                     .name(participants.stream().map(Participant::getName).collect(Collectors.joining(":")))
                     .owner(owner)
-                    .tariffId(tariffId)
                     .participants(participants)
                     .type(ChatType.PRIVATE)
                     .build());
@@ -150,127 +138,79 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         Participant owner = participantService.findById(dto.getOwnerId());
         Set<Participant> participants = new HashSet<>();
         participants.add(owner);
-
         dto.getUsersId().forEach(id -> participants.add(participantService.findById(id)));
         ChatRoom room = chatRoomRepo.save(ChatRoom
             .builder()
             .participants(participants)
             .owner(owner)
-            .chatStatus(dto.getChatStatus())
-            .tariffId(dto.getTariffId())
             .type(ChatType.GROUP)
+            .chatStatus(dto.getChatStatus())
             .name(dto.getChatName())
             .logo(dto.getLogo())
             .build());
-
-        Map<String, Object> headers = new HashMap<>();
-        headers.put(HEADER_SUPPORT, new Object());
-        List<EmployeeWithTariffsDto> employeesByTariffIdWithChat =
-            restClientUbs.getEmployeesByTariffIdWithChat(dto.getTariffId());
-
-        employeesByTariffIdWithChat.forEach(employee -> {
-            messagingTemplate.convertAndSendToUser(
-                employee.getEmployeeDto().getEmail(), SUPPORT_LINK, modelMapper.map(room, ChatRoomDto.class));
-            log.info("Notification sent to {}", employee.getEmployeeDto().getEmail());
-        });
-
         return modelMapper.map(room, ChatRoomDto.class);
     }
 
     @Override
-    public void deleteParticipantsFromChatRoom(ChatRoomDto chatRoomDto) {
+    public void deleteParticipantsFromChatRoom(ChatRoomDto chatRoomDto, Long userId) {
+        validateChatOwnership(chatRoomDto, userId);
         ChatRoom room = modelMapper.map(chatRoomDto, ChatRoom.class);
-        room.setOwner(participantService.findById(chatRoomDto.getOwnerId()));
-        room.setType(chatRoomDto.getChatType());
         Set<Participant> participantToSend = chatRoomRepo.getParticipantsByChatRoomId(chatRoomDto.getId());
         room = chatRoomRepo.save(room);
-        Map<String, Object> headers = new HashMap<>();
-        headers.put(HEADER_UPDATE_ROOM, new Object());
-        for (Participant participant : participantToSend) {
-            messagingTemplate.convertAndSend(ROOM_LINK + participant.getId(),
-                modelMapper.map(room, ChatRoomDto.class), headers);
-        }
+        sendToParticipant(modelMapper.map(room, ChatRoomDto.class),
+            participantToSend.stream()
+                .map(Participant::getId)
+                .collect(Collectors.toSet()),
+            HEADER_UPDATE_ROOM);
     }
 
     @Override
-    public void updateChatRoom(ChatRoomDto chatRoomDto) {
+    public void updateChatRoom(ChatRoomDto chatRoomDto, Long userId) {
+        validateChatOwnership(chatRoomDto, userId);
         ChatRoom room = modelMapper.map(chatRoomDto, ChatRoom.class);
-        room.setOwner(participantService.findById(chatRoomDto.getOwnerId()));
-        room.setType(chatRoomDto.getChatType());
         room = chatRoomRepo.save(room);
-        Map<String, Object> headers = new HashMap<>();
-        headers.put(HEADER_UPDATE_ROOM, new Object());
-        for (ParticipantDto participant : chatRoomDto.getParticipants()) {
-            messagingTemplate.convertAndSend(ROOM_LINK + participant.getId(),
-                modelMapper.map(room, ChatRoomDto.class), headers);
-        }
+        sendToParticipant(modelMapper.map(room, ChatRoomDto.class),
+            getParticipantIds(chatRoomDto), HEADER_UPDATE_ROOM);
     }
 
     @Override
     public void deleteChatRoom(Long userId, ChatRoomDto chatRoomDto) {
-        if (chatRoomDto.getChatType() == ChatType.GROUP) {
-            if (Objects.equals(chatRoomDto.getOwnerId(), userId)) {
-                chatRoomRepo.deleteById(chatRoomDto.getId());
-                Map<String, Object> headers = new HashMap<>();
-                headers.put(HEADER_DELETE_ROOM, new Object());
-                for (ParticipantDto participant : chatRoomDto.getParticipants()) {
-                    messagingTemplate.convertAndSend(ROOM_LINK + participant.getId(), chatRoomDto, headers);
-                }
-            } else {
-                throw new UnsupportedOperationException(ErrorMessage.USER_NOT_THE_OWNER);
-            }
-        } else if (chatRoomDto.getChatType() == ChatType.PRIVATE) {
-            if (chatRoomDto.getParticipants().stream()
-                .anyMatch(participantDto -> Objects.equals(participantDto.getId(), userId))) {
-                chatRoomRepo.deleteById(chatRoomDto.getId());
-                Map<String, Object> headers = new HashMap<>();
-                headers.put(HEADER_DELETE_ROOM, new Object());
-                for (ParticipantDto participant : chatRoomDto.getParticipants()) {
-                    messagingTemplate.convertAndSend(ROOM_LINK + participant.getId(), chatRoomDto, headers);
-                }
-            } else {
-                throw new UnsupportedOperationException(ErrorMessage.USER_NOT_BELONG_TO_CHAT);
-            }
-        }
+        validateChatOwnership(chatRoomDto, userId);
+        chatRoomRepo.deleteById(chatRoomDto.getId());
+        Set<Long> participantIds = chatRoomDto.getParticipants().stream()
+            .map(ParticipantDto::getId)
+            .collect(Collectors.toSet());
+        sendToParticipant(chatRoomDto, participantIds, HEADER_DELETE_ROOM);
     }
 
     @Override
-    public void leaveChatRoom(LeaveChatDto leaveChatDto) {
-        ChatRoomDto chatRoomDto = leaveChatDto.getChatRoomDto();
+    public void leaveChatRoom(ChatRoomDto chatRoomDto, Long userId) {
         ChatRoom chatRoom = modelMapper.map(chatRoomDto, ChatRoom.class);
-        chatRoom.setOwner(participantService.findById(chatRoomDto.getOwnerId()));
-        chatRoom.setType(ChatType.GROUP);
-        chatRoom.getParticipants().removeIf(participant -> participant.getId().equals(leaveChatDto.getUserId()));
+        chatRoom.getParticipants().removeIf(participant -> participant.getId().equals(userId));
         chatRoomRepo.save(chatRoom);
         chatRoomDto = modelMapper.map(chatRoom, ChatRoomDto.class);
-        Map<String, Object> headers = new HashMap<>();
-        headers.put(HEADER_LEAVE_ROOM, new Object());
-        for (ParticipantDto participant : chatRoomDto.getParticipants()) {
-            messagingTemplate.convertAndSend(ROOM_LINK + participant.getId(), chatRoomDto, headers);
-        }
+        sendToParticipant(chatRoomDto, getParticipantIds(chatRoomDto), HEADER_LEAVE_ROOM);
     }
 
     @Override
-    public List<ChatRoomDto> findGroupChatRooms(Participant participant, ChatType chatType) {
-        return chatRoomRepo.findGroupChats(participant, chatType).stream()
+    public List<ChatRoomDto> findChatRoomsByChatType(Participant participant, ChatType chatType) {
+        return formattingChatRooms(chatRoomRepo.findChatRoomsByChatType(participant, chatType).stream()
             .map(room -> modelMapper.map(room, ChatRoomDto.class))
-            .map(this::setLastMessageAndLastMessageDateTime)
-            .collect(Collectors.toList());
+            .collect(Collectors.toList()), participant.getId());
     }
 
     @Override
     public List<ChatRoomDto> findAllChatRoomsByQuery(String query, Participant participant) {
         List<ChatRoom> rooms = chatRoomRepo.findAllChatRoomsByQuery(query, participant);
-        return modelMapper
+        List<ChatRoomDto> roomsDto = modelMapper
             .map(
                 rooms.stream()
                     .filter(chatRoom -> !chatRoom.getMessages().isEmpty()
-                        && chatRoom.getType().equals(ChatType.PRIVATE)
-                        || chatRoom.getType().equals(ChatType.GROUP)
-                        || chatRoom.getType().equals(ChatType.SYSTEM))
+                        && chatRoom.getType() != null)
                     .collect(Collectors.toList()),
                 new TypeToken<List<ChatRoomDto>>() {
                 }.getType());
+        return formattingChatRooms(roomsDto, participant.getId());
     }
 
     @Override
@@ -284,7 +224,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         chatRoomRepo.addUserToChatRoom(chatRoomId, userId);
     }
 
-    private List<ChatRoomDto> mapListChatMessageDto(List<ChatRoom> rooms) {
+    private List<ChatRoomDto> mapListChatRoomDto(List<ChatRoom> rooms) {
         List<ChatRoomDto> chatRoomDtos = new ArrayList<>();
         for (ChatRoom room : rooms) {
             ChatRoomDto chatRoomDto = modelMapper.map(room, ChatRoomDto.class);
@@ -294,24 +234,21 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     }
 
     @Override
-    public void findPrivateByParticipantsForSockets(Long locationId, Long currentUserId) {
+    public void findSystemChatByParticipantsForSockets(Long tariffId, Long currentUserId) {
         Set<Participant> participants = new LinkedHashSet<>();
         Participant owner = participantService.findById(currentUserId);
-        Long tariffIdByLocationId = restClientUbs.getTariffIdByLocationId(locationId);
         ChatRoomDto room;
         participants.add(owner);
-
-        if (chatRoomRepo.existsByUserIdAndTariffId(currentUserId, tariffIdByLocationId)) {
-            room = modelMapper.map(chatRoomRepo.findByUserIdAndTariffId(currentUserId, tariffIdByLocationId),
-                ChatRoomDto.class);
+        ChatRoom chatRoom = chatRoomRepo.findByUserIdAndTariffId(currentUserId, tariffId);
+        if (chatRoom != null) {
+            room = modelMapper.map(chatRoom, ChatRoomDto.class);
         } else {
             ChatRoom save = chatRoomRepo.save(
                 ChatRoom.builder()
-                    .name(participants.stream().map(Participant::getName).collect(Collectors.joining(":")))
                     .owner(owner)
-                    .tariffId(tariffIdByLocationId)
+                    .tariffId(tariffId)
                     .participants(participants)
-                    .type(ChatType.PRIVATE)
+                    .type(ChatType.SYSTEM)
                     .name(owner.getEmail())
                     .build());
 
@@ -320,7 +257,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             Map<String, Object> headers = new HashMap<>();
             headers.put(HEADER_SUPPORT, new Object());
             List<EmployeeWithTariffsDto> employeesByTariffIdWithChat =
-                restClientUbs.getEmployeesByTariffIdWithChat(tariffIdByLocationId);
+                restClientUbs.getEmployeesByTariffIdWithChat(tariffId);
 
             employeesByTariffIdWithChat.forEach(employee -> {
                 messagingTemplate.convertAndSendToUser(
@@ -334,42 +271,46 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     }
 
     @Override
+    public void findPrivateChatByParticipantsForSockets(Long participantId, Long currentUserId) {
+        Set<Participant> participants = new LinkedHashSet<>();
+        Participant owner = participantService.findById(currentUserId);
+        participants.add(owner);
+        participants.add(participantService.findById(participantId));
+        List<ChatRoom> chatRoom = chatRoomRepo.findByParticipantsAndStatus(participants, participants.size(),
+            ChatType.PRIVATE);
+        chatRoom.forEach(chat -> chat.setName(chat.getName().replaceAll(owner.getName(), "")
+            .replaceAll(":", "")));
+        ChatRoomDto chatRoomDto = filterPrivateRoom(chatRoom, participants, owner);
+        participants.forEach(participant -> messagingTemplate
+            .convertAndSend(ROOM_LINK + "new-chats" + participant.getId(), chatRoomDto));
+    }
+
+    @Override
     public void deleteMessagesFromChatRoom(Long roomId, Long userId) {
-        ChatRoomDto room = findChatRoomById(roomId);
-        if (room.getParticipants().stream().anyMatch(participant -> Objects.equals(participant.getId(), userId))) {
-            chatMessageRepo.getAllByRoomId(roomId).stream()
-                .map(chatMessage -> modelMapper.map(chatMessage, ChatMessageDto.class))
-                .forEach(chatMessageService::deleteMessage);
-        } else {
-            throw new UnsupportedOperationException(ErrorMessage.USER_NOT_BELONG_TO_CHAT);
-        }
+        ChatRoom room = chatRoomRepo.findById(roomId)
+            .orElseThrow(() -> new ChatRoomNotFoundException(ErrorMessage.CHAT_ROOM_NOT_FOUND_BY_ID));
+        ChatRoomDto chatRoomDto = modelMapper.map(room, ChatRoomDto.class);
+        validatePrivateChatMembership(chatRoomDto, userId);
+        chatMessageRepo.getAllByRoomId(roomId).forEach(chatMessage -> {
+            if (chatMessage.getFileName() != null) {
+                azureFileService.deleteFile(chatMessage.getFileName());
+            }
+            chatMessageRepo.delete(chatMessage);
+        });
     }
 
     @Override
     public List<ChatRoomDto> findAllChatsByTariffId(Long tariffId) {
         if (!restClientUbs.checkIfTariffExistsById(tariffId)) {
             throw new TariffNotFoundException("ChatService - Tariff not found with id: " + tariffId);
-        } else {
-            var allChatsByTariffId = chatRoomRepo.findAllChatsByTariffId(tariffId);
-            return allChatsByTariffId.stream()
-                .map(chatRoom -> modelMapper.map(chatRoom, ChatRoomDto.class))
-                .map(this::setLastMessageAndLastMessageDateTime)
-                .collect(Collectors.toList());
         }
-    }
-
-    @Override
-    public List<LocationsDto> getAllLocationsWithChats(Long userId) {
-        List<LocationsDto> allLocations = restClientUbs.getAllLocations();
-
-        allLocations.forEach(location -> {
-            Long tariffId = restClientUbs.getTariffIdByLocationId(location.getId());
-            ChatRoom chatRoom = chatRoomRepo.findByUserIdAndTariffId(userId,
-                tariffId);
-            location.setChat(chatRoom != null ? modelMapper.map(chatRoom, ChatRoomDto.class) : null);
-        });
-
-        return allLocations;
+        var allChatsByTariffId = chatRoomRepo.findAllChatsByTariffId(tariffId);
+        return allChatsByTariffId.stream()
+            .map(chatRoom -> modelMapper.map(chatRoom, ChatRoomDto.class))
+            .map(this::setLastMessageAndLastMessageDateTime)
+            .sorted(Comparator.comparing(ChatRoomDto::getLastMessageDateTime,
+                Comparator.nullsFirst(Comparator.naturalOrder())).reversed())
+            .collect(Collectors.toList());
     }
 
     @Override
@@ -386,7 +327,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     }
 
     @Override
-    public Long getTariffIdByLocationId(Long locationId) {
+    public List<Long> getTariffIdByLocationId(Long locationId) {
         return restClientUbs.getTariffIdByLocationId(locationId);
     }
 
@@ -410,36 +351,19 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             .filter(GetTariffInfoForEmployeeDto::getHasChat)
             .map(GetTariffInfoForEmployeeDto::getId)
             .collect(Collectors.toList());
-
         if (tariffIdsWithChat.isEmpty()) {
             return new PageableDto<>(Collections.emptyList(), 0, 0, 0);
         }
 
-        Set<Long> allUnreadMessageIds =
-            unreadMessageRepo.findUnreadMessagesIdByUserId(participantService.findByEmail(email).getId());
-
         Page<ChatRoom> activeChatsPage = chatRoomRepo.findAllChatsByTariffIdPageable(tariffIdsWithChat, pageable);
 
         List<ChatRoomDto> chatRoomDtos = activeChatsPage.getContent().stream()
-            .map(chatRoom -> getChatRoomDtoWithAmountUnreadMessages(chatRoom, allUnreadMessageIds))
-            .map(this::setLastMessageAndLastMessageDateTime)
-            .sorted(Comparator.comparing(ChatRoomDto::getLastMessageDateTime,
-                Comparator.nullsFirst(Comparator.naturalOrder())).reversed())
+            .map(chatRoom -> modelMapper.map(chatRoom, ChatRoomDto.class))
             .collect(Collectors.toList());
-
-        return new PageableDto<>(chatRoomDtos,
+        return new PageableDto<>(formattingChatRooms(chatRoomDtos, participantService.findByEmail(email).getId()),
             activeChatsPage.getTotalElements(),
             activeChatsPage.getNumber(),
             activeChatsPage.getTotalPages());
-    }
-
-    private ChatRoomDto getChatRoomDtoWithAmountUnreadMessages(ChatRoom chatRoom, Set<Long> allUnreadMessageIds) {
-        ChatRoomDto dto = modelMapper.map(chatRoom, ChatRoomDto.class);
-        long unreadMessagesCount = chatRoom.getMessages().stream()
-            .filter(message -> allUnreadMessageIds.contains(message.getId()))
-            .count();
-        dto.setAmountUnreadMessages(unreadMessagesCount);
-        return dto;
     }
 
     private ChatRoomDto setLastMessageAndLastMessageDateTime(ChatRoomDto chatRoomDto) {
@@ -449,5 +373,51 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                 chatRoomDto.setLastMessageDateTime(chatMessage.getCreateDate());
             });
         return chatRoomDto;
+    }
+
+    private List<ChatRoomDto> formattingChatRooms(List<ChatRoomDto> chatRoomDtos, Long participantId) {
+        chatRoomDtos.forEach(chatRoomDto -> chatRoomDto.setAmountUnreadMessages(
+            chatRoomRepo.countUnreadMessages(participantId, chatRoomDto.getId())));
+        return chatRoomDtos.stream()
+            .map(this::setLastMessageAndLastMessageDateTime)
+            .sorted(Comparator.comparing(ChatRoomDto::getLastMessageDateTime,
+                Comparator.nullsFirst(Comparator.naturalOrder())).reversed())
+            .collect(Collectors.toList());
+    }
+
+    private <T> void sendToParticipant(T object, Set<Long> participantToSendId,
+        String headerString) {
+        Map<String, Object> headers = new HashMap<>();
+        headers.put(headerString, new Object());
+        for (Long participantId : participantToSendId) {
+            messagingTemplate.convertAndSend(ROOM_LINK + participantId,
+                object, headers);
+        }
+    }
+
+    private void validateChatOwnership(ChatRoomDto chatRoomDto, Long userId) {
+        if (chatRoomDto.getChatType() == ChatType.GROUP) {
+            validateGroupChatOwnership(chatRoomDto, userId);
+        } else if (chatRoomDto.getChatType() == ChatType.PRIVATE) {
+            validatePrivateChatMembership(chatRoomDto, userId);
+        }
+    }
+
+    private void validateGroupChatOwnership(ChatRoomDto chatRoomDto, Long userId) {
+        if (!Objects.equals(chatRoomDto.getOwnerId(), userId)) {
+            throw new UnsupportedOperationException(ErrorMessage.USER_NOT_THE_OWNER);
+        }
+    }
+
+    private void validatePrivateChatMembership(ChatRoomDto chatRoomDto, Long userId) {
+        boolean isParticipant = chatRoomDto.getParticipants().stream()
+            .anyMatch(participantDto -> Objects.equals(participantDto.getId(), userId));
+        if (!isParticipant) {
+            throw new UnsupportedOperationException(ErrorMessage.USER_NOT_BELONG_TO_CHAT);
+        }
+    }
+
+    private Set<Long> getParticipantIds(ChatRoomDto chatRoomDto) {
+        return chatRoomDto.getParticipants().stream().map(ParticipantDto::getId).collect(Collectors.toSet());
     }
 }
