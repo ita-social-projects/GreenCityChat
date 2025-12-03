@@ -115,50 +115,50 @@ stages:
                 $(Build.BuildId)
                 latest
 
-  - stage: deploy
-    jobs:
-      - deployment: deploy
-        displayName: Deploy GreenCityChat
-        pool:
-          vmImage: $(agentOS)
-        environment: 'prod'
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - download: none
-
-                - task: DownloadBuildArtifacts@0
-                  inputs:
-                    buildType: 'current'
-                    downloadType: 'single'
-                    artifactName: '$(artifactName)'
-                    downloadPath: '$(System.ArtifactsDirectory)'
-
-#                 - task: AzureRmWebAppDeployment@4
-#                   inputs:
-#                     azureSubscription: '$(azureSub)'
-#                     appType: 'webAppLinux'
-#                     WebAppName: '$(userServiceName)'
-#                     deployToSlotOrASE: true
-#                     ResourceGroupName: '$(resourceGroup)'
-#                     packageForLinux: '$(System.ArtifactsDirectory)/$(artifactName)/$(userRepoName)/target/$(onbootJarName)'
-
-
-                - task: HelmInstaller@0
-                  inputs:
-                    helmVersion: '3.9.0'
-                    installKubectl: true
-                
-                - task: HelmDeploy@0
-                  inputs:
-                    connectionType: 'Kubernetes Service Connection'
-                    kubernetesServiceConnection: 'k8s-stage'
-                    namespace: 'default'
-                    command: 'upgrade'
-                    chartType: 'FilePath'
-                    chartPath: '$(System.ArtifactsDirectory)/drop/greencity-chat-chart'
-                    releaseName: 'chat'
-                    overrideValues: 'deployment.image=skyere/greencitychat:$(Build.BuildId)'
-                    arguments: '--debug '
+#  - stage: deploy
+#    jobs:
+#      - deployment: deploy
+#        displayName: Deploy GreenCityChat
+#        pool:
+#          vmImage: $(agentOS)
+#        environment: 'prod'
+#        strategy:
+#          runOnce:
+#            deploy:
+#              steps:
+#                - download: none
+#
+#                - task: DownloadBuildArtifacts@0
+#                  inputs:
+#                    buildType: 'current'
+#                    downloadType: 'single'
+#                    artifactName: '$(artifactName)'
+#                    downloadPath: '$(System.ArtifactsDirectory)'
+#
+##                 - task: AzureRmWebAppDeployment@4
+##                   inputs:
+##                     azureSubscription: '$(azureSub)'
+##                     appType: 'webAppLinux'
+##                     WebAppName: '$(userServiceName)'
+##                     deployToSlotOrASE: true
+##                     ResourceGroupName: '$(resourceGroup)'
+##                     packageForLinux: '$(System.ArtifactsDirectory)/$(artifactName)/$(userRepoName)/target/$(onbootJarName)'
+#
+#
+#                - task: HelmInstaller@0
+#                  inputs:
+#                    helmVersion: '3.9.0'
+#                    installKubectl: true
+#
+#                - task: HelmDeploy@0
+#                  inputs:
+#                    connectionType: 'Kubernetes Service Connection'
+#                    kubernetesServiceConnection: 'k8s-stage'
+#                    namespace: 'default'
+#                    command: 'upgrade'
+#                    chartType: 'FilePath'
+#                    chartPath: '$(System.ArtifactsDirectory)/drop/greencity-chat-chart'
+#                    releaseName: 'chat'
+#                    overrideValues: 'deployment.image=skyere/greencitychat:$(Build.BuildId)'
+#                    arguments: '--debug '
 
