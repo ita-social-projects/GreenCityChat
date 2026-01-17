@@ -30,7 +30,6 @@ import org.springframework.web.cors.CorsConfiguration;
 
 /**
  * Config for security.
- *
  */
 @Configuration
 @EnableWebSecurity
@@ -106,6 +105,9 @@ public class SecurityConfig {
                     "/swagger-resources/**",
                     "/webjars/**",
                     "/chat/**")
+                .permitAll()
+                .requestMatchers(HttpMethod.GET,
+                    "/commit-info")
                 .permitAll()
                 .requestMatchers(HttpMethod.GET,
                     "/chat/create-chatRoom",
